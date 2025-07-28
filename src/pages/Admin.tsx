@@ -1,25 +1,71 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-
-interface Guest {
-  id: string;
-  fullName: string;
-  phone: string;
-  menCount?: number;
-  womenCount?: number;
-  totalGuests?: number;
-  confirmedAt?: string;
-  status: 'pending' | 'confirmed';
-}
+import EventManager, { Event } from "@/components/EventManager";
+import GuestList, { Guest } from "@/components/GuestList";
 
 const Admin = () => {
-  const [guests, setGuests] = useState<Guest[]>([]);
+  const [events, setEvents] = useState<Event[]>([
+    {
+      id: "1",
+      name: "החתונה של שייקי ומיכל",
+      description: "חתונה מיוחדת בגן אירועים",
+      date: "2024-06-15",
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: "2", 
+      name: "יום הולדת 30 לדני",
+      description: "מסיבת יום הולדת במועדון",
+      date: "2024-07-20",
+      createdAt: new Date().toISOString()
+    }
+  ]);
+  
+  const [guests, setGuests] = useState<Guest[]>([
+    {
+      id: "1",
+      eventId: "1",
+      fullName: "משה כהן",
+      phone: "0501234567",
+      menCount: 2,
+      womenCount: 3,
+      totalGuests: 5,
+      confirmedAt: new Date().toISOString(),
+      status: 'confirmed'
+    },
+    {
+      id: "2", 
+      eventId: "1",
+      fullName: "שרה לוי",
+      phone: "0527654321",
+      status: 'pending'
+    },
+    {
+      id: "3",
+      eventId: "2",
+      fullName: "דוד ישראלי", 
+      phone: "0543216789",
+      menCount: 1,
+      womenCount: 2,
+      totalGuests: 3,
+      confirmedAt: new Date(Date.now() - 86400000).toISOString(),
+      status: 'confirmed'
+    },
+    {
+      id: "4",
+      eventId: "2",
+      fullName: "רחל אברהם",
+      phone: "0556789123", 
+      status: 'pending'
+    }
+  ]);
+  
+  const [selectedEventId, setSelectedEventId] = useState<string | null>("1");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -31,7 +77,6 @@ const Admin = () => {
     e.preventDefault();
     if (username === "admin" && password === "123456") {
       setIsAuthenticated(true);
-      loadGuestsData();
       toast({
         title: "✅ התחברות בהצלחה",
         description: "ברוכים הבאים למערכת הניהול"
@@ -45,87 +90,49 @@ const Admin = () => {
     }
   };
 
-  const loadGuestsData = async () => {
-    setLoading(true);
-    try {
-      // Mock data - will be replaced with Supabase queries
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockData: Guest[] = [
-        {
-          id: "1",
-          fullName: "משה כהן",
-          phone: "0501234567",
-          menCount: 2,
-          womenCount: 3,
-          totalGuests: 5,
-          confirmedAt: new Date().toISOString(),
-          status: 'confirmed'
-        },
-        {
-          id: "2", 
-          fullName: "שרה לוי",
-          phone: "0527654321",
-          status: 'pending'
-        },
-        {
-          id: "3",
-          fullName: "דוד ישראלי", 
-          phone: "0543216789",
-          menCount: 1,
-          womenCount: 2,
-          totalGuests: 3,
-          confirmedAt: new Date(Date.now() - 86400000).toISOString(),
-          status: 'confirmed'
-        },
-        {
-          id: "4",
-          fullName: "רחל אברהם",
-          phone: "0556789123", 
-          status: 'pending'
-        }
-      ];
-      
-      setGuests(mockData);
-    } catch (error) {
-      toast({
-        title: "❌ שגיאה",
-        description: "שגיאה בטעינת נתוני המוזמנים",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+  const handleEventCreate = (newEvent: Omit<Event, 'id' | 'createdAt'>) => {
+    const event: Event = {
+      ...newEvent,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setEvents(prev => [...prev, event]);
+    setSelectedEventId(event.id);
+  };
+
+  const handleEventDelete = (eventId: string) => {
+    setEvents(prev => prev.filter(e => e.id !== eventId));
+    setGuests(prev => prev.filter(g => g.eventId !== eventId));
+    if (selectedEventId === eventId) {
+      setSelectedEventId(events.length > 1 ? events.find(e => e.id !== eventId)?.id || null : null);
     }
+    toast({
+      title: "✅ אירוע נמחק",
+      description: "האירוע וכל המוזמנים שלו נמחקו"
+    });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && selectedEventId) {
       // This will be implemented with proper Excel parsing later
       toast({
         title: "📁 קובץ נטען",
-        description: `הקובץ ${file.name} נטען בהצלחה (זמנית)`
+        description: `הקובץ ${file.name} נטען בהצלחה לאירוע הנבחר`
       });
     }
   };
 
   const exportToExcel = () => {
-    // This will be implemented with proper Excel export later
-    const confirmedGuests = guests.filter(g => g.status === 'confirmed');
+    if (!selectedEventId) return;
+    
+    const eventGuests = guests.filter(g => g.eventId === selectedEventId);
+    const confirmedGuests = eventGuests.filter(g => g.status === 'confirmed');
     const totalConfirmed = confirmedGuests.reduce((sum, g) => sum + (g.totalGuests || 0), 0);
     
     toast({
       title: "📊 ייצוא בהצלחה", 
       description: `יוצאו ${confirmedGuests.length} אישורים (${totalConfirmed} מוזמנים בסה"כ)`
-    });
-  };
-
-  const copyInviteLink = (phone: string) => {
-    const link = `${window.location.origin}/rsvp/${phone}`;
-    navigator.clipboard.writeText(link);
-    toast({
-      title: "🔗 הקישור הועתק",
-      description: "הקישור הועתק ללוח"
     });
   };
 
@@ -170,11 +177,15 @@ const Admin = () => {
     );
   }
 
-  const confirmedCount = guests.filter(g => g.status === 'confirmed').length;
-  const pendingCount = guests.filter(g => g.status === 'pending').length;
-  const totalConfirmedGuests = guests
+  // Calculate stats for selected event
+  const selectedEventGuests = selectedEventId ? guests.filter(g => g.eventId === selectedEventId) : [];
+  const confirmedCount = selectedEventGuests.filter(g => g.status === 'confirmed').length;
+  const pendingCount = selectedEventGuests.filter(g => g.status === 'pending').length;
+  const totalConfirmedGuests = selectedEventGuests
     .filter(g => g.status === 'confirmed')
     .reduce((sum, g) => sum + (g.totalGuests || 0), 0);
+
+  const selectedEvent = events.find(e => e.id === selectedEventId);
 
   return (
     <div className="min-h-screen bg-background p-4" dir="rtl">
@@ -185,7 +196,9 @@ const Admin = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <CardTitle className="text-2xl">🎭 מערכת ניהול אירועים</CardTitle>
-                <p className="text-muted-foreground">ניהול אישורי הגעה</p>
+                <p className="text-muted-foreground">
+                  {selectedEvent ? `ניהול: ${selectedEvent.name}` : "בחר אירוע לניהול"}
+                </p>
               </div>
               <Button 
                 variant="outline" 
@@ -197,33 +210,44 @@ const Admin = () => {
           </CardHeader>
         </Card>
 
+        {/* Event Manager */}
+        <EventManager 
+          events={events}
+          selectedEventId={selectedEventId}
+          onEventSelect={setSelectedEventId}
+          onEventCreate={handleEventCreate}
+          onEventDelete={handleEventDelete}
+        />
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{confirmedCount}</div>
-                <p className="text-sm text-muted-foreground">אישרו הגעה</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-500">{pendingCount}</div>
-                <p className="text-sm text-muted-foreground">ממתינים לאישור</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{totalConfirmedGuests}</div>
-                <p className="text-sm text-muted-foreground">סה"כ מוזמנים</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {selectedEventId && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">{confirmedCount}</div>
+                  <p className="text-sm text-muted-foreground">אישרו הגעה</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-500">{pendingCount}</div>
+                  <p className="text-sm text-muted-foreground">ממתינים לאישור</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{totalConfirmedGuests}</div>
+                  <p className="text-sm text-muted-foreground">סה"כ מוזמנים</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
@@ -234,47 +258,11 @@ const Admin = () => {
           </TabsList>
 
           <TabsContent value="guests">
-            <Card>
-              <CardHeader>
-                <CardTitle>📋 רשימת מוזמנים</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">
-                    <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-                    <p>טוען נתונים...</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {guests.map((guest) => (
-                      <div key={guest.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-medium">{guest.fullName}</h3>
-                            <Badge variant={guest.status === 'confirmed' ? 'default' : 'secondary'}>
-                              {guest.status === 'confirmed' ? 'אישר' : 'ממתין'}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground">📞 {guest.phone}</p>
-                          {guest.status === 'confirmed' && (
-                            <p className="text-sm text-green-600">
-                              👥 {guest.totalGuests} מוזמנים ({guest.menCount} גברים, {guest.womenCount} נשים)
-                            </p>
-                          )}
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => copyInviteLink(guest.phone)}
-                        >
-                          העתק קישור
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <GuestList 
+              guests={guests}
+              loading={loading}
+              selectedEventId={selectedEventId}
+            />
           </TabsContent>
 
           <TabsContent value="upload">
@@ -283,24 +271,37 @@ const Admin = () => {
                 <CardTitle>📁 העלאת קובץ אקסל</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="excel-file">בחר קובץ אקסל (עם עמודות: שם מלא, טלפון)</Label>
-                  <Input
-                    id="excel-file"
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={handleFileUpload}
-                    className="mt-2"
-                  />
-                </div>
-                <div className="p-4 bg-muted rounded-lg">
-                  <h4 className="font-medium mb-2">📝 הוראות:</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• הקובץ צריך להכיל עמודה "שם מלא" ועמודה "טלפון"</li>
-                    <li>• הטלפון צריך להיות במספר ספרות ישראלי</li>
-                    <li>• לאחר העלאה, הקישורים ייווצרו אוטומטית</li>
-                  </ul>
-                </div>
+                {!selectedEventId ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    בחר אירוע כדי להעלות קובץ מוזמנים
+                  </div>
+                ) : (
+                  <>
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                      <p className="text-sm font-medium">
+                        העלאה לאירוע: <span className="text-primary">{selectedEvent?.name}</span>
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="excel-file">בחר קובץ אקסל (עם עמודות: שם מלא, טלפון)</Label>
+                      <Input
+                        id="excel-file"
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleFileUpload}
+                        className="mt-2"
+                      />
+                    </div>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-2">📝 הוראות:</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• הקובץ צריך להכיל עמודה "שם מלא" ועמודה "טלפון"</li>
+                        <li>• הטלפון צריך להיות במספר ספרות ישראלי</li>
+                        <li>• לאחר העלאה, הקישורים ייווצרו אוטומטית</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -311,19 +312,25 @@ const Admin = () => {
                 <CardTitle>📊 ייצוא נתונים</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button onClick={exportToExcel} className="h-20">
-                    📥 ייצא אישורים לאקסל
-                  </Button>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <h4 className="font-medium mb-2">📈 סיכום</h4>
-                    <ul className="text-sm space-y-1">
-                      <li>אישרו הגעה: {confirmedCount}</li>
-                      <li>ממתינים: {pendingCount}</li>
-                      <li>סה"כ מוזמנים: {totalConfirmedGuests}</li>
-                    </ul>
+                {!selectedEventId ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    בחר אירוע כדי לייצא נתונים
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button onClick={exportToExcel} className="h-20">
+                      📥 ייצא אישורים לאקסל
+                    </Button>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <h4 className="font-medium mb-2">📈 סיכום עבור {selectedEvent?.name}</h4>
+                      <ul className="text-sm space-y-1">
+                        <li>אישרו הגעה: {confirmedCount}</li>
+                        <li>ממתינים: {pendingCount}</li>
+                        <li>סה"כ מוזמנים: {totalConfirmedGuests}</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

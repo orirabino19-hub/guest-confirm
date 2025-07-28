@@ -4,25 +4,32 @@ import RSVPForm from "@/components/RSVPForm";
 import { Card, CardContent } from "@/components/ui/card";
 
 const RSVP = () => {
-  const { phone } = useParams<{ phone: string }>();
+  const { eventId, phone } = useParams<{ eventId: string; phone: string }>();
   const [guestName, setGuestName] = useState<string>("");
+  const [eventName, setEventName] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const fetchGuestData = async () => {
-      if (!phone) {
-        setError("מספר טלפון לא תקין");
+    const fetchData = async () => {
+      if (!phone || !eventId) {
+        setError("קישור לא תקין - חסרים פרטים");
         setLoading(false);
         return;
       }
 
       try {
-        // Simulate API call to fetch guest name by phone
+        // Simulate API call to fetch guest and event data
         // This will be connected to Supabase later
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock data - in real app this will come from the uploaded Excel file
+        // Mock event data
+        const mockEvents = {
+          "1": "החתונה של שייקי ומיכל",
+          "2": "יום הולדת 30 לדני"
+        };
+        
+        // Mock guest data
         const mockGuests = {
           "0501234567": "משה כהן",
           "0527654321": "שרה לוי",
@@ -30,24 +37,28 @@ const RSVP = () => {
           "0556789123": "רחל אברהם"
         };
 
+        const foundEvent = mockEvents[eventId as keyof typeof mockEvents];
+        if (!foundEvent) {
+          setError("האירוע לא נמצא במערכת");
+          setLoading(false);
+          return;
+        }
+
         const cleanPhone = phone.replace(/\D/g, '');
         const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
         
-        if (foundGuest) {
-          setGuestName(foundGuest);
-        } else {
-          setGuestName("אורח יקר"); // Default fallback
-        }
+        setEventName(foundEvent);
+        setGuestName(foundGuest || "אורח יקר");
       } catch (err) {
         setError("שגיאה בטעינת נתוני המוזמן");
-        console.error("Error fetching guest data:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchGuestData();
-  }, [phone]);
+    fetchData();
+  }, [phone, eventId]);
 
   if (loading) {
     return (
@@ -86,6 +97,7 @@ const RSVP = () => {
     <RSVPForm 
       guestName={guestName} 
       phone={phone || ""} 
+      eventName={eventName}
     />
   );
 };

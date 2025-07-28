@@ -9,9 +9,10 @@ import eventInvitation from "@/assets/event-invitation.jpg";
 interface RSVPFormProps {
   guestName: string;
   phone: string;
+  eventName: string;
 }
 
-const RSVPForm = ({ guestName, phone }: RSVPFormProps) => {
+const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
   const [menCount, setMenCount] = useState<number>(0);
   const [womenCount, setWomenCount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,7 +71,7 @@ const RSVPForm = ({ guestName, phone }: RSVPFormProps) => {
               שלום {guestName}! 👋
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              אנחנו מתכבדים להזמינכם לאירוע שלנו
+              אנחנו מתכבדים להזמינכם ל{eventName}
             </p>
           </CardHeader>
         </Card>

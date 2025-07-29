@@ -12,11 +12,14 @@ const RSVP = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!phone || !eventId) {
+      if (!phone) {
         setError("קישור לא תקין - חסרים פרטים");
         setLoading(false);
         return;
       }
+
+      // אם אין eventId, נשתמש בברירת מחדל
+      const currentEventId = eventId || "1";
 
       try {
         // Simulate API call to fetch guest and event data
@@ -37,7 +40,7 @@ const RSVP = () => {
           "0556789123": "רחל אברהם"
         };
 
-        const foundEvent = mockEvents[eventId as keyof typeof mockEvents];
+        const foundEvent = mockEvents[currentEventId as keyof typeof mockEvents];
         if (!foundEvent) {
           setError("האירוע לא נמצא במערכת");
           setLoading(false);

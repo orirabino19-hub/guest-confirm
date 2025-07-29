@@ -4,11 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/event-invitation.jpg";
 
 const Index = () => {
   const [phone, setPhone] = useState("");
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +22,13 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4" dir="rtl">
+    <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Language Selector */}
+        <div className={`flex ${i18n.language === 'he' ? 'justify-start' : 'justify-end'} mb-4`}>
+          <LanguageSelector />
+        </div>
+
         {/* Hero Section */}
         <div className="text-center space-y-6">
           <div className="relative overflow-hidden rounded-lg shadow-elegant max-w-2xl mx-auto">
@@ -32,10 +40,10 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white">
               <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                🎭 מערכת אישורי הגעה
+                🎭 {t('index.title')}
               </h1>
               <p className="text-lg opacity-90">
-                ברוכים הבאים לאירוע המיוחד שלנו
+                {t('index.subtitle')}
               </p>
             </div>
           </div>
@@ -46,16 +54,16 @@ const Index = () => {
           {/* Guest Access */}
           <Card className="bg-gradient-card shadow-soft">
             <CardHeader>
-              <CardTitle className="text-xl text-center">👋 למוזמנים</CardTitle>
+              <CardTitle className="text-xl text-center">👋 {t('index.guestAccess')}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handlePhoneSubmit} className="space-y-4">
                 <div>
-                  <Label htmlFor="phone">הזן את מספר הטלפון שלך</Label>
+                  <Label htmlFor="phone">{t('index.guestDescription')}</Label>
                   <Input
                     id="phone"
                     type="tel"
-                    placeholder="050-1234567"
+                    placeholder={t('index.phonePlaceholder')}
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="text-center text-lg"
@@ -66,12 +74,12 @@ const Index = () => {
                   type="submit" 
                   className="w-full bg-gradient-primary hover:opacity-90"
                 >
-                  ✅ אשר הגעה
+                  ✅ {t('index.confirmAttendance')}
                 </Button>
               </form>
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground text-center">
-                  💡 הזן את מספר הטלפון שבו קיבלת את ההזמנה
+                  💡 {t('index.guestDescription')}
                 </p>
               </div>
             </CardContent>
@@ -80,15 +88,15 @@ const Index = () => {
           {/* Admin Access */}
           <Card className="bg-gradient-card shadow-soft">
             <CardHeader>
-              <CardTitle className="text-xl text-center">🔐 למנהלי האירוע</CardTitle>
+              <CardTitle className="text-xl text-center">🔐 {t('index.adminAccess')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center space-y-4">
                 <div className="space-y-2">
                   <div className="text-2xl">📊</div>
-                  <h3 className="font-semibold">מערכת ניהול</h3>
+                  <h3 className="font-semibold">{t('navigation.admin')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    העלאת רשימות, מעקב אישורים וייצוא נתונים
+                    {t('index.adminDescription')}
                   </p>
                 </div>
                 <Button 
@@ -96,7 +104,7 @@ const Index = () => {
                   variant="outline"
                   className="w-full"
                 >
-                  כניסה למערכת הניהול
+                  {t('index.goToAdmin')}
                 </Button>
               </div>
             </CardContent>

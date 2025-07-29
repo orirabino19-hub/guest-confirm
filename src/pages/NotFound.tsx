@@ -1,8 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const NotFound = () => {
   const location = useLocation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     console.error(
@@ -12,12 +15,13 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
+    <div className="min-h-screen flex items-center justify-center bg-background" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+      <div className="text-center space-y-4">
+        <LanguageSelector />
+        <h1 className="text-4xl font-bold mb-4">{t('notFound.title')}</h1>
+        <p className="text-xl text-muted-foreground mb-4">{t('notFound.message')}</p>
+        <a href="/" className="text-primary hover:text-primary/80 underline">
+          {t('notFound.returnHome')}
         </a>
       </div>
     </div>

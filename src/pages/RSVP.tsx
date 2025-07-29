@@ -1,7 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import RSVPForm from "@/components/RSVPForm";
 import { Card, CardContent } from "@/components/ui/card";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const RSVP = () => {
   const { eventId, phone } = useParams<{ eventId: string; phone: string }>();
@@ -9,11 +11,12 @@ const RSVP = () => {
   const [eventName, setEventName] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
       if (!phone) {
-        setError("קישור לא תקין - חסרים פרטים");
+        setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
       }
@@ -28,21 +31,21 @@ const RSVP = () => {
         
         // Mock event data
         const mockEvents = {
-          "1": "החתונה של שייקי ומיכל",
-          "2": "יום הולדת 30 לדני"
+          "1": i18n.language === 'he' ? "החתונה של שייקי ומיכל" : "Shaiky & Michal's Wedding",
+          "2": i18n.language === 'he' ? "יום הולדת 30 לדני" : "Danny's 30th Birthday"
         };
         
         // Mock guest data
         const mockGuests = {
-          "0501234567": "משה כהן",
-          "0527654321": "שרה לוי",
-          "0543216789": "דוד ישראלי",
-          "0556789123": "רחל אברהם"
+          "0501234567": i18n.language === 'he' ? "משה כהן" : "Moshe Cohen",
+          "0527654321": i18n.language === 'he' ? "שרה לוי" : "Sarah Levy",
+          "0543216789": i18n.language === 'he' ? "דוד ישראלי" : "David Israeli",
+          "0556789123": i18n.language === 'he' ? "רחל אברהם" : "Rachel Abraham"
         };
 
         const foundEvent = mockEvents[currentEventId as keyof typeof mockEvents];
         if (!foundEvent) {
-          setError("האירוע לא נמצא במערכת");
+          setError(t('rsvp.errors.eventNotFound'));
           setLoading(false);
           return;
         }
@@ -51,9 +54,9 @@ const RSVP = () => {
         const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
         
         setEventName(foundEvent);
-        setGuestName(foundGuest || "אורח יקר");
+        setGuestName(foundGuest || (i18n.language === 'he' ? "אורח יקר" : "Dear Guest"));
       } catch (err) {
-        setError("שגיאה בטעינת נתוני המוזמן");
+        setError(t('rsvp.errors.guestDataError'));
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
@@ -65,11 +68,12 @@ const RSVP = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
         <Card className="w-full max-w-md mx-4">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-lg text-muted-foreground">טוען נתונים...</p>
+            <LanguageSelector />
+            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4 mt-4" />
+            <p className="text-lg text-muted-foreground">{t('common.loading')}</p>
           </CardContent>
         </Card>
       </div>
@@ -78,17 +82,18 @@ const RSVP = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
         <Card className="w-full max-w-md mx-4 border-destructive/50">
           <CardContent className="text-center py-12">
-            <div className="text-4xl mb-4">❌</div>
-            <h2 className="text-xl font-semibold mb-2 text-destructive">שגיאה</h2>
+            <LanguageSelector />
+            <div className="text-4xl mb-4 mt-4">❌</div>
+            <h2 className="text-xl font-semibold mb-2 text-destructive">{t('common.error')}</h2>
             <p className="text-muted-foreground">{error}</p>
             <a 
               href="/" 
               className="inline-block mt-4 text-primary hover:underline"
             >
-              חזור לעמוד הראשי
+              {t('rsvp.errors.returnHome')}
             </a>
           </CardContent>
         </Card>

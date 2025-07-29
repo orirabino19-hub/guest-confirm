@@ -1,11 +1,13 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/event-invitation.jpg";
 
 interface RSVPFormProps {
@@ -19,6 +21,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
   const [womenCount, setWomenCount] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +32,8 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
-        title: "✅ האישור נקלט בהצלחה!",
-        description: `תודה ${guestName}, המקום שמור עבורכם`,
+        title: t('rsvp.success.title'),
+        description: t('rsvp.success.description', { name: guestName }),
       });
       
       console.log("RSVP Submitted:", {
@@ -42,8 +45,8 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
       });
     } catch (error) {
       toast({
-        title: "❌ שגיאה",
-        description: "אירעה שגיאה בשליחת האישור. אנא נסו שוב.",
+        title: t('rsvp.error.title'),
+        description: t('rsvp.error.description'),
         variant: "destructive"
       });
     } finally {
@@ -78,8 +81,13 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
   const totalGuests = menCount + womenCount;
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4" dir="rtl">
+    <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
       <div className="max-w-2xl mx-auto space-y-8">
+        {/* Language Selector */}
+        <div className={`flex ${i18n.language === 'he' ? 'justify-start' : 'justify-end'} mb-4`}>
+          <LanguageSelector />
+        </div>
+
         {/* Event Invitation Image */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
           <img 
@@ -94,10 +102,10 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
         <Card className="bg-gradient-card shadow-soft border-border/50">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
-              שלום {guestName}! 👋
+              {t('rsvp.welcome', { name: guestName })}
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              אנחנו מתכבדים להזמינכם ל{eventName}
+              {t('rsvp.eventInvitation', { eventName })}
             </p>
           </CardHeader>
         </Card>
@@ -106,10 +114,10 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
         <Card className="bg-gradient-card shadow-elegant border-border/50">
           <CardHeader>
             <CardTitle className="text-xl font-semibold text-center text-primary">
-              🎉 אישור הגעה
+              {t('rsvp.confirmTitle')}
             </CardTitle>
             <p className="text-center text-muted-foreground">
-              אנא אמתו את מספר המוזמנים
+              {t('rsvp.confirmDescription')}
             </p>
           </CardHeader>
           <CardContent>
@@ -118,7 +126,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                 {/* Men Count */}
                 <div className="space-y-2">
                   <Label htmlFor="menCount" className="text-sm font-medium">
-                    👨 מספר גברים
+                    {t('rsvp.menCount')}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button
@@ -156,7 +164,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                 {/* Women Count */}
                 <div className="space-y-2">
                   <Label htmlFor="womenCount" className="text-sm font-medium">
-                    👩 מספר נשים
+                    {t('rsvp.womenCount')}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button
@@ -196,7 +204,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
               {totalGuests > 0 && (
                 <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
                   <p className="text-lg font-medium text-accent-foreground">
-                    סה"כ מוזמנים: <span className="font-bold text-primary">{totalGuests}</span>
+                    {t('rsvp.totalGuests', { count: totalGuests })}
                   </p>
                 </div>
               )}
@@ -210,16 +218,16 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    שולח...
+                    {t('rsvp.submitting')}
                   </div>
                 ) : (
-                  "✅ אשר הגעה"
+                  t('rsvp.submitButton')
                 )}
               </Button>
 
               {totalGuests === 0 && (
                 <p className="text-center text-sm text-muted-foreground">
-                  אנא הזינו את מספר המוזמנים לפני האישור
+                  {t('rsvp.pleaseEnterGuests')}
                 </p>
               )}
             </form>
@@ -231,10 +239,10 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                🕐 האירוע יתקיים בתאריך ובשעה שנקבעו
+                {t('rsvp.eventTime')}
               </p>
               <p className="text-sm text-muted-foreground">
-                📞 לשאלות: {phone}
+                {t('rsvp.contactInfo', { phone })}
               </p>
             </div>
           </CardContent>

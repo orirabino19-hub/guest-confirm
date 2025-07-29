@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Plus, Minus } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
 
 interface RSVPFormProps {
@@ -46,6 +48,30 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const incrementMen = () => {
+    if (menCount < 10) {
+      setMenCount(menCount + 1);
+    }
+  };
+
+  const decrementMen = () => {
+    if (menCount > 0) {
+      setMenCount(menCount - 1);
+    }
+  };
+
+  const incrementWomen = () => {
+    if (womenCount < 10) {
+      setWomenCount(womenCount + 1);
+    }
+  };
+
+  const decrementWomen = () => {
+    if (womenCount > 0) {
+      setWomenCount(womenCount - 1);
     }
   };
 
@@ -94,15 +120,37 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                   <Label htmlFor="menCount" className="text-sm font-medium">
                     👨 מספר גברים
                   </Label>
-                  <Input
-                    id="menCount"
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={menCount}
-                    onChange={(e) => setMenCount(Number(e.target.value))}
-                    className="text-center text-lg border-border/50 focus:border-primary"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={decrementMen}
+                      disabled={menCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      id="menCount"
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={menCount}
+                      onChange={(e) => setMenCount(Number(e.target.value))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={incrementMen}
+                      disabled={menCount >= 10}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Women Count */}
@@ -110,15 +158,37 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                   <Label htmlFor="womenCount" className="text-sm font-medium">
                     👩 מספר נשים
                   </Label>
-                  <Input
-                    id="womenCount"
-                    type="number"
-                    min="0"
-                    max="10"
-                    value={womenCount}
-                    onChange={(e) => setWomenCount(Number(e.target.value))}
-                    className="text-center text-lg border-border/50 focus:border-primary"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={decrementWomen}
+                      disabled={womenCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      id="womenCount"
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={womenCount}
+                      onChange={(e) => setWomenCount(Number(e.target.value))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={incrementWomen}
+                      disabled={womenCount >= 10}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 

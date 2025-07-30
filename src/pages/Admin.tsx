@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import EventManager, { Event } from "@/components/EventManager";
 import GuestList, { Guest } from "@/components/GuestList";
+import LanguageManager from "@/components/LanguageManager";
+import InvitationManager from "@/components/InvitationManager";
 
 const Admin = () => {
   const [events, setEvents] = useState<Event[]>([
@@ -251,8 +253,10 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="guests">רשימת מוזמנים</TabsTrigger>
+            <TabsTrigger value="invitations">הזמנות</TabsTrigger>
+            <TabsTrigger value="languages">שפות</TabsTrigger>
             <TabsTrigger value="upload">העלאת קובץ</TabsTrigger>
             <TabsTrigger value="export">ייצוא נתונים</TabsTrigger>
           </TabsList>
@@ -263,6 +267,17 @@ const Admin = () => {
               loading={loading}
               selectedEventId={selectedEventId}
             />
+          </TabsContent>
+
+          <TabsContent value="invitations">
+            <InvitationManager 
+              selectedEventId={selectedEventId}
+              eventName={selectedEvent?.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="languages">
+            <LanguageManager />
           </TabsContent>
 
           <TabsContent value="upload">

@@ -16,6 +16,15 @@ interface RSVPFormProps {
   eventName: string;
 }
 
+const getInvitationForGuest = (phone: string, language: string) => {
+  // Special invitation for Sarah Levy demo
+  if (phone === "0527654321" && language === 'he') {
+    return "/lovable-uploads/2ed7e50b-48f4-4be4-b874-a19830a05aaf.png";
+  }
+  // Default invitation for others
+  return eventInvitation;
+};
+
 const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
   const [menCount, setMenCount] = useState<number>(0);
   const [womenCount, setWomenCount] = useState<number>(0);
@@ -91,11 +100,11 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
         {/* Event Invitation Image */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
           <img 
-            src={eventInvitation} 
-            alt="הזמנה לאירוע" 
-            className="w-full h-64 md:h-80 object-cover"
+            src={getInvitationForGuest(phone, i18n.language)} 
+            alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+            className="w-full h-auto object-contain bg-white"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
 
         {/* Welcome Card */}

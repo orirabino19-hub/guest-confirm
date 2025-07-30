@@ -9,6 +9,7 @@ import EventManager, { Event } from "@/components/EventManager";
 import GuestList, { Guest } from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
 import InvitationManager from "@/components/InvitationManager";
+import ColorManager from "@/components/ColorManager";
 
 const Admin = () => {
   const [events, setEvents] = useState<Event[]>([
@@ -256,7 +257,7 @@ const Admin = () => {
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="guests">רשימת מוזמנים</TabsTrigger>
             <TabsTrigger value="invitations">הזמנות</TabsTrigger>
-            <TabsTrigger value="languages">שפות</TabsTrigger>
+            <TabsTrigger value="colors">צבעים ועיצוב</TabsTrigger>
             <TabsTrigger value="upload">העלאת קובץ</TabsTrigger>
             <TabsTrigger value="export">ייצוא נתונים</TabsTrigger>
           </TabsList>
@@ -276,8 +277,11 @@ const Admin = () => {
             />
           </TabsContent>
 
-          <TabsContent value="languages">
-            <LanguageManager />
+          <TabsContent value="colors">
+            <ColorManager 
+              selectedEventId={selectedEventId}
+              eventName={selectedEvent?.name}
+            />
           </TabsContent>
 
           <TabsContent value="upload">
@@ -350,6 +354,9 @@ const Admin = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Language Management Section */}
+        <LanguageManager />
       </div>
     </div>
   );

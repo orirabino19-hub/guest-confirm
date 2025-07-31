@@ -1,0 +1,703 @@
+/* תבנית CSS למערכת ניהול אירועים */
+
+/* איפוס וגופנים */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Tahoma', Arial, sans-serif;
+    line-height: 1.6;
+    direction: rtl;
+    text-align: right;
+}
+
+/* משתני צבע וערכות עיצוב */
+:root {
+    /* צבעי בסיס */
+    --background: hsl(42, 15%, 98%);
+    --foreground: hsl(25, 25%, 15%);
+    
+    --card: hsl(0, 0%, 100%);
+    --card-foreground: hsl(25, 25%, 15%);
+    
+    /* צבע ראשי - זהב עשיר */
+    --primary: hsl(38, 85%, 45%);
+    --primary-foreground: hsl(0, 0%, 100%);
+    --primary-glow: hsl(42, 95%, 60%);
+    
+    /* צבע משני - חם */
+    --secondary: hsl(42, 25%, 92%);
+    --secondary-foreground: hsl(25, 25%, 15%);
+    
+    --muted: hsl(42, 15%, 95%);
+    --muted-foreground: hsl(25, 15%, 45%);
+    
+    /* צבע הדגשה - זהב ורוד */
+    --accent: hsl(15, 45%, 85%);
+    --accent-foreground: hsl(25, 35%, 25%);
+    
+    --destructive: hsl(0, 84.2%, 60.2%);
+    --destructive-foreground: hsl(0, 0%, 100%);
+    
+    --border: hsl(42, 20%, 88%);
+    --input: hsl(42, 20%, 94%);
+    --ring: hsl(38, 85%, 45%);
+    
+    /* משתני עיצוב מותאמים אישית */
+    --gradient-primary: linear-gradient(135deg, hsl(38, 85%, 45%), hsl(42, 95%, 60%));
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%), hsl(42, 25%, 97%));
+    --shadow-elegant: 0 10px 40px -10px hsla(38, 85%, 45%, 0.2);
+    --shadow-soft: 0 4px 20px -4px hsla(25, 25%, 15%, 0.1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --radius: 0.5rem;
+    
+    /* צבעי סטטוס */
+    --status-confirmed: hsl(142, 76%, 36%);
+    --status-pending: hsl(38, 92%, 50%);
+    --status-cancelled: hsl(0, 84%, 60%);
+}
+
+/* כללי */
+.admin-container,
+.login-container {
+    min-height: 100vh;
+    background-color: var(--background);
+    padding: 1rem;
+}
+
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* קארד בסיסי */
+.card {
+    background: var(--gradient-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-smooth);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-elegant);
+}
+
+.card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h1,
+.card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin: 0;
+}
+
+.card-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.card-content {
+    padding: 1.5rem;
+}
+
+/* כותרת ראשית */
+.header-card {
+    background: var(--gradient-primary);
+    color: var(--primary-foreground);
+    border: none;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1rem;
+}
+
+.header-info h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+/* כפתורים */
+.btn-primary,
+.btn-outline,
+.btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elegant);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+/* טפסים */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--input);
+    color: var(--foreground);
+    transition: var(--transition-smooth);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px hsla(38, 85%, 45%, 0.2);
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* כניסת מנהל */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 1rem;
+}
+
+.login-header {
+    text-align: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.login-header h1 {
+    font-size: 1.5rem;
+    color: var(--foreground);
+}
+
+.login-content {
+    padding: 1.5rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.demo-text {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin-top: 0.5rem;
+}
+
+/* פריטי אירוע */
+.event-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.event-item:hover {
+    border-color: var(--primary);
+    background: var(--accent);
+}
+
+.event-item.selected {
+    border-color: var(--primary);
+    background: var(--accent);
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.event-name-row h3 {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.badge-selected {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.event-description {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.event-date {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+}
+
+/* סטטיסטיקות */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-number.primary {
+    color: var(--primary);
+}
+
+.stat-number.orange {
+    color: var(--status-pending);
+}
+
+.stat-number.green {
+    color: var(--status-confirmed);
+}
+
+.stat-label {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+}
+
+/* תפריט טאבים */
+.tabs-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+}
+
+.tabs-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid var(--border);
+}
+
+.tab-trigger {
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    color: var(--muted-foreground);
+    border-bottom: 2px solid transparent;
+}
+
+.tab-trigger:hover {
+    background: var(--muted);
+    color: var(--foreground);
+}
+
+.tab-trigger.active {
+    background: var(--accent);
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+.tab-content {
+    padding: 1.5rem;
+}
+
+/* פריטי אורח */
+.guest-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.75rem;
+}
+
+.guest-info h3 {
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 0.25rem;
+}
+
+.guest-info p {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.guest-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.confirmed {
+    background: var(--status-confirmed);
+    color: white;
+}
+
+.status-badge.pending {
+    background: var(--status-pending);
+    color: white;
+}
+
+/* ניהול צבעים */
+.info-box {
+    background: var(--accent);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-box p {
+    color: var(--accent-foreground);
+    font-size: 0.875rem;
+}
+
+.color-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.color-control {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.color-control label {
+    font-weight: 500;
+    color: var(--foreground);
+}
+
+.color-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.color-picker {
+    width: 4rem;
+    height: 2.5rem;
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+}
+
+.color-text {
+    flex: 1;
+}
+
+.color-description {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+}
+
+.color-preview {
+    background: white;
+    color: black;
+    border: 2px solid #3b82f6;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.color-preview h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.preview-secondary {
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+.preview-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.preview-primary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-weight: 500;
+}
+
+.preview-secondary-btn {
+    background: transparent;
+    color: #3b82f6;
+    border: 1px solid #3b82f6;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* ניהול שפות */
+.language-selector {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.language-btn {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--foreground);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.language-btn:hover {
+    background: var(--muted);
+}
+
+.language-btn.active {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: var(--primary);
+}
+
+/* מודל */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal {
+    background: var(--card);
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: var(--shadow-elegant);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    color: var(--foreground);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-content {
+    padding: 1.5rem;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* רספונסיביות */
+@media (max-width: 768px) {
+    .admin-content {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .tabs-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-trigger {
+        text-align: center;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-item,
+    .guest-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .color-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-container,
+    .login-container {
+        padding: 0.5rem;
+    }
+    
+    .card-content,
+    .tab-content {
+        padding: 1rem;
+    }
+    
+    .header-info h1 {
+        font-size: 1.5rem;
+    }
+    
+    .guest-details {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}

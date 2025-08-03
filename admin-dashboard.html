@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול אירועים - מערכת אישור הגעה</title>
+    <link rel="stylesheet" href="template-styles.css">
+</head>
+<body class="bg-background">
+    <div class="min-h-screen p-4">
+        <div class="max-w-6xl mx-auto space-y-6">
+            <!-- Header -->
+            <div class="card card-gradient">
+                <div class="card-header">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h1 class="card-title text-2xl">🎭 מערכת ניהול אירועים</h1>
+                            <p class="text-muted">ניהול: החתונה של שייקי ומיכל</p>
+                        </div>
+                        <button class="btn btn-outline" onclick="logout()">
+                            התנתק
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Manager -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">ניהול אירועים</h2>
+                </div>
+                <div class="card-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <select class="input" id="eventSelect" onchange="selectEvent()">
+                            <option value="1">החתונה של שייקי ומיכל</option>
+                            <option value="2">יום הולדת 30 לדני</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="createEvent()">
+                            ➕ צור אירוע חדש
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number text-primary">2</div>
+                        <p class="stat-label">אישרו הגעה</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number" style="color: orange;">2</div>
+                        <p class="stat-label">ממתינים לאישור</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number" style="color: green;">8</div>
+                        <p class="stat-label">סה"כ מוזמנים</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Tabs -->
+            <div class="tabs">
+                <div class="tabs-list">
+                    <button class="tab-trigger active" onclick="showTab('guests')">רשימת מוזמנים</button>
+                    <button class="tab-trigger" onclick="showTab('invitations')">הזמנות</button>
+                    <button class="tab-trigger" onclick="showTab('colors')">צבעים ועיצוב</button>
+                    <button class="tab-trigger" onclick="showTab('upload')">העלאת קובץ</button>
+                    <button class="tab-trigger" onclick="showTab('export')">ייצוא נתונים</button>
+                </div>
+
+                <!-- Guests Tab -->
+                <div id="guests-tab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">רשימת מוזמנים</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="overflow-hidden">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>שם מלא</th>
+                                            <th>טלפון</th>
+                                            <th>גברים</th>
+                                            <th>נשים</th>
+                                            <th>סה"כ</th>
+                                            <th>סטטוס</th>
+                                            <th>פעולות</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>משה כהן</td>
+                                            <td>0501234567</td>
+                                            <td>2</td>
+                                            <td>3</td>
+                                            <td>5</td>
+                                            <td><span class="badge badge-success">אישר</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline">עריכה</button>
+                                                <button class="btn btn-sm btn-destructive">מחיקה</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>שרה לוי</td>
+                                            <td>0527654321</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td><span class="badge badge-warning">ממתין</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline">עריכה</button>
+                                                <button class="btn btn-sm btn-destructive">מחיקה</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invitations Tab -->
+                <div id="invitations-tab" class="tab-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">ניהול הזמנות</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="tabs">
+                                <div class="tabs-list grid-cols-2">
+                                    <button class="tab-trigger active">עברית</button>
+                                    <button class="tab-trigger">English</button>
+                                </div>
+                                <div class="tab-content">
+                                    <div class="space-y-4">
+                                        <div class="upload-area">
+                                            <h4 class="font-semibold mb-2">📷 העלאת תמונת הזמנה</h4>
+                                            <input type="file" accept="image/*" class="input">
+                                        </div>
+                                        <div class="upload-area">
+                                            <h4 class="font-semibold mb-2">📄 העלאת קובץ PDF</h4>
+                                            <input type="file" accept=".pdf" class="input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colors Tab -->
+                <div id="colors-tab" class="tab-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">ניהול צבעים ועיצוב</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="label">צבע ראשי</label>
+                                        <input type="color" value="#fbbf24" class="color-picker">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="label">צבע משני</label>
+                                        <input type="color" value="#f3f4f6" class="color-picker">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="label">צבע רקע</label>
+                                        <input type="color" value="#ffffff" class="color-picker">
+                                    </div>
+                                </div>
+                                <div class="card border">
+                                    <div class="card-header">
+                                        <h4 class="card-title">תצוגה מקדימה</h4>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="btn btn-primary mb-2">כפתור לדוגמה</div>
+                                        <p class="text-muted">טקסט לדוגמה עם הצבעים החדשים</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="upload-tab" class="tab-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">📁 העלאת קובץ אקסל</h3>
+                        </div>
+                        <div class="card-content space-y-4">
+                            <div class="p-4 bg-primary/5 border border-primary/20 rounded">
+                                <p class="text-sm font-medium">
+                                    העלאה לאירוע: <span class="text-primary">החתונה של שייקי ומיכל</span>
+                                </p>
+                            </div>
+                            <div class="form-group">
+                                <label for="excel-file" class="label">בחר קובץ אקסל (עם עמודות: שם מלא, טלפון)</label>
+                                <input
+                                    id="excel-file"
+                                    type="file"
+                                    accept=".xlsx,.xls"
+                                    class="input"
+                                />
+                            </div>
+                            <div class="p-4 bg-muted rounded">
+                                <h4 class="font-medium mb-2">📝 הוראות:</h4>
+                                <ul class="text-sm text-muted space-y-1">
+                                    <li>• הקובץ צריך להכיל עמודה "שם מלא" ועמודה "טלפון"</li>
+                                    <li>• הטלפון צריך להיות במספר ספרות ישראלי</li>
+                                    <li>• לאחר העלאה, הקישורים ייווצרו אוטומטית</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div id="export-tab" class="tab-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">📊 ייצוא נתונים</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button class="btn btn-primary btn-lg" onclick="exportToExcel()">
+                                    📥 ייצא אישורים לאקסל
+                                </button>
+                                <div class="p-4 bg-muted rounded">
+                                    <h4 class="font-medium mb-2">📈 סיכום עבור החתונה של שייקי ומיכל</h4>
+                                    <ul class="text-sm space-y-1">
+                                        <li>אישרו הגעה: 2</li>
+                                        <li>ממתינים: 2</li>
+                                        <li>סה"כ מוזמנים: 8</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Language Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">ניהול שפות</h3>
+                </div>
+                <div class="card-content">
+                    <div class="flex gap-4">
+                        <button class="btn btn-outline">עברית</button>
+                        <button class="btn btn-outline">English</button>
+                        <button class="btn btn-primary">➕ הוסף שפה</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            
+            // Remove active class from all triggers
+            const triggers = document.querySelectorAll('.tab-trigger');
+            triggers.forEach(trigger => trigger.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Add active class to clicked trigger
+            event.target.classList.add('active');
+        }
+
+        function selectEvent() {
+            const select = document.getElementById('eventSelect');
+            showToast(`נבחר אירוע: ${select.options[select.selectedIndex].text}`, 'success');
+        }
+
+        function createEvent() {
+            showToast('תכונה זו תיהיה זמינה בקרוב', 'success');
+        }
+
+        function exportToExcel() {
+            showToast('📊 ייצוא בהצלחה - יוצאו 2 אישורים (8 מוזמנים בסה"כ)', 'success');
+        }
+
+        function logout() {
+            showToast('התנתקת בהצלחה', 'success');
+            setTimeout(() => {
+                window.location.href = 'admin-login.html';
+            }, 1500);
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

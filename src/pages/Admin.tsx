@@ -254,7 +254,7 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1">
             <TabsTrigger value="guests">רשימת מוזמנים</TabsTrigger>
             <TabsTrigger value="invitations">הזמנות</TabsTrigger>
             <TabsTrigger value="colors">צבעים ועיצוב</TabsTrigger>

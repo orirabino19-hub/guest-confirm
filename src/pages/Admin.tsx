@@ -254,12 +254,12 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="guests">רשימת מוזמנים</TabsTrigger>
-            <TabsTrigger value="invitations">הזמנות</TabsTrigger>
-            <TabsTrigger value="colors">צבעים ועיצוב</TabsTrigger>
-            <TabsTrigger value="upload">העלאת קובץ</TabsTrigger>
-            <TabsTrigger value="export">ייצוא נתונים</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 h-auto min-h-[2.5rem]">
+            <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">רשימת מוזמנים</TabsTrigger>
+            <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
+            <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים ועיצוב</TabsTrigger>
+            <TabsTrigger value="upload" className="text-xs md:text-sm px-2 py-2 whitespace-normal">העלאת קובץ</TabsTrigger>
+            <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא נתונים</TabsTrigger>
           </TabsList>
 
           <TabsContent value="guests">

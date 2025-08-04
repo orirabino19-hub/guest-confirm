@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול אירועים - מערכת ניהול</title>
+    <link rel="stylesheet" href="template-styles.css">
+</head>
+<body>
+    <div class="min-h-screen">
+        <div class="container">
+            <!-- Header -->
+            <div class="card bg-gradient-card">
+                <div class="card-header">
+                    <div class="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4">
+                        <div>
+                            <h1 class="card-title text-2xl">🎭 מערכת ניהול אירועים</h1>
+                            <p class="text-muted-foreground">
+                                ניהול: <span id="selected-event-name">החתונה של שייקי ומיכל</span>
+                            </p>
+                        </div>
+                        <button onclick="logout()" class="btn btn-outline">
+                            התנתק
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Manager -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">🎪 ניהול אירועים</h2>
+                </div>
+                <div class="card-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Event List -->
+                        <div>
+                            <h3 class="font-semibold mb-3">אירועים קיימים</h3>
+                            <div class="space-y-2" id="events-list">
+                                <div class="event-item p-3 border rounded-lg bg-primary-soft cursor-pointer" onclick="selectEvent('1', 'החתונה של שייקי ומיכל')">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h4 class="font-medium">החתונה של שייקי ומיכל</h4>
+                                            <p class="text-sm text-muted-foreground">15/06/2024</p>
+                                        </div>
+                                        <button onclick="deleteEvent('1')" class="btn btn-outline btn-icon text-red-600 hover:bg-red-50">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="event-item p-3 border rounded-lg cursor-pointer" onclick="selectEvent('2', 'יום הולדת 30 לדני')">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h4 class="font-medium">יום הולדת 30 לדני</h4>
+                                            <p class="text-sm text-muted-foreground">20/07/2024</p>
+                                        </div>
+                                        <button onclick="deleteEvent('2')" class="btn btn-outline btn-icon text-red-600 hover:bg-red-50">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create New Event -->
+                        <div>
+                            <h3 class="font-semibold mb-3">צור אירוע חדש</h3>
+                            <form onsubmit="createEvent(event)" class="space-y-4">
+                                <div>
+                                    <label class="label">שם האירוע</label>
+                                    <input type="text" id="event-name" class="input" placeholder="לדוגמה: חתונת יוסי ומירי" required>
+                                </div>
+                                <div>
+                                    <label class="label">תיאור</label>
+                                    <input type="text" id="event-description" class="input" placeholder="תיאור קצר של האירוע">
+                                </div>
+                                <div>
+                                    <label class="label">תאריך האירוע</label>
+                                    <input type="date" id="event-date" class="input" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-full">
+                                    ➕ צור אירוע
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" style="margin-top: 1.5rem;">
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number" id="confirmed-count">1</div>
+                        <p class="stat-label">אישרו הגעה</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number" id="pending-count" style="color: hsl(38 92% 50%);">1</div>
+                        <p class="stat-label">ממתינים לאישור</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-content stat-card">
+                        <div class="stat-number" id="total-guests" style="color: hsl(120 100% 25%);">5</div>
+                        <p class="stat-label">סה"כ מוזמנים</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content - Tabs -->
+            <div class="tabs" style="margin-top: 1.5rem;">
+                <div class="tabs-list">
+                    <button class="tabs-trigger active" onclick="showTab('guests')">רשימת מוזמנים</button>
+                    <button class="tabs-trigger" onclick="showTab('invitations')">הזמנות</button>
+                    <button class="tabs-trigger" onclick="showTab('colors')">צבעים ועיצוב</button>
+                    <button class="tabs-trigger" onclick="showTab('upload')">העלאת קובץ</button>
+                    <button class="tabs-trigger" onclick="showTab('export')">ייצוא נתונים</button>
+                </div>
+
+                <!-- Guests Tab -->
+                <div id="tab-guests" class="tabs-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">📋 רשימת מוזמנים</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="table-container" style="overflow-x: auto;">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>שם מלא</th>
+                                            <th>טלפון</th>
+                                            <th>גברים</th>
+                                            <th>נשים</th>
+                                            <th>סה"כ</th>
+                                            <th>סטטוס</th>
+                                            <th>תאריך אישור</th>
+                                            <th>פעולות</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="guests-table-body">
+                                        <tr>
+                                            <td>משה כהן</td>
+                                            <td>050-123-4567</td>
+                                            <td>2</td>
+                                            <td>3</td>
+                                            <td>5</td>
+                                            <td><span class="badge badge-success">אושר</span></td>
+                                            <td>היום</td>
+                                            <td>
+                                                <button class="btn btn-outline btn-icon" onclick="sendReminder('0501234567')">📩</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>שרה לוי</td>
+                                            <td>052-765-4321</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td><span class="badge badge-warning">ממתין</span></td>
+                                            <td>-</td>
+                                            <td>
+                                                <button class="btn btn-outline btn-icon" onclick="sendReminder('0527654321')">📩</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invitations Tab -->
+                <div id="tab-invitations" class="tabs-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">💌 ניהול הזמנות</h2>
+                        </div>
+                        <div class="card-content space-y-6">
+                            <div class="bg-primary-soft rounded-lg" style="padding: 1rem;">
+                                <p class="font-medium">
+                                    ניהול הזמנות עבור: <span class="text-primary">החתונה של שייקי ומיכל</span>
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Current Invitation -->
+                                <div>
+                                    <h3 class="font-semibold mb-3">הזמנה נוכחית</h3>
+                                    <div class="border rounded-lg overflow-hidden">
+                                        <img src="src/assets/event-invitation.jpg" alt="הזמנה נוכחית" style="width: 100%; height: 200px; object-fit: cover;">
+                                    </div>
+                                    <p class="text-sm text-muted-foreground mt-2">הזמנה ברירת מחדל</p>
+                                </div>
+
+                                <!-- Upload New -->
+                                <div>
+                                    <h3 class="font-semibold mb-3">העלאת הזמנה חדשה</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="label">בחר קובץ תמונה</label>
+                                            <input type="file" accept="image/*" class="input" onchange="previewInvitation(event)">
+                                        </div>
+                                        <div id="invitation-preview" class="hidden">
+                                            <p class="text-sm font-medium mb-2">תצוגה מקדימה:</p>
+                                            <div class="border rounded-lg overflow-hidden">
+                                                <img id="preview-image" style="width: 100%; height: 200px; object-fit: cover;">
+                                            </div>
+                                        </div>
+                                        <button onclick="uploadInvitation()" class="btn btn-primary w-full">
+                                            📤 העלה הזמנה
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Special Invitations -->
+                            <div>
+                                <h3 class="font-semibold mb-3">הזמנות מיוחדות</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 border rounded-lg">
+                                        <div>
+                                            <span class="font-medium">שרה לוי (052-765-4321)</span>
+                                            <span class="text-sm text-muted-foreground mr-2">- הזמנה מיוחדת</span>
+                                        </div>
+                                        <button onclick="removeSpecialInvitation('0527654321')" class="btn btn-outline btn-icon text-red-600">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                                <button onclick="addSpecialInvitation()" class="btn btn-outline w-full">
+                                    ➕ הוסף הזמנה מיוחדת
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colors Tab -->
+                <div id="tab-colors" class="tabs-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">🎨 צבעים ועיצוב</h2>
+                        </div>
+                        <div class="card-content space-y-6">
+                            <div class="bg-primary-soft rounded-lg" style="padding: 1rem;">
+                                <p class="font-medium">
+                                    עיצוב עבור: <span class="text-primary">החתונה של שייקי ומיכל</span>
+                                </p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Color Schemes -->
+                                <div>
+                                    <h3 class="font-semibold mb-3">ערכות צבעים</h3>
+                                    <div class="space-y-3">
+                                        <div class="color-scheme p-3 border rounded-lg cursor-pointer bg-primary-soft" onclick="selectColorScheme('warm')">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex gap-1">
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(38 85% 45%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(42 95% 60%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(15 45% 85%);"></div>
+                                                </div>
+                                                <span class="font-medium">חם ואלגנטי (נוכחי)</span>
+                                            </div>
+                                        </div>
+                                        <div class="color-scheme p-3 border rounded-lg cursor-pointer" onclick="selectColorScheme('blue')">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex gap-1">
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(217 91% 60%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(217 91% 75%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(217 91% 85%);"></div>
+                                                </div>
+                                                <span class="font-medium">כחול מלכותי</span>
+                                            </div>
+                                        </div>
+                                        <div class="color-scheme p-3 border rounded-lg cursor-pointer" onclick="selectColorScheme('purple')">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex gap-1">
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(270 85% 60%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(270 85% 75%);"></div>
+                                                    <div class="w-6 h-6 rounded" style="background: hsl(270 85% 85%);"></div>
+                                                </div>
+                                                <span class="font-medium">סגול רויאל</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Colors -->
+                                <div>
+                                    <h3 class="font-semibold mb-3">צבעים מותאמים אישית</h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="label">צבע ראשי</label>
+                                            <input type="color" value="#B8860B" class="input" style="height: 50px;">
+                                        </div>
+                                        <div>
+                                            <label class="label">צבע משני</label>
+                                            <input type="color" value="#F5DEB3" class="input" style="height: 50px;">
+                                        </div>
+                                        <div>
+                                            <label class="label">צבע רקע</label>
+                                            <input type="color" value="#FEFCF8" class="input" style="height: 50px;">
+                                        </div>
+                                        <button onclick="applyCustomColors()" class="btn btn-primary w-full">
+                                            ✨ החל צבעים
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Typography -->
+                            <div>
+                                <h3 class="font-semibold mb-3">טיפוגרפיה</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="label">גופן כותרות</label>
+                                        <select class="input">
+                                            <option>Assistant (נוכחי)</option>
+                                            <option>Heebo</option>
+                                            <option>Rubik</option>
+                                            <option>Open Sans Hebrew</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="label">גופן טקסט</label>
+                                        <select class="input">
+                                            <option>Assistant (נוכחי)</option>
+                                            <option>Heebo</option>
+                                            <option>Rubik</option>
+                                            <option>Open Sans Hebrew</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Tab -->
+                <div id="tab-upload" class="tabs-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">📁 העלאת קובץ אקסל</h2>
+                        </div>
+                        <div class="card-content space-y-4">
+                            <div class="bg-primary-soft rounded-lg" style="padding: 1rem;">
+                                <p class="font-medium">
+                                    העלאה לאירוע: <span class="text-primary">החתונה של שייקי ומיכל</span>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="label">בחר קובץ אקסל (עם עמודות: שם מלא, טלפון)</label>
+                                <input type="file" accept=".xlsx,.xls" class="input" onchange="handleFileUpload(event)">
+                            </div>
+                            <div class="bg-muted-soft rounded-lg" style="padding: 1rem;">
+                                <h4 class="font-medium mb-2">📝 הוראות:</h4>
+                                <ul class="text-sm text-muted-foreground space-y-1">
+                                    <li>• הקובץ צריך להכיל עמודה "שם מלא" ועמודה "טלפון"</li>
+                                    <li>• הטלפון צריך להיות במספר ספרות ישראלי</li>
+                                    <li>• לאחר העלאה, הקישורים ייווצרו אוטומטית</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Export Tab -->
+                <div id="tab-export" class="tabs-content hidden">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">📊 ייצוא נתונים</h2>
+                        </div>
+                        <div class="card-content space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <button onclick="exportToExcel()" class="btn btn-primary" style="height: 5rem;">
+                                    📥 ייצא אישורים לאקסל
+                                </button>
+                                <div class="bg-muted-soft rounded-lg" style="padding: 1rem;">
+                                    <h4 class="font-medium mb-2">📈 סיכום עבור החתונה של שייקי ומיכל</h4>
+                                    <ul class="text-sm space-y-1">
+                                        <li>אישרו הגעה: 1</li>
+                                        <li>ממתינים: 1</li>
+                                        <li>סה"כ מוזמנים: 5</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="hidden fixed top-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
+        <div class="flex items-center">
+            <span id="toast-icon" class="text-2xl mr-3"></span>
+            <div>
+                <div id="toast-title" class="font-semibold"></div>
+                <div id="toast-description" class="text-sm text-gray-600"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEventId = '1';
+        let events = [
+            { id: '1', name: 'החתונה של שייקי ומיכל', description: 'חתונה מיוחדת בגן אירועים', date: '2024-06-15' },
+            { id: '2', name: 'יום הולדת 30 לדני', description: 'מסיבת יום הולדת במועדון', date: '2024-07-20' }
+        ];
+
+        function showToast(icon, title, description, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastTitle = document.getElementById('toast-title');
+            const toastDescription = document.getElementById('toast-description');
+            
+            toastIcon.textContent = icon;
+            toastTitle.textContent = title;
+            toastDescription.textContent = description;
+            
+            if (isError) {
+                toast.className = 'fixed top-4 right-4 bg-red-50 border border-red-200 rounded-lg shadow-lg p-4 z-50';
+                toastTitle.className = 'font-semibold text-red-800';
+                toastDescription.className = 'text-sm text-red-600';
+            } else {
+                toast.className = 'fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg shadow-lg p-4 z-50';
+                toastTitle.className = 'font-semibold text-green-800';
+                toastDescription.className = 'text-sm text-green-600';
+            }
+            
+            toast.classList.remove('hidden');
+            
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tabs-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all triggers
+            document.querySelectorAll('.tabs-trigger').forEach(trigger => {
+                trigger.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // Add active class to clicked trigger
+            event.target.classList.add('active');
+        }
+
+        function selectEvent(eventId, eventName) {
+            currentEventId = eventId;
+            document.getElementById('selected-event-name').textContent = eventName;
+            
+            // Update visual selection
+            document.querySelectorAll('.event-item').forEach(item => {
+                item.classList.remove('bg-primary-soft');
+            });
+            event.currentTarget.classList.add('bg-primary-soft');
+            
+            updateStats(eventId);
+        }
+
+        function updateStats(eventId) {
+            // Mock data update based on selected event
+            if (eventId === '1') {
+                document.getElementById('confirmed-count').textContent = '1';
+                document.getElementById('pending-count').textContent = '1';
+                document.getElementById('total-guests').textContent = '5';
+            } else {
+                document.getElementById('confirmed-count').textContent = '1';
+                document.getElementById('pending-count').textContent = '1';
+                document.getElementById('total-guests').textContent = '3';
+            }
+        }
+
+        function createEvent(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('event-name').value;
+            const description = document.getElementById('event-description').value;
+            const date = document.getElementById('event-date').value;
+            
+            const newEvent = {
+                id: Date.now().toString(),
+                name,
+                description,
+                date
+            };
+            
+            events.push(newEvent);
+            
+            showToast('✅', 'אירוע נוצר', `האירוע "${name}" נוצר בהצלחה`);
+            
+            // Clear form
+            document.getElementById('event-name').value = '';
+            document.getElementById('event-description').value = '';
+            document.getElementById('event-date').value = '';
+            
+            // Refresh events list (in real app, would re-render)
+            console.log('Created event:', newEvent);
+        }
+
+        function deleteEvent(eventId) {
+            if (confirm('האם אתה בטוח שברצונך למחוק את האירוע?')) {
+                showToast('✅', 'אירוע נמחק', 'האירוע וכל המוזמנים שלו נמחקו');
+            }
+        }
+
+        function sendReminder(phone) {
+            showToast('📩', 'תזכורת נשלחה', `תזכורת נשלחה למספר ${phone}`);
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                showToast('📁', 'קובץ נטען', `הקובץ ${file.name} נטען בהצלחה לאירוע הנבחר`);
+            }
+        }
+
+        function exportToExcel() {
+            showToast('📊', 'ייצוא בהצלחה', 'יוצאו 1 אישורים (5 מוזמנים בסה"כ)');
+        }
+
+        function previewInvitation(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview-image').src = e.target.result;
+                    document.getElementById('invitation-preview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function uploadInvitation() {
+            showToast('📤', 'הזמנה הועלתה', 'ההזמנה החדשה הועלתה בהצלחה');
+        }
+
+        function selectColorScheme(scheme) {
+            document.querySelectorAll('.color-scheme').forEach(item => {
+                item.classList.remove('bg-primary-soft');
+            });
+            event.currentTarget.classList.add('bg-primary-soft');
+            
+            showToast('🎨', 'ערכת צבעים נבחרה', `ערכת הצבעים "${scheme}" הוחלה בהצלחה`);
+        }
+
+        function applyCustomColors() {
+            showToast('✨', 'צבעים הוחלו', 'הצבעים המותאמים אישית הוחלו בהצלחה');
+        }
+
+        function addSpecialInvitation() {
+            const phone = prompt('הכנס מספר טלפון למוזמן המיוחד:');
+            if (phone) {
+                showToast('💌', 'הזמנה מיוחדת נוספה', `הזמנה מיוחדת נוספה למספר ${phone}`);
+            }
+        }
+
+        function removeSpecialInvitation(phone) {
+            if (confirm('האם למחוק את ההזמנה המיוחדת?')) {
+                showToast('🗑️', 'הזמנה מיוחדת נמחקה', `ההזמנה המיוחדת למספר ${phone} נמחקה`);
+            }
+        }
+
+        function logout() {
+            if (confirm('האם אתה בטוח שברצונך להתנתק?')) {
+                window.location.href = 'main-template.html';
+            }
+        }
+
+        // Initialize first tab
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('guests');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת ניהול אירועים - דף הבית</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="bootstrap-styles.css">
+</head>
+<body>
+    <div class="min-vh-100 py-4">
+        <div class="container">
+            <!-- Language Selector -->
+            <div class="d-flex justify-content-start mb-4">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown">
+                        <i class="fas fa-globe"></i> <span id="current-lang">עברית</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="setLanguage('he')"><i class="fas fa-flag"></i> עברית</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setLanguage('en')"><i class="fas fa-flag"></i> English</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <div class="hero-container position-relative rounded-4 overflow-hidden shadow-lg">
+                    <img src="src/assets/event-invitation.jpg" alt="הזמנה לאירוע" class="hero-image img-fluid w-100">
+                    <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+                    <div class="hero-content position-absolute top-50 start-50 translate-middle text-white">
+                        <h1 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-theater-masks"></i> <span data-i18n="index.title">מערכת אישור הגעה לאירועים</span>
+                        </h1>
+                        <p class="lead">
+                            <span data-i18n="index.subtitle">אשר את הגעתך בקלות ומהירות</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row g-4 mb-5">
+                <!-- Guest Access -->
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h2 class="card-title mb-0"><i class="fas fa-hand-wave"></i> <span data-i18n="index.guestAccess">כניסת מוזמנים</span></h2>
+                        </div>
+                        <div class="card-body">
+                            <form onsubmit="handlePhoneSubmit(event)">
+                                <div class="mb-3">
+                                    <label class="form-label" for="phone">
+                                        <span data-i18n="index.guestDescription">הזן את מספר הטלפון שלך</span>
+                                    </label>
+                                    <input
+                                        id="phone"
+                                        type="tel"
+                                        placeholder="050-1234567"
+                                        class="form-control form-control-lg text-center"
+                                        required
+                                    >
+                                </div>
+                                <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                                    <i class="fas fa-check"></i> <span data-i18n="index.confirmAttendance">אשר הגעה</span>
+                                </button>
+                            </form>
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-lightbulb"></i> <span data-i18n="index.guestDescription">הזן את מספר הטלפון שלך</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Access -->
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-warning text-dark text-center">
+                            <h2 class="card-title mb-0"><i class="fas fa-lock"></i> <span data-i18n="index.adminAccess">כניסת מנהל</span></h2>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-4">
+                                <div class="display-1 text-primary mb-3">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <h3 class="fw-semibold">מערכת ניהול</h3>
+                                <p class="text-muted">ניהול אירועים ומוזמנים</p>
+                            </div>
+                            <button onclick="window.location.href='admin-login.html'" class="btn btn-outline-primary btn-lg w-100">
+                                כניסה לניהול
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card text-center h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="display-1 text-primary mb-3">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <h3 class="fw-semibold mb-3">נוח לשימוש</h3>
+                            <p class="text-muted">ממשק פשוט ונוח לאישור הגעה מהטלפון</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card text-center h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="display-1 text-warning mb-3">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h3 class="fw-semibold mb-3">מהיר ויעיל</h3>
+                            <p class="text-muted">אישור מהיר עם ספירת מוזמנים גברים ונשים</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card text-center h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="display-1 text-success mb-3">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="fw-semibold mb-3">מעקב מלא</h3>
+                            <p class="text-muted">מערכת ניהול מתקדמת עם ייצוא לאקסל</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demo Links -->
+            <div class="card bg-light shadow-sm">
+                <div class="card-body text-center">
+                    <h3 class="fw-semibold mb-4">
+                        <i class="fas fa-bullseye"></i> קישורי דמו
+                    </h3>
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-md-3">
+                            <button onclick="window.location.href='rsvp-demo.html'" class="btn btn-outline-primary w-100">
+                                דמו - משה כהן
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button onclick="window.location.href='rsvp-demo-sarah.html'" class="btn btn-outline-primary w-100">
+                                דמו - שרה לוי
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-muted small mt-3">לצפייה במערכת ללא הרשמה</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentLanguage = 'he';
+        
+        const translations = {
+            he: {
+                'index.title': 'מערכת אישור הגעה לאירועים',
+                'index.subtitle': 'אשר את הגעתך בקלית ומהירות',
+                'index.guestAccess': 'כניסת מוזמנים',
+                'index.guestDescription': 'הזן את מספר הטלפון שלך',
+                'index.confirmAttendance': 'אשר הגעה',
+                'index.adminAccess': 'כניסת מנהל'
+            },
+            en: {
+                'index.title': 'Event RSVP Management System',
+                'index.subtitle': 'Confirm your attendance easily and quickly',
+                'index.guestAccess': 'Guest Access',
+                'index.guestDescription': 'Enter your phone number',
+                'index.confirmAttendance': 'Confirm Attendance',
+                'index.adminAccess': 'Admin Access'
+            }
+        };
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            const html = document.documentElement;
+            const currentLangSpan = document.getElementById('current-lang');
+
+            if (lang === 'he') {
+                html.setAttribute('lang', 'he');
+                html.setAttribute('dir', 'rtl');
+                currentLangSpan.textContent = 'עברית';
+            } else {
+                html.setAttribute('lang', 'en');
+                html.setAttribute('dir', 'ltr');
+                currentLangSpan.textContent = 'English';
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+        }
+
+        function handlePhoneSubmit(event) {
+            event.preventDefault();
+            const phone = document.getElementById('phone').value.trim();
+            if (phone) {
+                const cleanPhone = phone.replace(/\D/g, '');
+                if (cleanPhone === '0501234567') {
+                    window.location.href = 'rsvp-demo.html';
+                } else if (cleanPhone === '0527654321') {
+                    window.location.href = 'rsvp-demo-sarah.html';
+                } else {
+                    alert('לדמו, נסה: 050-123-4567 או 052-765-4321');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

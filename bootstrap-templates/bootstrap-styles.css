@@ -1,0 +1,313 @@
+/* Bootstrap Custom Styles for Event RSVP System */
+
+:root {
+    /* Color Variables */
+    --bs-primary: #d4861e;
+    --bs-primary-rgb: 212, 134, 30;
+    --bs-secondary: #f4d03f;
+    --bs-success: #27ae60;
+    --bs-warning: #f39c12;
+    --bs-danger: #e74c3c;
+    --bs-info: #3498db;
+    --bs-light: #f8f9fa;
+    --bs-dark: #2c3e50;
+    
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, #d4861e, #f4d03f);
+    --gradient-warm: linear-gradient(135deg, #f4d03f, #f8c471);
+    --gradient-overlay: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4));
+    
+    /* Shadows */
+    --shadow-elegant: 0 10px 30px -10px rgba(212, 134, 30, 0.3);
+    --shadow-soft: 0 4px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* RTL Support */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .dropdown-menu {
+    right: 0;
+    left: auto;
+}
+
+/* Hero Section */
+.hero-container {
+    height: 400px;
+    position: relative;
+}
+
+.hero-image {
+    height: 400px;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    background: var(--gradient-overlay);
+}
+
+.bg-gradient {
+    background: var(--gradient-overlay);
+}
+
+/* Custom Card Styles */
+.card {
+    border: none;
+    border-radius: 1rem;
+    transition: var(--transition-smooth);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elegant);
+}
+
+.card-header {
+    border-bottom: none;
+    border-radius: 1rem 1rem 0 0 !important;
+}
+
+/* Primary Button Enhancements */
+.btn-primary {
+    background: var(--gradient-primary);
+    border: none;
+    box-shadow: var(--shadow-soft);
+    transition: var(--transition-smooth);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #c17a19, #e6b635);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-elegant);
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(212, 134, 30, 0.25);
+}
+
+/* Success Button */
+.btn-success {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    border: none;
+    transition: var(--transition-smooth);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #229954, #28b463);
+    transform: translateY(-1px);
+}
+
+/* Warning Button */
+.btn-warning {
+    background: linear-gradient(135deg, #f39c12, #f4d03f);
+    border: none;
+    color: #2c3e50;
+    transition: var(--transition-smooth);
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, #e67e22, #f1c40f);
+    color: #2c3e50;
+    transform: translateY(-1px);
+}
+
+/* Outline Button Styles */
+.btn-outline-primary {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    transition: var(--transition-smooth);
+}
+
+.btn-outline-primary:hover {
+    background: var(--gradient-primary);
+    border-color: var(--bs-primary);
+    transform: translateY(-1px);
+}
+
+/* Form Controls */
+.form-control {
+    border-radius: 0.75rem;
+    border: 2px solid #e9ecef;
+    transition: var(--transition-smooth);
+}
+
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(212, 134, 30, 0.15);
+}
+
+.form-control-lg {
+    padding: 1rem 1.5rem;
+    font-size: 1.25rem;
+    border-radius: 1rem;
+}
+
+/* Input Groups */
+.input-group-lg .btn {
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+}
+
+.input-group-lg .form-control {
+    border-radius: 0;
+}
+
+.input-group-lg .btn:first-child {
+    border-radius: 1rem 0 0 1rem;
+}
+
+.input-group-lg .btn:last-child {
+    border-radius: 0 1rem 1rem 0;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: var(--shadow-soft);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+    color: #2980b9;
+}
+
+/* Toast Enhancements */
+.toast {
+    border-radius: 1rem;
+    box-shadow: var(--shadow-elegant);
+}
+
+.toast-header {
+    border-bottom: none;
+    border-radius: 1rem 1rem 0 0;
+}
+
+/* Spinner */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Background Utilities */
+.bg-light {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef) !important;
+}
+
+.bg-primary {
+    background: var(--gradient-primary) !important;
+}
+
+/* Text Utilities */
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+.text-warning {
+    color: var(--bs-warning) !important;
+}
+
+.text-success {
+    color: var(--bs-success) !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Display Utilities for Icons */
+.display-1 {
+    font-size: 3rem;
+    line-height: 1.2;
+}
+
+/* Minimum Height */
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+/* Shadows */
+.shadow-sm {
+    box-shadow: var(--shadow-soft) !important;
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-elegant) !important;
+}
+
+/* Rounded Corners */
+.rounded-4 {
+    border-radius: 1.5rem !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-container,
+    .hero-image {
+        height: 250px;
+    }
+    
+    .display-5 {
+        font-size: 2rem;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+    }
+}
+
+/* Animation for Hover Effects */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+
+.card:hover {
+    animation: float 0.6s ease-in-out;
+}
+
+/* Custom spacing for RTL */
+[dir="rtl"] .me-2 {
+    margin-left: 0.5rem !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .me-auto {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+}
+
+[dir="rtl"] .ms-2 {
+    margin-right: 0.5rem !important;
+    margin-left: 0 !important;
+}
+
+/* Dropdown fixes for RTL */
+[dir="rtl"] .dropdown-menu {
+    text-align: right;
+}
+
+[dir="rtl"] .dropdown-toggle::after {
+    margin-right: 0.255em;
+    margin-left: 0;
+}
+
+/* Toast positioning for RTL */
+[dir="rtl"] .toast-container {
+    left: 1rem !important;
+    right: auto !important;
+}

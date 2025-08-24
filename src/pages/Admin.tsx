@@ -10,6 +10,10 @@ import GuestList, { Guest } from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
 import InvitationManager from "@/components/InvitationManager";
 import ColorManager from "@/components/ColorManager";
+import ExcelImport from "@/components/ExcelImport";
+import ExcelExport from "@/components/ExcelExport";
+import LinkManager from "@/components/LinkManager";
+import GuestManager from "@/components/GuestManager";
 
 const Admin = () => {
   const [events, setEvents] = useState<Event[]>([
@@ -101,6 +105,10 @@ const Admin = () => {
     };
     setEvents(prev => [...prev, event]);
     setSelectedEventId(event.id);
+    toast({
+      title: "✅ אירוע נוצר בהצלחה",
+      description: `האירוע "${newEvent.name}" נוצר בהצלחה`
+    });
   };
 
   const handleEventDelete = (eventId: string) => {
@@ -115,15 +123,35 @@ const Admin = () => {
     });
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && selectedEventId) {
-      // This will be implemented with proper Excel parsing later
-      toast({
-        title: "📁 קובץ נטען",
-        description: `הקובץ ${file.name} נטען בהצלחה לאירוע הנבחר`
-      });
-    }
+  const handleGuestsImported = (importedGuests: Omit<Guest, 'id'>[]) => {
+    setLoading(true);
+    
+    // Add unique IDs to imported guests
+    const guestsWithIds = importedGuests.map(guest => ({
+      ...guest,
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    }));
+
+    setGuests(prev => [...prev, ...guestsWithIds]);
+    setLoading(false);
+    
+    toast({
+      title: "📥 אורחים יובאו בהצלחה",
+      description: `נוספו ${importedGuests.length} אורחים מהקובץ`
+    });
+  };
+
+  const handleGuestAdd = (guestData: Omit<Guest, 'id'>) => {
+    const newGuest: Guest = {
+      ...guestData,
+      id: Date.now().toString()
+    };
+    
+    setGuests(prev => [...prev, newGuest]);
+  };
+
+  const handleGuestDelete = (guestId: string) => {
+    setGuests(prev => prev.filter(g => g.id !== guestId));
   };
 
   const exportToExcel = () => {
@@ -254,19 +282,42 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-1 h-auto min-h-[2.5rem]">
-            <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">רשימת מוזמנים</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 h-auto min-h-[2.5rem]">
+            <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
+            <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
+            <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
-            <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים ועיצוב</TabsTrigger>
-            <TabsTrigger value="upload" className="text-xs md:text-sm px-2 py-2 whitespace-normal">העלאת קובץ</TabsTrigger>
-            <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא נתונים</TabsTrigger>
+            <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
+            <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="guests">
-            <GuestList 
-              guests={guests}
-              loading={loading}
+          <TabsContent value="guests" className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <GuestManager
+                selectedEventId={selectedEventId}
+                guests={guests}
+                onGuestAdd={handleGuestAdd}
+                onGuestDelete={handleGuestDelete}
+              />
+              <GuestList
+                guests={guests}
+                loading={loading}
+                selectedEventId={selectedEventId}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="import" className="space-y-4">
+            <ExcelImport
               selectedEventId={selectedEventId}
+              onGuestsImported={handleGuestsImported}
+            />
+          </TabsContent>
+
+          <TabsContent value="links" className="space-y-4">
+            <LinkManager
+              selectedEventId={selectedEventId}
+              eventName={selectedEvent?.name}
             />
           </TabsContent>
 
@@ -284,74 +335,12 @@ const Admin = () => {
             />
           </TabsContent>
 
-          <TabsContent value="upload">
-            <Card>
-              <CardHeader>
-                <CardTitle>📁 העלאת קובץ אקסל</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {!selectedEventId ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    בחר אירוע כדי להעלות קובץ מוזמנים
-                  </div>
-                ) : (
-                  <>
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                      <p className="text-sm font-medium">
-                        העלאה לאירוע: <span className="text-primary">{selectedEvent?.name}</span>
-                      </p>
-                    </div>
-                    <div>
-                      <Label htmlFor="excel-file">בחר קובץ אקסל (עם עמודות: שם מלא, טלפון)</Label>
-                      <Input
-                        id="excel-file"
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={handleFileUpload}
-                        className="mt-2"
-                      />
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">📝 הוראות:</h4>
-                      <ul className="text-sm text-muted-foreground space-y-1">
-                        <li>• הקובץ צריך להכיל עמודה "שם מלא" ועמודה "טלפון"</li>
-                        <li>• הטלפון צריך להיות במספר ספרות ישראלי</li>
-                        <li>• לאחר העלאה, הקישורים ייווצרו אוטומטית</li>
-                      </ul>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="export">
-            <Card>
-              <CardHeader>
-                <CardTitle>📊 ייצוא נתונים</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {!selectedEventId ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    בחר אירוע כדי לייצא נתונים
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button onClick={exportToExcel} className="h-20">
-                      📥 ייצא אישורים לאקסל
-                    </Button>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <h4 className="font-medium mb-2">📈 סיכום עבור {selectedEvent?.name}</h4>
-                      <ul className="text-sm space-y-1">
-                        <li>אישרו הגעה: {confirmedCount}</li>
-                        <li>ממתינים: {pendingCount}</li>
-                        <li>סה"כ מוזמנים: {totalConfirmedGuests}</li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <TabsContent value="export" className="space-y-4">
+            <ExcelExport
+              selectedEventId={selectedEventId}
+              eventName={selectedEvent?.name}
+              guests={guests}
+            />
           </TabsContent>
         </Tabs>
         

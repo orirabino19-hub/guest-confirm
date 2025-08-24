@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אישור הגעה - משה כהן</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-gradient">
+    <div class="container-fluid min-vh-100 d-flex align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="card shadow-lg">
+                        <div class="card-body p-5">
+                            <div class="text-center mb-4">
+                                <img src="https://via.placeholder.com/300x200?text=הזמנה+לחתונה" class="img-fluid rounded mb-3">
+                                <h2 class="text-primary">שלום משה כהן!</h2>
+                                <p class="lead">אתה מוזמן לחתונת דוד ושרה</p>
+                            </div>
+                            
+                            <form id="rsvpForm">
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6">
+                                        <label class="form-label">מספר גברים</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="changeCount('men', -1)">-</button>
+                                            <input type="number" class="form-control text-center" id="menCount" value="0" readonly>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="changeCount('men', 1)">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">מספר נשים</label>
+                                        <div class="input-group">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="changeCount('women', -1)">-</button>
+                                            <input type="number" class="form-control text-center" id="womenCount" value="0" readonly>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="changeCount('women', 1)">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body text-center">
+                                            <h5>סה"כ מוזמנים: <span id="totalCount" class="text-primary">0</span></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-check-circle me-2"></i>
+                                    אשר הגעה
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts.js"></script>
+    <script>
+        function changeCount(type, delta) {
+            const input = document.getElementById(type + 'Count');
+            let value = parseInt(input.value) + delta;
+            if (value < 0) value = 0;
+            if (value > 10) value = 10;
+            input.value = value;
+            updateTotal();
+        }
+        
+        function updateTotal() {
+            const men = parseInt(document.getElementById('menCount').value);
+            const women = parseInt(document.getElementById('womenCount').value);
+            document.getElementById('totalCount').textContent = men + women;
+        }
+        
+        document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const total = parseInt(document.getElementById('totalCount').textContent);
+            if (total === 0) {
+                showToast('יש לבחור לפחות מוזמן אחד', 'error');
+                return;
+            }
+            showToast('תודה! אישור ההגעה נרשם בהצלחה', 'success');
+        });
+    </script>
+</body>
+</html>

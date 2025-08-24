@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת אישורי הגעה לאירועים</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body class="bg-gradient">
+    <div class="container-fluid min-vh-100 d-flex align-items-center">
+        <div class="container">
+            <!-- Header -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-8 text-center">
+                    <div class="hero-card p-5 rounded-4 shadow-lg">
+                        <h1 class="display-4 fw-bold text-primary mb-3">
+                            <i class="bi bi-calendar-event me-3"></i>
+                            מערכת אישורי הגעה לאירועים
+                        </h1>
+                        <p class="lead text-muted mb-4">
+                            פתרון מקצועי לניהול הזמנות ואישורי הגעה לכל סוגי האירועים
+                        </p>
+                        
+                        <!-- Language Selector -->
+                        <div class="language-selector mb-4">
+                            <button class="btn btn-outline-primary btn-sm active" onclick="switchLanguage('he')">עברית</button>
+                            <button class="btn btn-outline-primary btn-sm" onclick="switchLanguage('en')">English</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Types -->
+            <div class="row g-4 mb-5">
+                <!-- Guest Access -->
+                <div class="col-lg-6">
+                    <div class="access-card h-100 p-4 rounded-4 border-0 shadow-sm">
+                        <div class="text-center mb-4">
+                            <div class="icon-circle bg-primary-subtle mb-3">
+                                <i class="bi bi-person-check fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="fw-bold text-primary">כניסת אורח</h3>
+                            <p class="text-muted mb-4">אישור הגעה מהיר וקל</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">הכנס את מספר הטלפון שלך:</label>
+                            <input type="tel" class="form-control form-control-lg text-center" 
+                                   placeholder="05X-XXXXXXX" id="guestPhone" dir="ltr">
+                        </div>
+                        
+                        <button class="btn btn-primary btn-lg w-100 fw-semibold" onclick="accessRSVP()">
+                            המשך לאישור הגעה
+                        </button>
+                        
+                        <!-- Demo Links -->
+                        <div class="mt-4 pt-4 border-top">
+                            <p class="small text-muted mb-2">דמו - קישורים לדוגמא:</p>
+                            <div class="d-flex gap-2 flex-wrap justify-content-center">
+                                <a href="rsvp-demo.html?guest=moshe" class="btn btn-outline-primary btn-sm">
+                                    דמו: משה כהן
+                                </a>
+                                <a href="rsvp-demo-sarah.html" class="btn btn-outline-primary btn-sm">
+                                    דמו: שרה לוי
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Access -->
+                <div class="col-lg-6">
+                    <div class="access-card h-100 p-4 rounded-4 border-0 shadow-sm">
+                        <div class="text-center mb-4">
+                            <div class="icon-circle bg-warning-subtle mb-3">
+                                <i class="bi bi-shield-lock fs-1 text-warning"></i>
+                            </div>
+                            <h3 class="fw-bold text-warning">כניסת מנהל</h3>
+                            <p class="text-muted mb-4">ניהול מלא של אירועים ואורחים</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">שם משתמש:</label>
+                            <input type="text" class="form-control" placeholder="הכנס שם משתמש" id="adminUsername">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">סיסמה:</label>
+                            <input type="password" class="form-control" placeholder="הכנס סיסמה" id="adminPassword">
+                        </div>
+                        
+                        <button class="btn btn-warning btn-lg w-100 fw-semibold text-dark" onclick="adminLogin()">
+                            כניסה למערכת הניהול
+                        </button>
+                        
+                        <!-- Demo Info -->
+                        <div class="mt-4 pt-4 border-top">
+                            <p class="small text-muted mb-1">דמו - פרטי התחברות:</p>
+                            <code class="small">admin / 123456</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-4 border-0 shadow-sm h-100">
+                        <div class="icon-circle bg-success-subtle mb-3 mx-auto">
+                            <i class="bi bi-lightning fs-2 text-success"></i>
+                        </div>
+                        <h5 class="fw-bold">קל לשימוש</h5>
+                        <p class="text-muted mb-0">ממשק פשוט ואינטואיטיבי לכל המשתמשים</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-4 border-0 shadow-sm h-100">
+                        <div class="icon-circle bg-info-subtle mb-3 mx-auto">
+                            <i class="bi bi-speedometer2 fs-2 text-info"></i>
+                        </div>
+                        <h5 class="fw-bold">מהיר ויעיל</h5>
+                        <p class="text-muted mb-0">אישור הגעה במהירות תוך כמה קליקים בלבד</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card text-center p-4 rounded-4 border-0 shadow-sm h-100">
+                        <div class="icon-circle bg-primary-subtle mb-3 mx-auto">
+                            <i class="bi bi-graph-up fs-2 text-primary"></i>
+                        </div>
+                        <h5 class="fw-bold">מעקב מתקדם</h5>
+                        <p class="text-muted mb-0">דוחות מפורטים וסטטיסטיקות בזמן אמת</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts.js"></script>
+</body>
+</html>

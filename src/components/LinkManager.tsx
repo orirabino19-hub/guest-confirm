@@ -182,15 +182,15 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
         <Tabs defaultValue="name" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="name" className="text-xs">
-              <User className="h-4 w-4 mr-1" />
+              <User className="h-4 w-4 ml-1" />
               לפי שם
             </TabsTrigger>
             <TabsTrigger value="open" className="text-xs">
-              <Users className="h-4 w-4 mr-1" />
+              <Users className="h-4 w-4 ml-1" />
               קישור פתוח
             </TabsTrigger>
             <TabsTrigger value="numbered" className="text-xs">
-              <Hash className="h-4 w-4 mr-1" />
+              <Hash className="h-4 w-4 ml-1" />
               ממוספר
             </TabsTrigger>
           </TabsList>
@@ -207,7 +207,7 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
                   className="flex-1"
                 />
                 <Button onClick={generateNameLink} disabled={!customName.trim()}>
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="h-4 w-4 ml-1" />
                   צור קישור
                 </Button>
               </div>
@@ -221,7 +221,7 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
             <div className="space-y-2">
               <Label>קישור פתוח לכל אורח</Label>
               <Button onClick={generateOpenLink} className="w-full">
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="h-4 w-4 ml-2" />
                 צור קישור פתוח
               </Button>
               <p className="text-sm text-muted-foreground">
@@ -244,7 +244,7 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
                   className="flex-1"
                 />
                 <Button onClick={generateNumberedLinks}>
-                  <Hash className="h-4 w-4 mr-1" />
+                  <Hash className="h-4 w-4 ml-1" />
                   צור קישורים
                 </Button>
               </div>
@@ -261,7 +261,7 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
             <div className="flex items-center justify-between">
               <h4 className="font-medium">קישורים שנוצרו ({eventCustomLinks.length})</h4>
               <Button variant="outline" size="sm" onClick={copyAllLinks}>
-                <Copy className="h-4 w-4 mr-1" />
+                <Copy className="h-4 w-4 ml-1" />
                 העתק הכל
               </Button>
             </div>

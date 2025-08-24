@@ -201,7 +201,7 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
             className="w-full"
             size="lg"
           >
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="h-4 w-4 ml-2" />
             {isProcessing ? 'מעבד קובץ...' : 'בחר קובץ Excel'}
           </Button>
           

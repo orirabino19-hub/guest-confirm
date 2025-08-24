@@ -195,7 +195,7 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
             className="w-full"
             size="lg"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="h-4 w-4 ml-2" />
             ייצא לקובץ Excel
           </Button>
 
@@ -205,7 +205,7 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
             disabled={filteredGuests.length === 0}
             className="w-full"
           >
-            <ExternalLink className="h-4 w-4 mr-2" />
+            <ExternalLink className="h-4 w-4 ml-2" />
             העתק את כל הקישורים
           </Button>
         </div>

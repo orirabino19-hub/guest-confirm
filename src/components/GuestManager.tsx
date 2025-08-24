@@ -147,11 +147,11 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="w-full">
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-4 w-4 ml-2" />
               הוסף אורח חדש
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md" dir="rtl">
             <DialogHeader>
               <DialogTitle>הוספת אורח חדש</DialogTitle>
             </DialogHeader>
@@ -180,7 +180,7 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleAddGuest} className="flex-1">
-                  <UserPlus className="h-4 w-4 mr-2" />
+                  <UserPlus className="h-4 w-4 ml-2" />
                   הוסף אורח
                 </Button>
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>

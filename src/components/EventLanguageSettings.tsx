@@ -36,15 +36,34 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
     { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
   ];
 
-  const handleLanguageChange = (newLanguage: string) => {
+  const handleLanguageToggle = (languageCode: string) => {
     if (!selectedEvent) return;
     
-    onEventUpdate(selectedEvent.id, { language: newLanguage });
+    const currentLanguages = selectedEvent.languages || ['he'];
+    const isSelected = currentLanguages.includes(languageCode);
     
-    const languageConfig = availableLanguages.find(l => l.code === newLanguage);
+    let newLanguages;
+    if (isSelected) {
+      // Don't allow removing the last language
+      if (currentLanguages.length === 1) {
+        toast({
+          title: "❌ שגיאה",
+          description: "חייב להשאיר לפחות שפה אחת",
+          variant: "destructive"
+        });
+        return;
+      }
+      newLanguages = currentLanguages.filter(l => l !== languageCode);
+    } else {
+      newLanguages = [...currentLanguages, languageCode];
+    }
+    
+    onEventUpdate(selectedEvent.id, { languages: newLanguages });
+    
+    const languageConfig = availableLanguages.find(l => l.code === languageCode);
     toast({
-      title: "✅ שפת האירוע עודכנה",
-      description: `השפה שונתה ל${languageConfig ? languageConfig.nativeName : newLanguage}`
+      title: "✅ שפות האירוע עודכנו",
+      description: `${languageConfig ? languageConfig.nativeName : languageCode} ${isSelected ? 'הוסרה' : 'נוספה'}`
     });
   };
 
@@ -60,7 +79,10 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
     );
   }
 
-  const currentLanguage = availableLanguages.find(l => l.code === selectedEvent.language);
+  const currentLanguages = selectedEvent.languages || ['he'];
+  const selectedLanguageConfigs = currentLanguages.map(code => 
+    availableLanguages.find(l => l.code === code) || { code, name: 'Unknown', nativeName: code, flag: '🌐', rtl: false }
+  );
 
   return (
     <Card>
@@ -73,48 +95,49 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
       <CardContent className="space-y-6">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="current-language">שפה נוכחית</Label>
-            <div className="mt-2 p-3 bg-muted rounded-lg flex items-center gap-3">
-              <span className="text-2xl">{currentLanguage?.flag || '🌐'}</span>
-              <div>
-                <div className="font-medium">
-                  {currentLanguage?.nativeName || selectedEvent.language}
+            <Label>שפות נוכחיות</Label>
+            <div className="mt-2 space-y-2">
+              {selectedLanguageConfigs.map((lang) => (
+                <div key={lang.code} className="p-3 bg-muted rounded-lg flex items-center gap-3">
+                  <span className="text-2xl">{lang.flag}</span>
+                  <div className="flex-1">
+                    <div className="font-medium">{lang.nativeName}</div>
+                    <div className="text-sm text-muted-foreground">{lang.name}</div>
+                  </div>
+                  {lang.rtl && (
+                    <Badge variant="secondary">RTL</Badge>
+                  )}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {currentLanguage?.name || 'שפה לא מוכרת'}
-                </div>
-              </div>
-              {currentLanguage?.rtl && (
-                <Badge variant="secondary" className="mr-auto">
-                  RTL
-                </Badge>
-              )}
+              ))}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="language-select">שנה שפה</Label>
-            <Select 
-              value={selectedEvent.language} 
-              onValueChange={handleLanguageChange}
-            >
-              <SelectTrigger className="mt-2">
-                <SelectValue placeholder="בחר שפה חדשה" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableLanguages.map((language) => (
-                  <SelectItem key={language.code} value={language.code}>
-                    <div className="flex items-center gap-2">
-                      <span>{language.flag}</span>
-                      <span>{language.nativeName}</span>
-                      {language.rtl && (
-                        <Badge variant="outline" className="text-xs">RTL</Badge>
-                      )}
+            <Label>הוסף או הסר שפות</Label>
+            <div className="mt-2 space-y-2">
+              {availableLanguages.map((language) => {
+                const isSelected = currentLanguages.includes(language.code);
+                return (
+                  <div key={language.code} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-muted/50">
+                    <input
+                      type="checkbox"
+                      id={`lang-${language.code}`}
+                      checked={isSelected}
+                      onChange={() => handleLanguageToggle(language.code)}
+                      className="rounded"
+                    />
+                    <span className="text-xl">{language.flag}</span>
+                    <div className="flex-1">
+                      <span className="font-medium">{language.nativeName}</span>
+                      <span className="text-sm text-muted-foreground ml-2">({language.name})</span>
                     </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                    {language.rtl && (
+                      <Badge variant="outline" className="text-xs">RTL</Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -122,16 +145,16 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
           <h4 className="font-medium mb-3">📋 מידע נוסף</h4>
           <div className="space-y-2 text-sm text-muted-foreground">
             <div className="flex justify-between">
-              <span>כיוון כתיבה:</span>
-              <span>{currentLanguage?.rtl ? 'ימין לשמאל (RTL)' : 'שמאל לימין (LTR)'}</span>
+              <span>מספר שפות:</span>
+              <span>{currentLanguages.length}</span>
             </div>
             <div className="flex justify-between">
-              <span>קוד שפה:</span>
-              <span className="font-mono">{selectedEvent.language}</span>
+              <span>שפות RTL:</span>
+              <span>{selectedLanguageConfigs.filter(l => l.rtl).length}</span>
             </div>
             <div className="flex justify-between">
-              <span>שם באנגלית:</span>
-              <span>{currentLanguage?.name || 'לא זמין'}</span>
+              <span>קודי שפות:</span>
+              <span className="font-mono">{currentLanguages.join(', ')}</span>
             </div>
           </div>
         </div>

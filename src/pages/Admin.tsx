@@ -25,7 +25,7 @@ const Admin = () => {
       description: "חתונה מיוחדת בגן אירועים",
       date: "2024-06-15",
       createdAt: new Date().toISOString(),
-      language: 'he'
+      languages: ['he']
     },
     {
       id: "2", 
@@ -33,7 +33,7 @@ const Admin = () => {
       description: "מסיבת יום הולדת במועדון",
       date: "2024-07-20",
       createdAt: new Date().toISOString(),
-      language: 'he'
+      languages: ['he']
     }
   ]);
   

@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -25,7 +24,7 @@ export interface Event {
   date: string;
   createdAt: string;
   invitationImage?: string;
-  language: string; // Changed to string to support any language code
+  languages: string[]; // Array of language codes for multi-language support
 }
 
 interface EventManagerProps {
@@ -49,7 +48,7 @@ const EventManager = ({
     description: "",
     date: "",
     invitationImage: "",
-    language: "he"
+    languages: ["he"] // Default to Hebrew
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -68,10 +67,10 @@ const EventManager = ({
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEvent.name || !newEvent.date) {
+    if (!newEvent.name || !newEvent.date || newEvent.languages.length === 0) {
       toast({
         title: "❌ שגיאה",
-        description: "יש למלא את כל השדות הנדרשים",
+        description: "יש למלא את כל השדות הנדרשים ולבחור לפחות שפה אחת",
         variant: "destructive"
       });
       return;
@@ -89,7 +88,7 @@ const EventManager = ({
       invitationImage: invitationImageUrl
     });
     
-    setNewEvent({ name: "", description: "", date: "", invitationImage: "", language: "he" });
+    setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
@@ -167,74 +166,86 @@ const EventManager = ({
                      required
                    />
                  </div>
-                  <div>
-                    <Label htmlFor="event-language">שפת האירוع *</Label>
-                    <Select 
-                      value={newEvent.language} 
-                      onValueChange={(value: string) => setNewEvent(prev => ({ ...prev, language: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="בחר שפה" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableLanguages.map((language) => (
-                          <SelectItem key={language.code} value={language.code}>
-                            {language.flag} {language.nativeName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="invitation-image">תמונת הזמנה</Label>
-                    <Input
-                      id="invitation-image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="cursor-pointer"
-                    />
-                    {selectedFile && (
-                      <div className="mt-2 p-2 bg-muted rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-green-600">✓</span>
-                          <span className="text-sm font-medium">{selectedFile.name}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setSelectedFile(null)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            ×
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          גודל: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      עד 5MB, פורמטים נתמכים: JPG, PNG, GIF
-                    </p>
-                  </div>
-                 <div className="flex gap-2 pt-4">
-                   <Button type="submit" className="flex-1">
-                     צור אירוע
-                   </Button>
-                   <Button 
-                     type="button" 
-                     variant="outline" 
-                     onClick={() => {
-                       setIsCreateOpen(false);
-                       setSelectedFile(null);
-                       setNewEvent({ name: "", description: "", date: "", invitationImage: "", language: "he" });
-                     }}
-                   >
-                     ביטול
-                   </Button>
+                 <div>
+                   <Label>שפות האירוע *</Label>
+                   <div className="space-y-2 mt-2">
+                     {availableLanguages.map((language) => (
+                       <div key={language.code} className="flex items-center gap-2">
+                         <input
+                           type="checkbox"
+                           id={`lang-${language.code}`}
+                           checked={newEvent.languages.includes(language.code)}
+                           onChange={(e) => {
+                             const checked = e.target.checked;
+                             setNewEvent(prev => ({
+                               ...prev,
+                               languages: checked 
+                                 ? [...prev.languages, language.code]
+                                 : prev.languages.filter(l => l !== language.code)
+                             }));
+                           }}
+                           className="rounded"
+                         />
+                         <label htmlFor={`lang-${language.code}`} className="text-sm cursor-pointer">
+                           {language.flag} {language.nativeName}
+                         </label>
+                       </div>
+                     ))}
+                   </div>
+                   {newEvent.languages.length === 0 && (
+                     <p className="text-xs text-red-500 mt-1">יש לבחור לפחות שפה אחת</p>
+                   )}
                  </div>
-               </form>
+                 <div>
+                   <Label htmlFor="invitation-image">תמונת הזמנה</Label>
+                   <Input
+                     id="invitation-image"
+                     type="file"
+                     accept="image/*"
+                     onChange={handleFileChange}
+                     className="cursor-pointer"
+                   />
+                   {selectedFile && (
+                     <div className="mt-2 p-2 bg-muted rounded-lg">
+                       <div className="flex items-center gap-2">
+                         <span className="text-sm text-green-600">✓</span>
+                         <span className="text-sm font-medium">{selectedFile.name}</span>
+                         <Button
+                           type="button"
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setSelectedFile(null)}
+                           className="text-red-500 hover:text-red-700"
+                         >
+                           ×
+                         </Button>
+                       </div>
+                       <p className="text-xs text-muted-foreground mt-1">
+                         גודל: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                       </p>
+                     </div>
+                   )}
+                   <p className="text-xs text-muted-foreground mt-1">
+                     עד 5MB, פורמטים נתמכים: JPG, PNG, GIF
+                   </p>
+                 </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">
+                    צור אירוע
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsCreateOpen(false);
+                      setSelectedFile(null);
+                      setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });
+                    }}
+                  >
+                    ביטול
+                  </Button>
+                </div>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -258,18 +269,22 @@ const EventManager = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium">{event.name}</h3>
-                      <Badge variant="outline" className="text-xs">
-                        {(() => {
-                          const lang = availableLanguages.find(l => l.code === event.language);
-                          return lang ? `${lang.flag} ${lang.nativeName}` : event.language.toUpperCase();
-                        })()}
-                      </Badge>
-                      {selectedEventId === event.id && (
-                        <Badge variant="default">נבחר</Badge>
-                      )}
-                    </div>
+                     <div className="flex items-center gap-2 mb-1">
+                       <h3 className="font-medium">{event.name}</h3>
+                       <div className="flex flex-wrap gap-1">
+                         {event.languages.map(langCode => {
+                           const lang = availableLanguages.find(l => l.code === langCode);
+                           return (
+                             <Badge key={langCode} variant="outline" className="text-xs">
+                               {lang ? `${lang.flag} ${lang.nativeName}` : langCode.toUpperCase()}
+                             </Badge>
+                           );
+                         })}
+                       </div>
+                       {selectedEventId === event.id && (
+                         <Badge variant="default">נבחר</Badge>
+                       )}
+                     </div>
                     {event.description && (
                       <p className="text-sm text-muted-foreground mb-1">
                         {event.description}

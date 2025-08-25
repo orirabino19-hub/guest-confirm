@@ -22,14 +22,16 @@ const Admin = () => {
       name: "החתונה של שייקי ומיכל",
       description: "חתונה מיוחדת בגן אירועים",
       date: "2024-06-15",
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      language: 'he'
     },
     {
       id: "2", 
       name: "יום הולדת 30 לדני",
       description: "מסיבת יום הולדת במועדון",
       date: "2024-07-20",
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      language: 'he'
     }
   ]);
   

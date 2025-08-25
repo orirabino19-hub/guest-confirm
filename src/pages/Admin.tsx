@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import EventManager, { Event } from "@/components/EventManager";
 import GuestList, { Guest } from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
+import LanguageSystemManager from "@/components/LanguageSystemManager";
 import InvitationManager from "@/components/InvitationManager";
 import ColorManager from "@/components/ColorManager";
 import ExcelImport from "@/components/ExcelImport";
@@ -346,8 +347,8 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
         
-        {/* Language Management Section */}
-        <LanguageManager />
+        {/* Language System Management Section */}
+        <LanguageSystemManager />
       </div>
     </div>
   );

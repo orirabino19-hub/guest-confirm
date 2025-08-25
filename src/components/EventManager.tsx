@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+// Language configuration interface
+interface LanguageConfig {
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+  rtl: boolean;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -16,7 +25,7 @@ export interface Event {
   date: string;
   createdAt: string;
   invitationImage?: string;
-  language: 'he' | 'en';
+  language: string; // Changed to string to support any language code
 }
 
 interface EventManagerProps {
@@ -40,10 +49,22 @@ const EventManager = ({
     description: "",
     date: "",
     invitationImage: "",
-    language: "he" as 'he' | 'en'
+    language: "he"
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
+
+  // Available languages - this could be fetched from a global state or API
+  const [availableLanguages] = useState<LanguageConfig[]>([
+    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false },
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', rtl: true },
+    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', rtl: false },
+    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', rtl: false },
+    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', rtl: false },
+    { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', rtl: false },
+    { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
+  ]);
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,17 +168,20 @@ const EventManager = ({
                    />
                  </div>
                   <div>
-                    <Label htmlFor="event-language">שפת האירוע *</Label>
+                    <Label htmlFor="event-language">שפת האירוع *</Label>
                     <Select 
                       value={newEvent.language} 
-                      onValueChange={(value: 'he' | 'en') => setNewEvent(prev => ({ ...prev, language: value }))}
+                      onValueChange={(value: string) => setNewEvent(prev => ({ ...prev, language: value }))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="בחר שפה" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="he">🇮🇱 עברית</SelectItem>
-                        <SelectItem value="en">🇺🇸 English</SelectItem>
+                        {availableLanguages.map((language) => (
+                          <SelectItem key={language.code} value={language.code}>
+                            {language.flag} {language.nativeName}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -237,7 +261,10 @@ const EventManager = ({
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium">{event.name}</h3>
                       <Badge variant="outline" className="text-xs">
-                        {event.language === 'he' ? '🇮🇱 עברית' : '🇺🇸 English'}
+                        {(() => {
+                          const lang = availableLanguages.find(l => l.code === event.language);
+                          return lang ? `${lang.flag} ${lang.nativeName}` : event.language.toUpperCase();
+                        })()}
                       </Badge>
                       {selectedEventId === event.id && (
                         <Badge variant="default">נבחר</Badge>

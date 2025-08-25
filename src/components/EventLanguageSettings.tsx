@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Event } from "./EventManager";
 
 // Language configuration interface
@@ -23,6 +24,8 @@ interface EventLanguageSettingsProps {
 
 const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSettingsProps) => {
   const { toast } = useToast();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [tempLanguages, setTempLanguages] = useState<string[]>([]);
   
   // Available languages - this matches EventManager
   const availableLanguages: LanguageConfig[] = [
@@ -36,16 +39,18 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
     { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
   ];
 
-  const handleLanguageToggle = (languageCode: string) => {
+  const handleEditOpen = () => {
     if (!selectedEvent) return;
+    setTempLanguages([...selectedEvent.languages]);
+    setIsEditOpen(true);
+  };
+
+  const handleLanguageToggle = (languageCode: string) => {
+    const isSelected = tempLanguages.includes(languageCode);
     
-    const currentLanguages = selectedEvent.languages || ['he'];
-    const isSelected = currentLanguages.includes(languageCode);
-    
-    let newLanguages;
     if (isSelected) {
       // Don't allow removing the last language
-      if (currentLanguages.length === 1) {
+      if (tempLanguages.length === 1) {
         toast({
           title: "❌ שגיאה",
           description: "חייב להשאיר לפחות שפה אחת",
@@ -53,18 +58,27 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
         });
         return;
       }
-      newLanguages = currentLanguages.filter(l => l !== languageCode);
+      setTempLanguages(prev => prev.filter(l => l !== languageCode));
     } else {
-      newLanguages = [...currentLanguages, languageCode];
+      setTempLanguages(prev => [...prev, languageCode]);
     }
+  };
+
+  const handleSave = () => {
+    if (!selectedEvent) return;
     
-    onEventUpdate(selectedEvent.id, { languages: newLanguages });
+    onEventUpdate(selectedEvent.id, { languages: tempLanguages });
+    setIsEditOpen(false);
     
-    const languageConfig = availableLanguages.find(l => l.code === languageCode);
     toast({
       title: "✅ שפות האירוע עודכנו",
-      description: `${languageConfig ? languageConfig.nativeName : languageCode} ${isSelected ? 'הוסרה' : 'נוספה'}`
+      description: `נבחרו ${tempLanguages.length} שפות`
     });
+  };
+
+  const handleCancel = () => {
+    setIsEditOpen(false);
+    setTempLanguages([]);
   };
 
   if (!selectedEvent) {
@@ -87,10 +101,62 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          🌍 הגדרות שפה לאירוע
-          <Badge variant="outline">{selectedEvent.name}</Badge>
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            🌍 הגדרות שפה לאירוע
+            <Badge variant="outline">{selectedEvent.name}</Badge>
+          </CardTitle>
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleEditOpen}>ערוך שפות</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md" dir="rtl">
+              <DialogHeader>
+                <DialogTitle>עריכת שפות האירוע</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>בחר שפות לאירוע</Label>
+                  <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                    {availableLanguages.map((language) => {
+                      const isSelected = tempLanguages.includes(language.code);
+                      return (
+                        <div key={language.code} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-muted/50">
+                          <input
+                            type="checkbox"
+                            id={`edit-lang-${language.code}`}
+                            checked={isSelected}
+                            onChange={() => handleLanguageToggle(language.code)}
+                            className="rounded"
+                          />
+                          <span className="text-xl">{language.flag}</span>
+                          <div className="flex-1">
+                            <span className="font-medium">{language.nativeName}</span>
+                            <span className="text-sm text-muted-foreground ml-2">({language.name})</span>
+                          </div>
+                          {language.rtl && (
+                            <Badge variant="outline" className="text-xs">RTL</Badge>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {tempLanguages.length === 0 && (
+                    <p className="text-xs text-red-500 mt-1">יש לבחור לפחות שפה אחת</p>
+                  )}
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleSave} className="flex-1" disabled={tempLanguages.length === 0}>
+                    שמור שינויים
+                  </Button>
+                  <Button variant="outline" onClick={handleCancel}>
+                    ביטול
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
@@ -109,34 +175,6 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
                   )}
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>הוסף או הסר שפות</Label>
-            <div className="mt-2 space-y-2">
-              {availableLanguages.map((language) => {
-                const isSelected = currentLanguages.includes(language.code);
-                return (
-                  <div key={language.code} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-muted/50">
-                    <input
-                      type="checkbox"
-                      id={`lang-${language.code}`}
-                      checked={isSelected}
-                      onChange={() => handleLanguageToggle(language.code)}
-                      className="rounded"
-                    />
-                    <span className="text-xl">{language.flag}</span>
-                    <div className="flex-1">
-                      <span className="font-medium">{language.nativeName}</span>
-                      <span className="text-sm text-muted-foreground ml-2">({language.name})</span>
-                    </div>
-                    {language.rtl && (
-                      <Badge variant="outline" className="text-xs">RTL</Badge>
-                    )}
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>

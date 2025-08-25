@@ -15,6 +15,7 @@ import ExcelImport from "@/components/ExcelImport";
 import ExcelExport from "@/components/ExcelExport";
 import LinkManager from "@/components/LinkManager";
 import GuestManager from "@/components/GuestManager";
+import EventLanguageSettings from "@/components/EventLanguageSettings";
 
 const Admin = () => {
   const [events, setEvents] = useState<Event[]>([
@@ -157,6 +158,12 @@ const Admin = () => {
     setGuests(prev => prev.filter(g => g.id !== guestId));
   };
 
+  const handleEventUpdate = (eventId: string, updates: Partial<Event>) => {
+    setEvents(prev => prev.map(event => 
+      event.id === eventId ? { ...event, ...updates } : event
+    ));
+  };
+
   const exportToExcel = () => {
     if (!selectedEventId) return;
     
@@ -285,10 +292,11 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
+            <TabsTrigger value="language" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שפה</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
             <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא</TabsTrigger>
@@ -321,6 +329,13 @@ const Admin = () => {
             <LinkManager
               selectedEventId={selectedEventId}
               eventName={selectedEvent?.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="language" className="space-y-4">
+            <EventLanguageSettings
+              selectedEvent={selectedEvent}
+              onEventUpdate={handleEventUpdate}
             />
           </TabsContent>
 

@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Plus, Minus, Loader2 } from "lucide-react";
+import eventInvitation from "@/assets/event-invitation.jpg";
 
 interface CustomField {
   id: string;
@@ -28,10 +29,21 @@ interface Event {
   customFields?: CustomField[];
 }
 
+const getInvitationForGuest = (phone: string, language: string) => {
+  // Special invitation for Sarah Levy demo
+  if (phone === "0527654321" && language === 'he') {
+    return "/lovable-uploads/2ed7e50b-48f4-4be4-b874-a19830a05aaf.png";
+  }
+  // Default invitation for others
+  return eventInvitation;
+};
+
 const OpenRSVP = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({ guestName: '' });
+  const [menCount, setMenCount] = useState<number>(0);
+  const [womenCount, setWomenCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -50,13 +62,30 @@ const OpenRSVP = () => {
         // Simulate API call to fetch event data
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock event data with custom fields
+        // Mock event data with custom fields - should be replaced with real API call
+        // For now, use the same structure as in Admin component
         const mockEvents: Record<string, Event> = {
           "1": {
             id: "1",
             name: "החתונה של שייקי ומיכל",
             nameEn: "Shaiky & Michal's Wedding",
-            customFields: []
+            customFields: [
+              {
+                id: "transport",
+                type: "select",
+                label: "האם אתה צריך הסעה לאירוע?",
+                labelEn: "Do you need transportation to the event?",
+                options: ["כן", "לא"],
+                required: false
+              },
+              {
+                id: "dietary",
+                type: "text",
+                label: "הגבלות תזונתיות",
+                labelEn: "Dietary restrictions",
+                required: false
+              }
+            ]
           },
           "2": {
             id: "2",
@@ -109,8 +138,18 @@ const OpenRSVP = () => {
     
     if (!formData.guestName.trim()) {
       toast({
-        title: t('rsvp.form.error'),
+        title: t('rsvp.error.title'),
         description: i18n.language === 'he' ? "יש להזין שם האורח" : "Please enter guest name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const totalGuests = menCount + womenCount;
+    if (totalGuests === 0) {
+      toast({
+        title: t('rsvp.error.title'),
+        description: t('rsvp.pleaseEnterGuests'),
         variant: "destructive"
       });
       return;
@@ -122,7 +161,7 @@ const OpenRSVP = () => {
       if (!formData[field.id] || (typeof formData[field.id] === 'string' && !formData[field.id].trim())) {
         const fieldLabel = i18n.language === 'he' ? field.label : field.labelEn;
         toast({
-          title: t('rsvp.form.error'),
+          title: t('rsvp.error.title'),
           description: i18n.language === 'he' ? `יש למלא את השדה: ${fieldLabel}` : `Please fill the field: ${fieldLabel}`,
           variant: "destructive"
         });
@@ -134,15 +173,26 @@ const OpenRSVP = () => {
     
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
-        title: t('rsvp.form.success'),
-        description: t('rsvp.form.successMessage'),
+        title: t('rsvp.success.title'),
+        description: t('rsvp.success.description', { name: formData.guestName }),
+      });
+      
+      console.log("Open RSVP Submitted:", {
+        guestName: formData.guestName,
+        menCount,
+        womenCount,
+        totalGuests,
+        customFields: formData,
+        timestamp: new Date().toISOString()
       });
       
       // Reset form
       setFormData({ guestName: '' });
+      setMenCount(0);
+      setWomenCount(0);
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
           setFormData(prev => ({ ...prev, [field.id]: false }));
@@ -153,14 +203,40 @@ const OpenRSVP = () => {
       
     } catch (err) {
       toast({
-        title: t('rsvp.form.error'),
-        description: t('rsvp.form.errorMessage'),
+        title: t('rsvp.error.title'),
+        description: t('rsvp.error.description'),
         variant: "destructive"
       });
     } finally {
       setSubmitting(false);
     }
   };
+
+  const incrementMen = () => {
+    if (menCount < 10) {
+      setMenCount(menCount + 1);
+    }
+  };
+
+  const decrementMen = () => {
+    if (menCount > 0) {
+      setMenCount(menCount - 1);
+    }
+  };
+
+  const incrementWomen = () => {
+    if (womenCount < 10) {
+      setWomenCount(womenCount + 1);
+    }
+  };
+
+  const decrementWomen = () => {
+    if (womenCount > 0) {
+      setWomenCount(womenCount - 1);
+    }
+  };
+
+  const totalGuests = menCount + womenCount;
 
   const renderCustomField = (field: CustomField) => {
     const label = i18n.language === 'he' ? field.label : field.labelEn;
@@ -277,63 +353,209 @@ const OpenRSVP = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
-      <div className="container mx-auto px-4 max-w-2xl">
-        <div className="text-center mb-8">
-          <LanguageSelector />
+    <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Event Invitation Image with Language Selector */}
+        <div className="relative overflow-hidden rounded-lg shadow-elegant">
+          <img 
+            src={getInvitationForGuest("", i18n.language)} 
+            alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+            className="w-full h-auto max-h-[90vh] object-contain bg-white"
+          />
+          
+          {/* Language Selector - Top Right */}
+          <div className="absolute top-4 right-4 z-10">
+            <LanguageSelector />
+          </div>
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
-        
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">
-              {i18n.language === 'he' ? event.name : event.nameEn}
+
+        {/* Welcome Card */}
+        <Card className="bg-gradient-card shadow-soft border-border/50">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
+              {i18n.language === 'he' ? `ברוכים הבאים ל${event.name}` : `Welcome to ${event.nameEn}`}
             </CardTitle>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-muted-foreground text-lg">
               {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
             </p>
           </CardHeader>
-          
+        </Card>
+
+        {/* Guest Details Form */}
+        <Card className="bg-gradient-card shadow-elegant border-border/50">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-center text-primary">
+              {i18n.language === 'he' ? "פרטי האורח" : "Guest Information"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Guest Name Field - Always visible */}
+            <div className="space-y-2">
+              <Label htmlFor="guestName">
+                {i18n.language === 'he' ? "שם האורח" : "Guest Name"}
+                <span className="text-destructive mr-1">*</span>
+              </Label>
+              <Input
+                id="guestName"
+                value={formData.guestName}
+                onChange={(e) => handleInputChange('guestName', e.target.value)}
+                placeholder={i18n.language === 'he' ? "הזן את שמך המלא" : "Enter your full name"}
+                className="border-border/50 focus:border-primary"
+              />
+            </div>
+
+            {/* Custom Fields - if any */}
+            {event.customFields && event.customFields.length > 0 && (
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="font-medium text-foreground">
+                  {i18n.language === 'he' ? "פרטים נוספים" : "Additional Details"}
+                </h3>
+                {event.customFields.map(renderCustomField)}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* RSVP Form */}
+        <Card className="bg-gradient-card shadow-elegant border-border/50">
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold text-center text-primary">
+              🎉 {t('rsvp.confirmTitle')}
+            </CardTitle>
+            <p className="text-center text-muted-foreground">
+              {t('rsvp.confirmDescription')}
+            </p>
+          </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Guest Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="guestName">
-                  {i18n.language === 'he' ? "שם האורח" : "Guest Name"}
-                  <span className="text-destructive mr-1">*</span>
-                </Label>
-                <Input
-                  id="guestName"
-                  value={formData.guestName}
-                  onChange={(e) => handleInputChange('guestName', e.target.value)}
-                  placeholder={i18n.language === 'he' ? "הזן את שמך המלא" : "Enter your full name"}
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Men Count */}
+                <div className="space-y-2">
+                  <Label htmlFor="menCount" className="text-sm font-medium">
+                    {t('rsvp.menCount')}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={decrementMen}
+                      disabled={menCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      id="menCount"
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={menCount}
+                      onChange={(e) => setMenCount(Number(e.target.value))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={incrementMen}
+                      disabled={menCount >= 10}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Women Count */}
+                <div className="space-y-2">
+                  <Label htmlFor="womenCount" className="text-sm font-medium">
+                    {t('rsvp.womenCount')}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={decrementWomen}
+                      disabled={womenCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      id="womenCount"
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={womenCount}
+                      onChange={(e) => setWomenCount(Number(e.target.value))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={incrementWomen}
+                      disabled={womenCount >= 10}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
 
-              {/* Custom Fields */}
-              {event.customFields && event.customFields.length > 0 && (
-                <div className="space-y-4">
-                  <div className="border-t pt-4">
-                    <h3 className="text-lg font-medium mb-4">
-                      {i18n.language === 'he' ? "פרטים נוספים" : "Additional Details"}
-                    </h3>
-                    {event.customFields.map(renderCustomField)}
-                  </div>
+              {/* Total Display */}
+              {totalGuests > 0 && (
+                <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
+                  <p className="text-lg font-medium text-accent-foreground">
+                    {t('rsvp.totalGuests', { count: totalGuests })}
+                  </p>
                 </div>
               )}
 
+              {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full" 
-                disabled={submitting}
+                disabled={submitting || totalGuests === 0 || !formData.guestName.trim()}
+                className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
-                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {submitting 
-                  ? (i18n.language === 'he' ? "שולח..." : "Submitting...") 
-                  : (i18n.language === 'he' ? "אישור השתתפות" : "Confirm Attendance")
-                }
+                {submitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {t('rsvp.submitting')}
+                  </div>
+                ) : (
+                  t('rsvp.submitButton')
+                )}
               </Button>
+
+              {(totalGuests === 0 || !formData.guestName.trim()) && (
+                <p className="text-center text-sm text-muted-foreground">
+                  {!formData.guestName.trim() 
+                    ? (i18n.language === 'he' ? "יש להזין שם האורח" : "Please enter guest name")
+                    : t('rsvp.pleaseEnterGuests')
+                  }
+                </p>
+              )}
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Info Card */}
+        <Card className="bg-muted/50 border-border/30">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                {t('rsvp.eventTime')}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {i18n.language === 'he' ? "לשאלות נוספות ניתן ליצור קשר" : "For additional questions, please contact us"}
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

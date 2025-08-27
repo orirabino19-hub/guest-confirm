@@ -26,7 +26,15 @@ const Admin = () => {
       date: "2024-06-15",
       createdAt: new Date().toISOString(),
       languages: ['he'],
-      customFields: []
+      customFields: [
+        {
+          id: 'guestName',
+          type: 'text',
+          label: 'שם האורח',
+          labelEn: 'Guest Name',
+          required: true
+        }
+      ]
     },
     {
       id: "2", 
@@ -35,7 +43,15 @@ const Admin = () => {
       date: "2024-07-20",
       createdAt: new Date().toISOString(),
       languages: ['he'],
-      customFields: []
+      customFields: [
+        {
+          id: 'guestName',
+          type: 'text',
+          label: 'שם האורח',
+          labelEn: 'Guest Name',
+          required: true
+        }
+      ]
     }
   ]);
   

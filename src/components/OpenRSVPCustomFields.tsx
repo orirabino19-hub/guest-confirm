@@ -36,6 +36,73 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' }
   ];
 
+  // Initialize with default guest name field if no custom fields exist
+  const ensureDefaultField = () => {
+    if (customFields.length === 0) {
+      const defaultField: CustomField = {
+        id: 'guestName',
+        type: 'text',
+        label: 'שם האורח',
+        labelEn: 'Guest Name',
+        required: true
+      };
+      onCustomFieldsUpdate([defaultField]);
+    }
+  };
+
+  // Call this when component mounts if no fields exist
+  React.useEffect(() => {
+    if (selectedEventId && customFields.length === 0) {
+      ensureDefaultField();
+    }
+  }, [selectedEventId]);
+
+  const addQuickField = (type: 'guestName' | 'phone' | 'email') => {
+    const quickFields = {
+      guestName: {
+        id: 'guestName',
+        type: 'text' as const,
+        label: 'שם האורח',
+        labelEn: 'Guest Name',
+        required: true
+      },
+      phone: {
+        id: 'phone',
+        type: 'text' as const,
+        label: 'מספר טלפון',
+        labelEn: 'Phone Number',
+        required: false
+      },
+      email: {
+        id: 'email',
+        type: 'text' as const,
+        label: 'כתובת אימייל',
+        labelEn: 'Email Address',
+        required: false
+      }
+    };
+
+    const fieldToAdd = quickFields[type];
+    
+    // Check if field already exists
+    if (customFields.some(field => field.id === fieldToAdd.id)) {
+      toast({
+        title: "שדה כבר קיים",
+        description: "השדה הזה כבר נמצא ברשימה",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedFields = [...customFields, fieldToAdd];
+    onCustomFieldsUpdate(updatedFields);
+    
+    toast({
+      title: "שדה נוסף",
+      description: `נוסף שדה: ${fieldToAdd.label}`
+    });
+  };
+
   const resetForm = () => {
     setNewField({
       type: 'text',
@@ -156,16 +223,51 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            הגדר שדות נוספים שיופיעו בקישור הפתוח של האירוע
+            הגדר שדות שיופיעו בקישור הפתוח של האירוע
           </p>
           
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="h-4 w-4 ml-1" />
-                הוסף שדה
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            {/* Quick Add Buttons */}
+            <div className="flex gap-1">
+              {!customFields.some(f => f.id === 'guestName') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('guestName')}
+                  className="text-xs"
+                >
+                  שם אורח
+                </Button>
+              )}
+              {!customFields.some(f => f.id === 'phone') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('phone')}
+                  className="text-xs"
+                >
+                  טלפון
+                </Button>
+              )}
+              {!customFields.some(f => f.id === 'email') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('email')}
+                  className="text-xs"
+                >
+                  אימייל
+                </Button>
+              )}
+            </div>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={resetForm}>
+                  <Plus className="h-4 w-4 ml-1" />
+                  הוסף שדה מותאם
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md" dir="rtl">
               <DialogHeader>
                 <DialogTitle>
@@ -267,18 +369,23 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                 </div>
               </div>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </div>
         </div>
 
         {/* Custom Fields List */}
         {customFields.length > 0 ? (
           <div className="space-y-3">
+            <div className="text-sm text-muted-foreground">
+              שדות הטופס ({customFields.length})
+            </div>
             {customFields.map((field) => (
               <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="outline">
-                      {fieldTypes.find(t => t.value === field.type)?.label}
+                    <Badge variant={field.id === 'guestName' ? 'default' : 'outline'}>
+                      {field.id === 'guestName' ? 'שדה בסיסי' : 
+                       fieldTypes.find(t => t.value === field.type)?.label}
                     </Badge>
                     {field.required && (
                       <Badge variant="destructive" className="text-xs">
@@ -315,8 +422,9 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 text-muted-foreground">
-            לא הוגדרו שדות מותאמים אישית עדיין
+          <div className="text-center py-6 text-muted-foreground space-y-2">
+            <p>לא הוגדרו שדות עדיין</p>
+            <p className="text-xs">לחץ על "שם אורח" כדי להתחיל</p>
           </div>
         )}
       </CardContent>

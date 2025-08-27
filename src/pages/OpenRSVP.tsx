@@ -63,13 +63,20 @@ const OpenRSVP = () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Mock event data with custom fields - should be replaced with real API call
-        // For now, use the same structure as in Admin component
+        // For now, use the same structure as in Admin component  
         const mockEvents: Record<string, Event> = {
           "1": {
             id: "1",
             name: "החתונה של שייקי ומיכל",
             nameEn: "Shaiky & Michal's Wedding",
             customFields: [
+              {
+                id: "guestName",
+                type: "text",
+                label: "שם האורח",
+                labelEn: "Guest Name",
+                required: true
+              },
               {
                 id: "transport",
                 type: "select",
@@ -91,7 +98,15 @@ const OpenRSVP = () => {
             id: "2",
             name: "יום הולדת 30 לדני",
             nameEn: "Danny's 30th Birthday",
-            customFields: []
+            customFields: [
+              {
+                id: "guestName",
+                type: "text",
+                label: "שם האורח",
+                labelEn: "Guest Name",
+                required: true
+              }
+            ]
           }
         };
         
@@ -237,6 +252,17 @@ const OpenRSVP = () => {
   };
 
   const totalGuests = menCount + womenCount;
+
+  // Check if all required fields are filled
+  const hasRequiredFields = () => {
+    const requiredFields = event?.customFields?.filter(field => field.required) || [];
+    for (const field of requiredFields) {
+      if (!formData[field.id] || (typeof formData[field.id] === 'string' && !formData[field.id].trim())) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const renderCustomField = (field: CustomField) => {
     const label = i18n.language === 'he' ? field.label : field.labelEn;
@@ -391,28 +417,15 @@ const OpenRSVP = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Guest Name Field - Always visible */}
-            <div className="space-y-2">
-              <Label htmlFor="guestName">
-                {i18n.language === 'he' ? "שם האורח" : "Guest Name"}
-                <span className="text-destructive mr-1">*</span>
-              </Label>
-              <Input
-                id="guestName"
-                value={formData.guestName}
-                onChange={(e) => handleInputChange('guestName', e.target.value)}
-                placeholder={i18n.language === 'he' ? "הזן את שמך המלא" : "Enter your full name"}
-                className="border-border/50 focus:border-primary"
-              />
-            </div>
-
-            {/* Custom Fields - if any */}
+            {/* Render all custom fields dynamically */}
             {event.customFields && event.customFields.length > 0 && (
-              <div className="space-y-4 border-t pt-4">
-                <h3 className="font-medium text-foreground">
-                  {i18n.language === 'he' ? "פרטים נוספים" : "Additional Details"}
-                </h3>
-                {event.customFields.map(renderCustomField)}
+              event.customFields.map(renderCustomField)
+            )}
+
+            {/* Show message if no fields configured */}
+            {(!event.customFields || event.customFields.length === 0) && (
+              <div className="text-center py-6 text-muted-foreground">
+                <p>{i18n.language === 'he' ? "לא הוגדרו שדות עבור אירוע זה" : "No fields configured for this event"}</p>
               </div>
             )}
           </CardContent>
@@ -520,7 +533,7 @@ const OpenRSVP = () => {
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={submitting || totalGuests === 0 || !formData.guestName.trim()}
+                disabled={submitting || totalGuests === 0 || !hasRequiredFields()}
                 className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {submitting ? (
@@ -533,11 +546,11 @@ const OpenRSVP = () => {
                 )}
               </Button>
 
-              {(totalGuests === 0 || !formData.guestName.trim()) && (
+              {(totalGuests === 0 || !hasRequiredFields()) && (
                 <p className="text-center text-sm text-muted-foreground">
-                  {!formData.guestName.trim() 
-                    ? (i18n.language === 'he' ? "יש להזין שם האורח" : "Please enter guest name")
-                    : t('rsvp.pleaseEnterGuests')
+                  {totalGuests === 0 
+                    ? t('rsvp.pleaseEnterGuests')
+                    : (i18n.language === 'he' ? "יש למלא את כל השדות הנדרשים" : "Please fill all required fields")
                   }
                 </p>
               )}

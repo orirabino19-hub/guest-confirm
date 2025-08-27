@@ -25,6 +25,11 @@ export interface Event {
   createdAt: string;
   invitationImage?: string;
   languages: string[]; // Array of language codes for multi-language support
+  textOverrides?: {
+    [key: string]: {
+      [language: string]: string;
+    };
+  };
 }
 
 interface EventManagerProps {

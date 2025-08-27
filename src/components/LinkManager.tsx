@@ -6,11 +6,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Link, Copy, User, Users, Hash, Plus } from 'lucide-react';
+import { Link, Copy, User, Users, Hash, Plus, Settings } from 'lucide-react';
+import OpenRSVPCustomFields from './OpenRSVPCustomFields';
+import { CustomField } from './EventManager';
 
 interface LinkManagerProps {
   selectedEventId: string | null;
   eventName?: string;
+  customFields?: CustomField[];
+  onCustomFieldsUpdate?: (fields: CustomField[]) => void;
 }
 
 interface CustomLink {
@@ -21,7 +25,7 @@ interface CustomLink {
   createdAt: string;
 }
 
-const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
+const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFieldsUpdate }: LinkManagerProps) => {
   const [customName, setCustomName] = useState('');
   const [numberedCount, setNumberedCount] = useState(5);
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
@@ -218,15 +222,28 @@ const LinkManager = ({ selectedEventId, eventName }: LinkManagerProps) => {
           </TabsContent>
 
           <TabsContent value="open" className="space-y-4">
-            <div className="space-y-2">
-              <Label>קישור פתוח לכל אורח</Label>
-              <Button onClick={generateOpenLink} className="w-full">
-                <Users className="h-4 w-4 ml-2" />
-                צור קישור פתוח
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                האורח יוכל להזין את פרטיו בעצמו בקישור זה
-              </p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>קישור פתוח לכל אורח</Label>
+                <Button onClick={generateOpenLink} className="w-full">
+                  <Users className="h-4 w-4 ml-2" />
+                  צור קישור פתוח
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  האורח יוכל להזין את פרטיו בעצמו בקישור זה
+                </p>
+              </div>
+              
+              {/* Custom Fields Manager */}
+              {onCustomFieldsUpdate && (
+                <div className="border-t pt-4">
+                  <OpenRSVPCustomFields
+                    selectedEventId={selectedEventId}
+                    customFields={customFields}
+                    onCustomFieldsUpdate={onCustomFieldsUpdate}
+                  />
+                </div>
+              )}
             </div>
           </TabsContent>
 

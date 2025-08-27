@@ -17,6 +17,15 @@ interface LanguageConfig {
   rtl: boolean;
 }
 
+export interface CustomField {
+  id: string;
+  type: 'text' | 'select' | 'checkbox' | 'textarea';
+  label: string;
+  labelEn: string;
+  options?: string[];
+  required: boolean;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -25,6 +34,7 @@ export interface Event {
   createdAt: string;
   invitationImage?: string;
   languages: string[]; // Array of language codes for multi-language support
+  customFields?: CustomField[]; // Custom fields for open RSVP
   textOverrides?: {
     [key: string]: {
       [language: string]: string;

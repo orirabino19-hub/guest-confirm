@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import EventManager, { Event } from "@/components/EventManager";
+import EventManager, { Event, CustomField } from "@/components/EventManager";
 import GuestList, { Guest } from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
 import LanguageSystemManager from "@/components/LanguageSystemManager";
@@ -25,7 +25,8 @@ const Admin = () => {
       description: "חתונה מיוחדת בגן אירועים",
       date: "2024-06-15",
       createdAt: new Date().toISOString(),
-      languages: ['he']
+      languages: ['he'],
+      customFields: []
     },
     {
       id: "2", 
@@ -33,7 +34,8 @@ const Admin = () => {
       description: "מסיבת יום הולדת במועדון",
       date: "2024-07-20",
       createdAt: new Date().toISOString(),
-      languages: ['he']
+      languages: ['he'],
+      customFields: []
     }
   ]);
   
@@ -162,6 +164,19 @@ const Admin = () => {
     setEvents(prev => prev.map(event => 
       event.id === eventId ? { ...event, ...updates } : event
     ));
+  };
+
+  const handleCustomFieldsUpdate = (fields: CustomField[]) => {
+    if (!selectedEventId) return;
+    
+    setEvents(prev => prev.map(event => 
+      event.id === selectedEventId ? { ...event, customFields: fields } : event
+    ));
+    
+    toast({
+      title: "✅ שדות מותאמים אישית עודכנו",
+      description: "השדות נשמרו בהצלחה עבור הקישור הפתוח"
+    });
   };
 
   const exportToExcel = () => {
@@ -329,6 +344,8 @@ const Admin = () => {
             <LinkManager
               selectedEventId={selectedEventId}
               eventName={selectedEvent?.name}
+              customFields={selectedEvent?.customFields || []}
+              onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>
 

@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Event } from "./EventManager";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Settings, Plus, Save, X, Edit3, RotateCcw } from "lucide-react";
+import type { Event } from "@/components/EventManager";
 
 // Language configuration interface
 interface LanguageConfig {
@@ -18,15 +22,34 @@ interface LanguageConfig {
 }
 
 interface EventLanguageSettingsProps {
-  selectedEvent: Event | null;
+  event: Event | null;
   onEventUpdate: (eventId: string, updates: Partial<Event>) => void;
 }
 
-const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSettingsProps) => {
+// Default translatable keys that can be overridden per event
+const EDITABLE_KEYS = [
+  { key: 'rsvp.welcome', label: 'Welcome Message', defaultEn: 'Hello {{name}}! 👋', defaultHe: 'שלום {{name}}! 👋' },
+  { key: 'rsvp.eventInvitation', label: 'Event Invitation', defaultEn: 'We are honored to invite you to {{eventName}}', defaultHe: 'אנחנו מתכבדים להזמינכם ל{{eventName}}' },
+  { key: 'rsvp.confirmTitle', label: 'Confirm Title', defaultEn: '🎉 RSVP Confirmation', defaultHe: '🎉 אישור הגעה' },
+  { key: 'rsvp.confirmDescription', label: 'Confirm Description', defaultEn: 'Please confirm the number of guests', defaultHe: 'אנא אמתו את מספר המוזמנים' },
+  { key: 'rsvp.submitButton', label: 'Submit Button', defaultEn: '✅ Confirm Attendance', defaultHe: '✅ אשר הגעה' },
+  { key: 'rsvp.eventTime', label: 'Event Time', defaultEn: '🕐 The event will take place on the scheduled date and time', defaultHe: '🕐 האירוע יתקיים בתאריך ובשעה שנקבעו' }
+];
+
+interface TextOverrides {
+  [key: string]: {
+    [language: string]: string;
+  };
+}
+
+const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsProps) => {
+  const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [tempLanguages, setTempLanguages] = useState<string[]>([]);
-  
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(event?.languages || []);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [textOverrides, setTextOverrides] = useState<TextOverrides>(event?.textOverrides || {});
+
   // Available languages - this matches EventManager
   const availableLanguages: LanguageConfig[] = [
     { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
@@ -39,163 +62,277 @@ const EventLanguageSettings = ({ selectedEvent, onEventUpdate }: EventLanguageSe
     { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
   ];
 
-  const handleEditOpen = () => {
-    if (!selectedEvent) return;
-    setTempLanguages([...selectedEvent.languages]);
-    setIsEditOpen(true);
-  };
-
-  const handleLanguageToggle = (languageCode: string) => {
-    const isSelected = tempLanguages.includes(languageCode);
+  const handleSaveLanguages = () => {
+    if (!event) return;
     
-    if (isSelected) {
-      // Don't allow removing the last language
-      if (tempLanguages.length === 1) {
-        toast({
-          title: "❌ שגיאה",
-          description: "חייב להשאיר לפחות שפה אחת",
-          variant: "destructive"
-        });
-        return;
-      }
-      setTempLanguages(prev => prev.filter(l => l !== languageCode));
-    } else {
-      setTempLanguages(prev => [...prev, languageCode]);
-    }
-  };
-
-  const handleSave = () => {
-    if (!selectedEvent) return;
-    
-    onEventUpdate(selectedEvent.id, { languages: tempLanguages });
-    setIsEditOpen(false);
+    onEventUpdate(event.id, { languages: selectedLanguages });
+    setIsEditDialogOpen(false);
     
     toast({
-      title: "✅ שפות האירוע עודכנו",
-      description: `נבחרו ${tempLanguages.length} שפות`
+      title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
+      description: i18n.language === 'he' ? "שפות האירוע עודכנו" : "Event languages have been updated",
     });
   };
 
-  const handleCancel = () => {
-    setIsEditOpen(false);
-    setTempLanguages([]);
+  const handleTextChange = (textKey: string, language: string, value: string) => {
+    setTextOverrides(prev => ({
+      ...prev,
+      [textKey]: {
+        ...prev[textKey],
+        [language]: value
+      }
+    }));
   };
 
-  if (!selectedEvent) {
-    return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center text-muted-foreground">
-            בחר אירוע כדי לערוך את הגדרות השפה שלו
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleSaveTexts = () => {
+    if (!event) return;
+    
+    onEventUpdate(event.id, { textOverrides });
+    setEditingKey(null);
+    
+    toast({
+      title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
+      description: i18n.language === 'he' ? "טקסטים מותאמים אישית נשמרו" : "Custom texts have been saved",
+    });
+  };
 
-  const currentLanguages = selectedEvent.languages || ['he'];
-  const selectedLanguageConfigs = currentLanguages.map(code => 
-    availableLanguages.find(l => l.code === code) || { code, name: 'Unknown', nativeName: code, flag: '🌐', rtl: false }
-  );
+  const handleResetText = (textKey: string) => {
+    const newOverrides = { ...textOverrides };
+    delete newOverrides[textKey];
+    setTextOverrides(newOverrides);
+    
+    toast({
+      title: i18n.language === 'he' ? "אופס" : "Reset",
+      description: i18n.language === 'he' ? "הטקסט חזר לברירת המחדל" : "Text reset to default",
+    });
+  };
+
+  const getDisplayText = (textKey: string, language: string, defaultText: string) => {
+    return textOverrides[textKey]?.[language] || defaultText;
+  };
+
+  const isOverridden = (textKey: string) => {
+    return textOverrides[textKey] && Object.keys(textOverrides[textKey]).length > 0;
+  };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            🌍 הגדרות שפה לאירוע
-            <Badge variant="outline">{selectedEvent.name}</Badge>
-          </CardTitle>
-          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleEditOpen}>ערוך שפות</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md" dir="rtl">
-              <DialogHeader>
-                <DialogTitle>עריכת שפות האירוע</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>בחר שפות לאירוע</Label>
-                  <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
-                    {availableLanguages.map((language) => {
-                      const isSelected = tempLanguages.includes(language.code);
-                      return (
-                        <div key={language.code} className="flex items-center gap-3 p-2 border rounded-lg hover:bg-muted/50">
-                          <input
-                            type="checkbox"
-                            id={`edit-lang-${language.code}`}
-                            checked={isSelected}
-                            onChange={() => handleLanguageToggle(language.code)}
-                            className="rounded"
-                          />
-                          <span className="text-xl">{language.flag}</span>
-                          <div className="flex-1">
-                            <span className="font-medium">{language.nativeName}</span>
-                            <span className="text-sm text-muted-foreground ml-2">({language.name})</span>
-                          </div>
-                          {language.rtl && (
-                            <Badge variant="outline" className="text-xs">RTL</Badge>
-                          )}
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="h-5 w-5" />
+          {i18n.language === 'he' ? 'הגדרות שפה וטקסטים' : 'Language & Text Settings'}
+        </CardTitle>
+        {event && (
+          <p className="text-sm text-muted-foreground">
+            {i18n.language === 'he' 
+              ? `אירוע: ${event.name}`
+              : `Event: ${event.name}`
+            }
+          </p>
+        )}
+      </CardHeader>
+      <CardContent>
+        {!event ? (
+          <p className="text-center text-muted-foreground py-8">
+            {i18n.language === 'he' ? 'בחר אירוע כדי לנהל הגדרות שפה וטקסטים' : 'Select an event to manage language and text settings'}
+          </p>
+        ) : (
+          <Tabs defaultValue="languages" className="space-y-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="languages">
+                {i18n.language === 'he' ? 'שפות נתמכות' : 'Languages'}
+              </TabsTrigger>
+              <TabsTrigger value="texts">
+                {i18n.language === 'he' ? 'טקסטים מותאמים' : 'Custom Texts'}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="languages" className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">
+                    {i18n.language === 'he' ? 'שפות נתמכות' : 'Supported Languages'}
+                  </h3>
+                  <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Settings className="h-4 w-4 mr-2" />
+                        {i18n.language === 'he' ? 'ערוך שפות' : 'Edit Languages'}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {i18n.language === 'he' ? 'ערוך שפות האירוע' : 'Edit Event Languages'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3">
+                          {availableLanguages.map((lang) => (
+                            <div key={lang.code} className="flex items-center space-x-2 space-x-reverse">
+                              <Checkbox
+                                id={lang.code}
+                                checked={selectedLanguages.includes(lang.code)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedLanguages([...selectedLanguages, lang.code]);
+                                  } else {
+                                    setSelectedLanguages(selectedLanguages.filter(l => l !== lang.code));
+                                  }
+                                }}
+                              />
+                              <Label htmlFor={lang.code} className="flex items-center gap-2 cursor-pointer">
+                                <span className="text-lg">{lang.flag}</span>
+                                <span>{lang.name}</span>
+                              </Label>
+                            </div>
+                          ))}
                         </div>
-                      );
-                    })}
-                  </div>
-                  {tempLanguages.length === 0 && (
-                    <p className="text-xs text-red-500 mt-1">יש לבחור לפחות שפה אחת</p>
-                  )}
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                            <X className="h-4 w-4 mr-2" />
+                            {i18n.language === 'he' ? 'ביטול' : 'Cancel'}
+                          </Button>
+                          <Button onClick={handleSaveLanguages}>
+                            <Save className="h-4 w-4 mr-2" />
+                            {i18n.language === 'he' ? 'שמור' : 'Save'}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={handleSave} className="flex-1" disabled={tempLanguages.length === 0}>
-                    שמור שינויים
-                  </Button>
-                  <Button variant="outline" onClick={handleCancel}>
-                    ביטול
-                  </Button>
+                
+                <div className="flex flex-wrap gap-2">
+                  {event.languages?.map((langCode) => {
+                    const language = availableLanguages.find(l => l.code === langCode);
+                    return language ? (
+                      <Badge key={langCode} variant="secondary" className="flex items-center gap-1">
+                        <span>{language.flag}</span>
+                        <span>{language.name}</span>
+                      </Badge>
+                    ) : null;
+                  })}
                 </div>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-4">
-          <div>
-            <Label>שפות נוכחיות</Label>
-            <div className="mt-2 space-y-2">
-              {selectedLanguageConfigs.map((lang) => (
-                <div key={lang.code} className="p-3 bg-muted rounded-lg flex items-center gap-3">
-                  <span className="text-2xl">{lang.flag}</span>
-                  <div className="flex-1">
-                    <div className="font-medium">{lang.nativeName}</div>
-                    <div className="text-sm text-muted-foreground">{lang.name}</div>
+            </TabsContent>
+
+            <TabsContent value="texts" className="space-y-6">
+              {EDITABLE_KEYS.map((item) => (
+                <div key={item.key} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Label className="font-medium">{item.label}</Label>
+                      {isOverridden(item.key) && (
+                        <Badge variant="secondary" className="text-xs">
+                          {i18n.language === 'he' ? 'מותאם אישית' : 'Customized'}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {editingKey === item.key ? (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={handleSaveTexts}
+                            className="h-7 px-2"
+                          >
+                            <Save className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingKey(null)}
+                            className="h-7 px-2"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingKey(item.key)}
+                            className="h-7 px-2"
+                          >
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                          {isOverridden(item.key) && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleResetText(item.key)}
+                              className="h-7 px-2"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                  {lang.rtl && (
-                    <Badge variant="secondary">RTL</Badge>
-                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Hebrew */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">עברית</Label>
+                      {editingKey === item.key ? (
+                        <Textarea
+                          dir="rtl"
+                          value={getDisplayText(item.key, 'he', item.defaultHe)}
+                          onChange={(e) => handleTextChange(item.key, 'he', e.target.value)}
+                          className="min-h-[60px] text-right"
+                          placeholder={item.defaultHe}
+                        />
+                      ) : (
+                        <div className="p-3 bg-muted/50 rounded border text-right" dir="rtl">
+                          {getDisplayText(item.key, 'he', item.defaultHe)}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* English */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">English</Label>
+                      {editingKey === item.key ? (
+                        <Textarea
+                          value={getDisplayText(item.key, 'en', item.defaultEn)}
+                          onChange={(e) => handleTextChange(item.key, 'en', e.target.value)}
+                          className="min-h-[60px]"
+                          placeholder={item.defaultEn}
+                        />
+                      ) : (
+                        <div className="p-3 bg-muted/50 rounded border">
+                          {getDisplayText(item.key, 'en', item.defaultEn)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
 
-        <div className="border-t pt-4">
-          <h4 className="font-medium mb-3">📋 מידע נוסף</h4>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <div className="flex justify-between">
-              <span>מספר שפות:</span>
-              <span>{currentLanguages.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>שפות RTL:</span>
-              <span>{selectedLanguageConfigs.filter(l => l.rtl).length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>קודי שפות:</span>
-              <span className="font-mono">{currentLanguages.join(', ')}</span>
-            </div>
-          </div>
-        </div>
+              {editingKey && (
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    onClick={handleSaveTexts}
+                    className="bg-gradient-primary hover:opacity-90"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {i18n.language === 'he' ? 'שמור שינויים' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingKey(null)}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    {i18n.language === 'he' ? 'ביטול' : 'Cancel'}
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </CardContent>
     </Card>
   );

@@ -223,7 +223,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            שדות מותאמים אישית לקישור פתוח
+            שדות מותאמים אישית
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -235,246 +235,312 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     );
   }
 
+  const counterFields = customFields.filter(field => field.type === 'menCounter' || field.type === 'womenCounter');
+  const otherFields = customFields.filter(field => field.type !== 'menCounter' && field.type !== 'womenCounter');
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings className="h-5 w-5" />
-          שדות מותאמים אישית לקישור פתוח
+          שדות מותאמים אישית
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            הגדר שדות שיופיעו בקישור הפתוח של האירוע
-          </p>
+      <CardContent className="space-y-8">
+        <div className="text-sm text-muted-foreground">
+          הגדר שדות שיופיעו בטופס RSVP של האירוע
+        </div>
+
+        {/* Counter Fields Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">שדות מונים</h3>
+            <p className="text-sm text-muted-foreground">
+              שדות לספירת מוזמנים
+            </p>
+          </div>
           
-          <div className="flex gap-2">
-            {/* Quick Add Buttons */}
-            <div className="flex gap-1 flex-wrap">
-              {!customFields.some(f => f.id === 'fullName') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('fullName')}
-                  className="text-xs"
-                >
-                  שם מלא
-                </Button>
-              )}
-              {!customFields.some(f => f.id === 'guestName') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('guestName')}
-                  className="text-xs"
-                >
-                  שם אורח
-                </Button>
-              )}
-              {!customFields.some(f => f.id === 'phone') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('phone')}
-                  className="text-xs"
-                >
-                  טלפון
-                </Button>
-              )}
-              {!customFields.some(f => f.id === 'email') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('email')}
-                  className="text-xs"
-                >
-                  אימייל
-                </Button>
-              )}
-              {!customFields.some(f => f.id === 'menCounter') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('menCounter')}
-                  className="text-xs"
-                >
-                  👨 גברים
-                </Button>
-              )}
-              {!customFields.some(f => f.id === 'womenCounter') && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => addQuickField('womenCounter')}
-                  className="text-xs"
-                >
-                  👩 נשים
-                </Button>
-              )}
+          <div className="flex gap-2 flex-wrap">
+            {!customFields.some(f => f.id === 'menCounter') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => addQuickField('menCounter')}
+                className="text-xs"
+              >
+                👨 הוסף מונה גברים
+              </Button>
+            )}
+            {!customFields.some(f => f.id === 'womenCounter') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => addQuickField('womenCounter')}
+                className="text-xs"
+              >
+                👩 הוסף מונה נשים
+              </Button>
+            )}
+          </div>
+
+          {/* Display existing counter fields */}
+          {counterFields.length > 0 && (
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground">
+                מונים פעילים ({counterFields.length})
+              </div>
+              {counterFields.map((field) => (
+                <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant="default">
+                        {field.type === 'menCounter' ? 'מונה גברים' : 'מונה נשים'}
+                      </Badge>
+                      {field.required && (
+                        <Badge variant="destructive" className="text-xs">
+                          חובה
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="font-medium">{field.label}</p>
+                    <p className="text-sm text-muted-foreground">{field.labelEn}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditField(field)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteField(field.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
-            
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={resetForm}>
-                  <Plus className="h-4 w-4 ml-1" />
-                  הוסף שדה מותאם
-                </Button>
-              </DialogTrigger>
-            <DialogContent className="max-w-md" dir="rtl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingField ? 'עריכת שדה' : 'הוספת שדה חדש'}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>סוג השדה</Label>
-                  <Select 
-                    value={newField.type} 
-                    onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as CustomField['type'] }))}
+          )}
+        </div>
+
+        {/* Custom Fields Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">שדות מותאמים אישית</h3>
+            <div className="flex gap-2">
+              {/* Quick Add Buttons for basic fields */}
+              <div className="flex gap-1 flex-wrap">
+                {!customFields.some(f => f.id === 'fullName') && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => addQuickField('fullName')}
+                    className="text-xs"
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fieldTypes.map(type => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>תווית בעברית *</Label>
-                  <Input
-                    value={newField.label}
-                    onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
-                    placeholder="לדוגמא: האם אתה צריך הסעה?"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>תווית באנגלית *</Label>
-                  <Input
-                    value={newField.labelEn}
-                    onChange={(e) => setNewField(prev => ({ ...prev, labelEn: e.target.value }))}
-                    placeholder="Example: Do you need transportation?"
-                  />
-                </div>
-
-                {newField.type === 'select' && (
-                  <div className="space-y-2">
-                    <Label>אפשרויות</Label>
+                    שם מלא
+                  </Button>
+                )}
+                {!customFields.some(f => f.id === 'guestName') && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => addQuickField('guestName')}
+                    className="text-xs"
+                  >
+                    שם אורח
+                  </Button>
+                )}
+                {!customFields.some(f => f.id === 'phone') && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => addQuickField('phone')}
+                    className="text-xs"
+                  >
+                    טלפון
+                  </Button>
+                )}
+                {!customFields.some(f => f.id === 'email') && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => addQuickField('email')}
+                    className="text-xs"
+                  >
+                    אימייל
+                  </Button>
+                )}
+              </div>
+              
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={resetForm}>
+                    <Plus className="h-4 w-4 ml-1" />
+                    הוסף שדה מותאם
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md" dir="rtl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingField ? 'עריכת שדה' : 'הוספת שדה חדש'}
+                    </DialogTitle>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      {(newField.options || []).map((option, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input
-                            value={option}
-                            onChange={(e) => handleOptionChange(index, e.target.value)}
-                            placeholder={`אפשרות ${index + 1}`}
-                          />
+                      <Label>סוג השדה</Label>
+                      <Select 
+                        value={newField.type} 
+                        onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as CustomField['type'] }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {fieldTypes.map(type => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>תווית בעברית *</Label>
+                      <Input
+                        value={newField.label}
+                        onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
+                        placeholder="לדוגמא: האם אתה צריך הסעה?"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>תווית באנגלית *</Label>
+                      <Input
+                        value={newField.labelEn}
+                        onChange={(e) => setNewField(prev => ({ ...prev, labelEn: e.target.value }))}
+                        placeholder="Example: Do you need transportation?"
+                      />
+                    </div>
+
+                    {newField.type === 'select' && (
+                      <div className="space-y-2">
+                        <Label>אפשרויות</Label>
+                        <div className="space-y-2">
+                          {(newField.options || []).map((option, index) => (
+                            <div key={index} className="flex gap-2">
+                              <Input
+                                value={option}
+                                onChange={(e) => handleOptionChange(index, e.target.value)}
+                                placeholder={`אפשרות ${index + 1}`}
+                              />
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => removeOption(index)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
                           <Button 
                             variant="outline" 
-                            size="sm"
-                            onClick={() => removeOption(index)}
+                            size="sm" 
+                            onClick={addOption}
+                            className="w-full"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Plus className="h-4 w-4 ml-1" />
+                            הוסף אפשרות
                           </Button>
                         </div>
-                      ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="required"
+                        checked={newField.required}
+                        onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: !!checked }))}
+                      />
+                      <Label htmlFor="required">שדה חובה</Label>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button onClick={handleSaveField} className="flex-1">
+                        {editingField ? 'עדכן' : 'הוסף'}
+                      </Button>
                       <Button 
                         variant="outline" 
-                        size="sm" 
-                        onClick={addOption}
-                        className="w-full"
+                        onClick={() => setIsDialogOpen(false)}
+                        className="flex-1"
                       >
-                        <Plus className="h-4 w-4 ml-1" />
-                        הוסף אפשרות
+                        ביטול
                       </Button>
                     </div>
                   </div>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="required"
-                    checked={newField.required}
-                    onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: !!checked }))}
-                  />
-                  <Label htmlFor="required">שדה חובה</Label>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={handleSaveField} className="flex-1">
-                    {editingField ? 'עדכן' : 'הוסף'}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsDialogOpen(false)}
-                    className="flex-1"
-                  >
-                    ביטול
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-
-        {/* Custom Fields List */}
-        {customFields.length > 0 ? (
-          <div className="space-y-3">
-            <div className="text-sm text-muted-foreground">
-              שדות הטופס ({customFields.length})
+                </DialogContent>
+              </Dialog>
             </div>
-            {customFields.map((field) => (
-              <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={field.id === 'fullName' || field.id === 'guestName' ? 'default' : 'outline'}>
-                      {field.id === 'fullName' || field.id === 'guestName' ? 'שדה בסיסי' : 
-                       fieldTypes.find(t => t.value === field.type)?.label}
-                    </Badge>
-                    {field.required && (
-                      <Badge variant="destructive" className="text-xs">
-                        חובה
+          </div>
+
+          {/* Display existing custom fields (non-counter fields) */}
+          {otherFields.length > 0 && (
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground">
+                שדות מותאמים פעילים ({otherFields.length})
+              </div>
+              {otherFields.map((field) => (
+                <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge variant={field.id === 'fullName' || field.id === 'guestName' ? 'default' : 'outline'}>
+                        {field.id === 'fullName' || field.id === 'guestName' ? 'שדה בסיסי' : 
+                         fieldTypes.find(t => t.value === field.type)?.label}
                       </Badge>
+                      {field.required && (
+                        <Badge variant="destructive" className="text-xs">
+                          חובה
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="font-medium">{field.label}</p>
+                    <p className="text-sm text-muted-foreground">{field.labelEn}</p>
+                    {field.options && field.options.length > 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        אפשרויות: {field.options.join(', ')}
+                      </p>
                     )}
                   </div>
-                  <p className="font-medium">{field.label}</p>
-                  <p className="text-sm text-muted-foreground">{field.labelEn}</p>
-                  {field.options && field.options.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      אפשרויות: {field.options.join(', ')}
-                    </p>
-                  )}
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditField(field)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteField(field.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEditField(field)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteField(field.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
+              ))}
+            </div>
+          )}
+        </div>
+
+        {customFields.length === 0 && (
           <div className="text-center py-6 text-muted-foreground space-y-2">
             <p>לא הוגדרו שדות עדיין</p>
             <p className="text-xs">לחץ על "שם מלא" כדי להתחיל</p>

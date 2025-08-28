@@ -19,7 +19,7 @@ interface LanguageConfig {
 
 export interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn: string;
   options?: string[];

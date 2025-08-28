@@ -33,7 +33,9 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'text', label: 'טקסט חופשי', labelEn: 'Text Input' },
     { value: 'textarea', label: 'טקסט ארוך', labelEn: 'Long Text' },
     { value: 'select', label: 'בחירה מרשימה', labelEn: 'Select List' },
-    { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' }
+    { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' },
+    { value: 'menCounter', label: 'מונה גברים', labelEn: 'Men Counter' },
+    { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' }
   ];
 
   // Initialize with default guest name field if no custom fields exist
@@ -57,7 +59,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     }
   }, [selectedEventId]);
 
-  const addQuickField = (type: 'guestName' | 'phone' | 'email') => {
+  const addQuickField = (type: 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
     const quickFields = {
       guestName: {
         id: 'guestName',
@@ -78,6 +80,20 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         type: 'text' as const,
         label: 'כתובת אימייל',
         labelEn: 'Email Address',
+        required: false
+      },
+      menCounter: {
+        id: 'menCounter',
+        type: 'menCounter' as const,
+        label: '👨 מספר גברים',
+        labelEn: '👨 Number of Men',
+        required: false
+      },
+      womenCounter: {
+        id: 'womenCounter',
+        type: 'womenCounter' as const,
+        label: '👩 מספר נשים',
+        labelEn: '👩 Number of Women',
         required: false
       }
     };
@@ -228,7 +244,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
           
           <div className="flex gap-2">
             {/* Quick Add Buttons */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               {!customFields.some(f => f.id === 'guestName') && (
                 <Button 
                   variant="outline" 
@@ -257,6 +273,26 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                   className="text-xs"
                 >
                   אימייל
+                </Button>
+              )}
+              {!customFields.some(f => f.id === 'menCounter') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('menCounter')}
+                  className="text-xs"
+                >
+                  👨 גברים
+                </Button>
+              )}
+              {!customFields.some(f => f.id === 'womenCounter') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('womenCounter')}
+                  className="text-xs"
+                >
+                  👩 נשים
                 </Button>
               )}
             </div>

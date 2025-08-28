@@ -15,7 +15,7 @@ import eventInvitation from "@/assets/event-invitation.jpg";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn: string;
   options?: string[];
@@ -41,9 +41,7 @@ const getInvitationForGuest = (phone: string, language: string) => {
 const OpenRSVP = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({ guestName: '' });
-  const [menCount, setMenCount] = useState<number>(0);
-  const [womenCount, setWomenCount] = useState<number>(0);
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -120,10 +118,12 @@ const OpenRSVP = () => {
         setEvent(foundEvent);
         
         // Initialize form data with default values
-        const initialFormData: Record<string, any> = { guestName: '' };
+        const initialFormData: Record<string, any> = {};
         foundEvent.customFields?.forEach(field => {
           if (field.type === 'checkbox') {
             initialFormData[field.id] = false;
+          } else if (field.type === 'menCounter' || field.type === 'womenCounter') {
+            initialFormData[field.id] = 0;
           } else {
             initialFormData[field.id] = '';
           }
@@ -151,7 +151,9 @@ const OpenRSVP = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.guestName.trim()) {
+    // Check if there are any guest name fields and validate them if required
+    const guestNameField = event?.customFields?.find(field => field.id === 'guestName');
+    if (guestNameField && guestNameField.required && !formData.guestName?.trim()) {
       toast({
         title: t('rsvp.error.title'),
         description: i18n.language === 'he' ? "יש להזין שם האורח" : "Please enter guest name",
@@ -160,7 +162,6 @@ const OpenRSVP = () => {
       return;
     }
 
-    const totalGuests = menCount + womenCount;
     if (totalGuests === 0) {
       toast({
         title: t('rsvp.error.title'),
@@ -190,31 +191,30 @@ const OpenRSVP = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      const guestName = formData.guestName || 'Unknown Guest';
       toast({
         title: t('rsvp.success.title'),
-        description: t('rsvp.success.description', { name: formData.guestName }),
+        description: t('rsvp.success.description', { name: guestName }),
       });
       
       console.log("Open RSVP Submitted:", {
-        guestName: formData.guestName,
-        menCount,
-        womenCount,
         totalGuests,
         customFields: formData,
         timestamp: new Date().toISOString()
       });
       
       // Reset form
-      setFormData({ guestName: '' });
-      setMenCount(0);
-      setWomenCount(0);
+      const initialFormData: Record<string, any> = {};
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
-          setFormData(prev => ({ ...prev, [field.id]: false }));
+          initialFormData[field.id] = false;
+        } else if (field.type === 'menCounter' || field.type === 'womenCounter') {
+          initialFormData[field.id] = 0;
         } else {
-          setFormData(prev => ({ ...prev, [field.id]: '' }));
+          initialFormData[field.id] = '';
         }
       });
+      setFormData(initialFormData);
       
     } catch (err) {
       toast({
@@ -227,31 +227,10 @@ const OpenRSVP = () => {
     }
   };
 
-  const incrementMen = () => {
-    if (menCount < 10) {
-      setMenCount(menCount + 1);
-    }
-  };
-
-  const decrementMen = () => {
-    if (menCount > 0) {
-      setMenCount(menCount - 1);
-    }
-  };
-
-  const incrementWomen = () => {
-    if (womenCount < 10) {
-      setWomenCount(womenCount + 1);
-    }
-  };
-
-  const decrementWomen = () => {
-    if (womenCount > 0) {
-      setWomenCount(womenCount - 1);
-    }
-  };
-
-  const totalGuests = menCount + womenCount;
+  // Calculate total guests from counter fields
+  const totalGuests = (event?.customFields || [])
+    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+    .reduce((total, field) => total + (formData[field.id] || 0), 0);
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
@@ -335,6 +314,60 @@ const OpenRSVP = () => {
               {label}
               {field.required && <span className="text-destructive mr-1">*</span>}
             </Label>
+          </div>
+        );
+
+      case 'menCounter':
+      case 'womenCounter':
+        const count = formData[field.id] || 0;
+        const increment = () => {
+          if (count < 10) {
+            handleInputChange(field.id, count + 1);
+          }
+        };
+        const decrement = () => {
+          if (count > 0) {
+            handleInputChange(field.id, count - 1);
+          }
+        };
+        
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={decrement}
+                disabled={count <= 0}
+                className="h-10 w-10 shrink-0"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                id={field.id}
+                type="number"
+                min="0"
+                max="10"
+                value={count}
+                onChange={(e) => handleInputChange(field.id, Number(e.target.value))}
+                className="text-center text-lg border-border/50 focus:border-primary"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={increment}
+                disabled={count >= 10}
+                className="h-10 w-10 shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         );
         
@@ -438,84 +471,6 @@ const OpenRSVP = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Men Count */}
-                <div className="space-y-2">
-                  <Label htmlFor="menCount" className="text-sm font-medium">
-                    {t('rsvp.menCount')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={decrementMen}
-                      disabled={menCount <= 0}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="menCount"
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={menCount}
-                      onChange={(e) => setMenCount(Number(e.target.value))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={incrementMen}
-                      disabled={menCount >= 10}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Women Count */}
-                <div className="space-y-2">
-                  <Label htmlFor="womenCount" className="text-sm font-medium">
-                    {t('rsvp.womenCount')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={decrementWomen}
-                      disabled={womenCount <= 0}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="womenCount"
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={womenCount}
-                      onChange={(e) => setWomenCount(Number(e.target.value))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={incrementWomen}
-                      disabled={womenCount >= 10}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
               {/* Total Display */}
               {totalGuests > 0 && (
                 <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
@@ -528,7 +483,7 @@ const OpenRSVP = () => {
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={submitting || totalGuests === 0 || !hasRequiredFields()}
+                disabled={submitting || !hasRequiredFields() || totalGuests === 0}
                 className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {submitting ? (

@@ -14,9 +14,11 @@ interface ExcelImportProps {
 }
 
 interface ExcelRow {
-  'שם מלא'?: string;
+  'שם'?: string;
+  'שם משפחה'?: string;
   'טלפון'?: string;
-  'Full Name'?: string;
+  'First Name'?: string;
+  'Last Name'?: string;
   'Phone'?: string;
   [key: string]: any;
 }
@@ -79,11 +81,11 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
 
       // Validate required columns
       const firstRow = jsonData[0];
-      const hasHebrewColumns = 'שם מלא' in firstRow && 'טלפון' in firstRow;
-      const hasEnglishColumns = 'Full Name' in firstRow && 'Phone' in firstRow;
+      const hasHebrewColumns = 'שם' in firstRow && 'שם משפחה' in firstRow && 'טלפון' in firstRow;
+      const hasEnglishColumns = 'First Name' in firstRow && 'Last Name' in firstRow && 'Phone' in firstRow;
 
       if (!hasHebrewColumns && !hasEnglishColumns) {
-        throw new Error('הקובץ חייב להכיל עמודות: "שם מלא" ו"טלפון" או "Full Name" ו"Phone"');
+        throw new Error('הקובץ חייב להכיל עמודות: "שם", "שם משפחה" ו"טלפון" או "First Name", "Last Name" ו"Phone"');
       }
 
       // Process and validate data
@@ -93,11 +95,17 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
       jsonData.forEach((row, index) => {
         const rowNum = index + 2; // +2 because Excel rows start at 1 and we skip header
         
-        const fullName = row['שם מלא'] || row['Full Name'] || '';
+        const firstName = row['שם'] || row['First Name'] || '';
+        const lastName = row['שם משפחה'] || row['Last Name'] || '';
         const phone = row['טלפון'] || row['Phone'] || '';
 
-        if (!fullName.trim()) {
-          errors.push(`שורה ${rowNum}: שדה "שם מלא" ריק`);
+        if (!firstName.trim()) {
+          errors.push(`שורה ${rowNum}: שדה "שם" ריק`);
+          return;
+        }
+
+        if (!lastName.trim()) {
+          errors.push(`שורה ${rowNum}: שדה "שם משפחה" ריק`);
           return;
         }
 
@@ -113,10 +121,11 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
         }
 
         const normalizedPhone = normalizePhoneNumber(phoneStr);
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
         
         processedGuests.push({
           eventId: selectedEventId,
-          fullName: fullName.trim(),
+          fullName: fullName,
           phone: normalizedPhone,
           status: 'pending'
         });
@@ -188,7 +197,7 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-sm">
             <strong>דרישות הקובץ:</strong>
-            <br />• הקובץ חייב להכיל עמודות: "שם מלא" ו"טלפון"
+            <br />• הקובץ חייב להכיל עמודות: "שם", "שם משפחה" ו"טלפון"
             <br />• מספרי הטלפון חייבים להיות ישראליים (10 ספרות, מתחיל ב-05)
             <br />• פורמטים נתמכים: .xlsx, .xls
           </AlertDescription>
@@ -235,14 +244,16 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
                 <table className="w-full text-sm">
                   <thead className="bg-muted">
                     <tr>
-                      <th className="p-2 text-right">שם מלא</th>
+                      <th className="p-2 text-right">שם</th>
+                      <th className="p-2 text-right">שם משפחה</th>
                       <th className="p-2 text-right">טלפון</th>
                     </tr>
                   </thead>
                   <tbody>
                     {previewData.map((row, index) => (
                       <tr key={index} className="border-t">
-                        <td className="p-2">{row['שם מלא'] || row['Full Name']}</td>
+                        <td className="p-2">{row['שם'] || row['First Name']}</td>
+                        <td className="p-2">{row['שם משפחה'] || row['Last Name']}</td>
                         <td className="p-2 font-mono">{row['טלפון'] || row['Phone']}</td>
                       </tr>
                     ))}

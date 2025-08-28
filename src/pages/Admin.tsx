@@ -16,6 +16,7 @@ import ExcelExport from "@/components/ExcelExport";
 import LinkManager from "@/components/LinkManager";
 import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
+import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
 
 const Admin = () => {
   const [events, setEvents] = useState<Event[]>([
@@ -329,13 +330,14 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
             <TabsTrigger value="language" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שפה וטקסטים</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
+            <TabsTrigger value="custom-fields" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שדות מותאמים</TabsTrigger>
             <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא</TabsTrigger>
           </TabsList>
 
@@ -390,6 +392,14 @@ const Admin = () => {
             <ColorManager 
               selectedEventId={selectedEventId}
               eventName={selectedEvent?.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="custom-fields" className="space-y-4">
+            <OpenRSVPCustomFields
+              selectedEventId={selectedEventId}
+              customFields={selectedEvent?.customFields || []}
+              onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>
 

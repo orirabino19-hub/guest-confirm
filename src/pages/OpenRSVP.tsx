@@ -409,28 +409,6 @@ const OpenRSVP = () => {
           </CardHeader>
         </Card>
 
-        {/* Guest Details Form */}
-        <Card className="bg-gradient-card shadow-elegant border-border/50">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-center text-primary">
-              {i18n.language === 'he' ? "פרטי האורח" : "Guest Information"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Render all custom fields dynamically */}
-            {event.customFields && event.customFields.length > 0 && (
-              event.customFields.map(renderCustomField)
-            )}
-
-            {/* Show message if no fields configured */}
-            {(!event.customFields || event.customFields.length === 0) && (
-              <div className="text-center py-6 text-muted-foreground">
-                <p>{i18n.language === 'he' ? "לא הוגדרו שדות עבור אירוע זה" : "No fields configured for this event"}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* RSVP Form */}
         <Card className="bg-gradient-card shadow-elegant border-border/50">
           <CardHeader>
@@ -443,6 +421,23 @@ const OpenRSVP = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Custom Fields Section */}
+              {event.customFields && event.customFields.length > 0 && (
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                  <h3 className="font-medium text-center text-foreground mb-4">
+                    {i18n.language === 'he' ? "פרטי האורח" : "Guest Information"}
+                  </h3>
+                  {event.customFields.map(renderCustomField)}
+                </div>
+              )}
+
+              {/* Show message if no fields configured */}
+              {(!event.customFields || event.customFields.length === 0) && (
+                <div className="text-center py-4 text-muted-foreground bg-muted/30 rounded-lg border border-border/30">
+                  <p>{i18n.language === 'he' ? "לא הוגדרו שדות עבור אירוע זה" : "No fields configured for this event"}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Men Count */}
                 <div className="space-y-2">

@@ -254,7 +254,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         {/* Counter Fields Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">שדות מונים</h3>
+            <h3 className="text-lg font-semibold">שדות ברירת מחדל</h3>
             <p className="text-sm text-muted-foreground">
               שדות לספירת מוזמנים
             </p>

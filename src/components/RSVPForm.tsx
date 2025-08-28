@@ -5,15 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/event-invitation.jpg";
 
+interface CustomField {
+  id: string;
+  type: 'text' | 'select' | 'checkbox' | 'menCounter' | 'womenCounter';
+  label: string;
+  labelEn?: string;
+  required: boolean;
+  options?: string[];
+}
+
 interface RSVPFormProps {
   guestName: string;
   phone: string;
   eventName: string;
+  customFields?: CustomField[];
 }
 
 const getInvitationForGuest = (phone: string, language: string) => {
@@ -25,16 +37,37 @@ const getInvitationForGuest = (phone: string, language: string) => {
   return eventInvitation;
 };
 
-const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
-  const [menCount, setMenCount] = useState<number>(0);
-  const [womenCount, setWomenCount] = useState<number>(0);
+const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormProps) => {
+  const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
+  const handleInputChange = (fieldId: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldId]: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Check required fields
+    const missingFields = customFields.filter(field => 
+      field.required && (!formData[field.id] || formData[field.id] === '' || formData[field.id] === 0)
+    );
+
+    if (missingFields.length > 0) {
+      toast({
+        title: t('rsvp.error.title'),
+        description: t('rsvp.error.requiredFields'),
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     // Simulate API call - will be connected to Supabase later
     try {
@@ -48,8 +81,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
       console.log("RSVP Submitted:", {
         guestName,
         phone,
-        menCount,
-        womenCount,
+        formData,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
@@ -63,31 +95,131 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
     }
   };
 
-  const incrementMen = () => {
-    if (menCount < 10) {
-      setMenCount(menCount + 1);
+  const incrementCounter = (fieldId: string) => {
+    const currentValue = formData[fieldId] || 0;
+    if (currentValue < 10) {
+      handleInputChange(fieldId, currentValue + 1);
     }
   };
 
-  const decrementMen = () => {
-    if (menCount > 0) {
-      setMenCount(menCount - 1);
+  const decrementCounter = (fieldId: string) => {
+    const currentValue = formData[fieldId] || 0;
+    if (currentValue > 0) {
+      handleInputChange(fieldId, currentValue - 1);
     }
   };
 
-  const incrementWomen = () => {
-    if (womenCount < 10) {
-      setWomenCount(womenCount + 1);
+  const totalGuests = customFields
+    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+    .reduce((sum, field) => sum + (formData[field.id] || 0), 0);
+
+  const renderCustomField = (field: CustomField) => {
+    const label = i18n.language === 'he' ? field.label : (field.labelEn || field.label);
+    const value = formData[field.id] || '';
+
+    switch (field.type) {
+      case 'text':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label} {field.required && <span className="text-destructive">*</span>}
+            </Label>
+            <Input
+              id={field.id}
+              type="text"
+              value={value}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              className="border-border/50 focus:border-primary"
+              required={field.required}
+            />
+          </div>
+        );
+
+      case 'select':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label} {field.required && <span className="text-destructive">*</span>}
+            </Label>
+            <Select value={value} onValueChange={(val) => handleInputChange(field.id, val)}>
+              <SelectTrigger>
+                <SelectValue placeholder="בחר אפשרות" />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option, index) => (
+                  <SelectItem key={index} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+
+      case 'checkbox':
+        return (
+          <div key={field.id} className="flex items-center space-x-2 space-x-reverse">
+            <Checkbox
+              id={field.id}
+              checked={value || false}
+              onCheckedChange={(checked) => handleInputChange(field.id, checked)}
+            />
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label} {field.required && <span className="text-destructive">*</span>}
+            </Label>
+          </div>
+        );
+
+      case 'menCounter':
+      case 'womenCounter':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label} {field.required && <span className="text-destructive">*</span>}
+            </Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => decrementCounter(field.id)}
+                disabled={!value || value <= 0}
+                className="h-10 w-10 shrink-0"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                id={field.id}
+                type="number"
+                min="0"
+                max="10"
+                value={value || 0}
+                onChange={(e) => handleInputChange(field.id, Number(e.target.value))}
+                className="text-center text-lg border-border/50 focus:border-primary"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => incrementCounter(field.id)}
+                disabled={value >= 10}
+                className="h-10 w-10 shrink-0"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 
-  const decrementWomen = () => {
-    if (womenCount > 0) {
-      setWomenCount(womenCount - 1);
-    }
-  };
-
-  const totalGuests = menCount + womenCount;
+  const hasRequiredFields = customFields.filter(field => field.required).every(field => {
+    const value = formData[field.id];
+    return value !== undefined && value !== '' && value !== 0;
+  });
 
   return (
     <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
@@ -133,81 +265,11 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Men Count */}
-                <div className="space-y-2">
-                  <Label htmlFor="menCount" className="text-sm font-medium">
-                    {t('rsvp.menCount')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={decrementMen}
-                      disabled={menCount <= 0}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="menCount"
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={menCount}
-                      onChange={(e) => setMenCount(Number(e.target.value))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={incrementMen}
-                      disabled={menCount >= 10}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                {customFields.map(field => (
+                  <div key={field.id} className="col-span-1">
+                    {renderCustomField(field)}
                   </div>
-                </div>
-
-                {/* Women Count */}
-                <div className="space-y-2">
-                  <Label htmlFor="womenCount" className="text-sm font-medium">
-                    {t('rsvp.womenCount')}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={decrementWomen}
-                      disabled={womenCount <= 0}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      id="womenCount"
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={womenCount}
-                      onChange={(e) => setWomenCount(Number(e.target.value))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={incrementWomen}
-                      disabled={womenCount >= 10}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Total Display */}
@@ -222,7 +284,7 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={isSubmitting || totalGuests === 0}
+                disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required))}
                 className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {isSubmitting ? (
@@ -235,9 +297,9 @@ const RSVPForm = ({ guestName, phone, eventName }: RSVPFormProps) => {
                 )}
               </Button>
 
-              {totalGuests === 0 && (
+              {customFields.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground">
-                  {t('rsvp.pleaseEnterGuests')}
+                  {t('rsvp.noFieldsConfigured')}
                 </p>
               )}
             </form>

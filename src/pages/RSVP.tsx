@@ -5,10 +5,20 @@ import RSVPForm from "@/components/RSVPForm";
 import { Card, CardContent } from "@/components/ui/card";
 import LanguageSelector from "@/components/LanguageSelector";
 
+interface CustomField {
+  id: string;
+  type: 'text' | 'select' | 'checkbox' | 'menCounter' | 'womenCounter';
+  label: string;
+  labelEn?: string;
+  required: boolean;
+  options?: string[];
+}
+
 const RSVP = () => {
   const { eventId, phone } = useParams<{ eventId: string; phone: string }>();
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
@@ -29,10 +39,60 @@ const RSVP = () => {
         // This will be connected to Supabase later
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Mock event data
+        // Mock event data with custom fields
         const mockEvents = {
-          "1": i18n.language === 'he' ? "החתונה של שייקי ומיכל" : "Shaiky & Michal's Wedding",
-          "2": i18n.language === 'he' ? "יום הולדת 30 לדני" : "Danny's 30th Birthday"
+          "1": {
+            name: i18n.language === 'he' ? "החתונה של שייקי ומיכל" : "Shaiky & Michal's Wedding",
+            customFields: [
+              {
+                id: "fullName",
+                type: "text" as const,
+                label: "שם מלא",
+                labelEn: "Full Name", 
+                required: true
+              },
+              {
+                id: "menCounter",
+                type: "menCounter" as const,
+                label: "👨 מספר גברים",
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter", 
+                type: "womenCounter" as const,
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women",
+                required: false
+              }
+            ]
+          },
+          "2": {
+            name: i18n.language === 'he' ? "יום הולדת 30 לדני" : "Danny's 30th Birthday",
+            customFields: [
+              {
+                id: "fullName",
+                type: "text" as const,
+                label: "שם מלא",
+                labelEn: "Full Name",
+                required: true
+              },
+              {
+                id: "menCounter",
+                type: "menCounter" as const,
+                label: "👨 מספר גברים", 
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter",
+                type: "womenCounter" as const,
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women", 
+                required: false
+              }
+            ]
+          }
         };
         
         // Mock guest data
@@ -53,7 +113,8 @@ const RSVP = () => {
         const cleanPhone = phone.replace(/\D/g, '');
         const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
         
-        setEventName(foundEvent);
+        setEventName(foundEvent.name);
+        setCustomFields(foundEvent.customFields);
         setGuestName(foundGuest || (i18n.language === 'he' ? "אורח יקר" : "Dear Guest"));
       } catch (err) {
         setError(t('rsvp.errors.guestDataError'));
@@ -106,6 +167,7 @@ const RSVP = () => {
       guestName={guestName} 
       phone={phone || ""} 
       eventName={eventName}
+      customFields={customFields}
     />
   );
 };

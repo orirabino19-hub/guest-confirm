@@ -38,14 +38,14 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' }
   ];
 
-  // Initialize with default guest name field if no custom fields exist
+  // Initialize with default full name field if no custom fields exist
   const ensureDefaultField = () => {
     if (customFields.length === 0) {
       const defaultField: CustomField = {
-        id: 'guestName',
+        id: 'fullName',
         type: 'text',
-        label: 'שם האורח',
-        labelEn: 'Guest Name',
+        label: 'שם מלא',
+        labelEn: 'Full Name',
         required: true
       };
       onCustomFieldsUpdate([defaultField]);
@@ -59,8 +59,15 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     }
   }, [selectedEventId]);
 
-  const addQuickField = (type: 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
+  const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
     const quickFields = {
+      fullName: {
+        id: 'fullName',
+        type: 'text' as const,
+        label: 'שם מלא',
+        labelEn: 'Full Name',
+        required: true
+      },
       guestName: {
         id: 'guestName',
         type: 'text' as const,
@@ -245,6 +252,16 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
           <div className="flex gap-2">
             {/* Quick Add Buttons */}
             <div className="flex gap-1 flex-wrap">
+              {!customFields.some(f => f.id === 'fullName') && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => addQuickField('fullName')}
+                  className="text-xs"
+                >
+                  שם מלא
+                </Button>
+              )}
               {!customFields.some(f => f.id === 'guestName') && (
                 <Button 
                   variant="outline" 
@@ -419,8 +436,8 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
               <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={field.id === 'guestName' ? 'default' : 'outline'}>
-                      {field.id === 'guestName' ? 'שדה בסיסי' : 
+                    <Badge variant={field.id === 'fullName' || field.id === 'guestName' ? 'default' : 'outline'}>
+                      {field.id === 'fullName' || field.id === 'guestName' ? 'שדה בסיסי' : 
                        fieldTypes.find(t => t.value === field.type)?.label}
                     </Badge>
                     {field.required && (
@@ -460,7 +477,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         ) : (
           <div className="text-center py-6 text-muted-foreground space-y-2">
             <p>לא הוגדרו שדות עדיין</p>
-            <p className="text-xs">לחץ על "שם אורח" כדי להתחיל</p>
+            <p className="text-xs">לחץ על "שם מלא" כדי להתחיל</p>
           </div>
         )}
       </CardContent>

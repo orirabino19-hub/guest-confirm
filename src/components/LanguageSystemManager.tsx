@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,11 @@ interface Translation {
   values: { [languageCode: string]: string };
 }
 
-const LanguageSystemManager = () => {
+interface LanguageSystemManagerProps {
+  onLanguagesChange?: (languages: LanguageConfig[]) => void;
+}
+
+const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps) => {
   const { toast } = useToast();
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editedTranslations, setEditedTranslations] = useState<{[key: string]: {[lang: string]: string}}>({});
@@ -45,6 +49,11 @@ const LanguageSystemManager = () => {
     { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', rtl: false },
     { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', rtl: false }
   ]);
+
+  // Notify parent component when languages change
+  useEffect(() => {
+    onLanguagesChange?.(languages);
+  }, [languages, onLanguagesChange]);
 
   // Sample translations that support all languages
   const [translations, setTranslations] = useState<Translation[]>([
@@ -115,7 +124,11 @@ const LanguageSystemManager = () => {
       flag: newLanguage.flag || "🌐"
     };
 
-    setLanguages(prev => [...prev, language]);
+    setLanguages(prev => {
+      const updatedLanguages = [...prev, language];
+      onLanguagesChange?.(updatedLanguages);
+      return updatedLanguages;
+    });
     
     // Add empty translations for the new language
     setTranslations(prev => prev.map(translation => ({
@@ -145,7 +158,11 @@ const LanguageSystemManager = () => {
       return;
     }
 
-    setLanguages(prev => prev.filter(lang => lang.code !== languageCode));
+    setLanguages(prev => {
+      const updatedLanguages = prev.filter(lang => lang.code !== languageCode);
+      onLanguagesChange?.(updatedLanguages);
+      return updatedLanguages;
+    });
     setTranslations(prev => prev.map(translation => {
       const newValues = { ...translation.values };
       delete newValues[languageCode];

@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Image, FileText, Eye, Trash2 } from "lucide-react";
+import { LanguageConfig } from "@/components/LanguageSystemManager";
 
 interface EventInvitation {
   eventId: string;
-  language: 'he' | 'en';
+  language: string;
   type: 'image' | 'pdf';
   fileName: string;
   fileUrl: string;
@@ -20,11 +21,20 @@ interface EventInvitation {
 interface InvitationManagerProps {
   selectedEventId: string | null;
   eventName?: string;
+  availableLanguages?: LanguageConfig[];
 }
 
-const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProps) => {
+const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: InvitationManagerProps) => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  
+  // Default languages if none provided
+  const defaultLanguages: LanguageConfig[] = [
+    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
+  ];
+  
+  const languages = availableLanguages || defaultLanguages;
   
   // Mock data - in real app this would come from backend
   const [invitations, setInvitations] = useState<EventInvitation[]>([
@@ -38,7 +48,7 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
     }
   ]);
 
-  const handleFileUpload = (language: 'he' | 'en', type: 'image' | 'pdf') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (language: string, type: 'image' | 'pdf') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedEventId) return;
 
@@ -81,9 +91,12 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
       ).concat(newInvitation)
     );
 
+    const languageConfig = languages.find(lang => lang.code === language);
+    const languageName = languageConfig ? languageConfig.nativeName : language;
+    
     toast({
       title: "✅ הזמנה הועלתה",
-      description: `הזמנה ב${language === 'he' ? 'עברית' : 'אנגלית'} הועלתה בהצלחה`
+      description: `הזמנה ב${languageName} הועלתה בהצלחה`
     });
   };
 
@@ -131,18 +144,21 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="he" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="he">עברית 🇮🇱</TabsTrigger>
-            <TabsTrigger value="en">English 🇺🇸</TabsTrigger>
+        <Tabs defaultValue={languages[0]?.code || "he"} className="space-y-4">
+          <TabsList className={`grid w-full ${languages.length <= 2 ? 'grid-cols-2' : languages.length <= 3 ? 'grid-cols-3' : 'grid-cols-4'}`}>
+            {languages.map(lang => (
+              <TabsTrigger key={lang.code} value={lang.code}>
+                {lang.nativeName} {lang.flag}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          {(['he', 'en'] as const).map(lang => (
-            <TabsContent key={lang} value={lang}>
+          {languages.map(lang => (
+            <TabsContent key={lang.code} value={lang.code}>
               <div className="space-y-4">
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <p className="text-sm">
-                    העלה הזמנות לאירוע ב{lang === 'he' ? 'עברית' : 'אנגלית'}. 
+                    העלה הזמנות לאירוע ב{lang.nativeName}. 
                     ניתן להעלות תמונה (WEBP, JPG, PNG) או קובץ PDF.
                   </p>
                 </div>
@@ -161,7 +177,7 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
                         <Input
                           type="file"
                           accept="image/jpeg,image/png,image/webp"
-                          onChange={handleFileUpload(lang, 'image')}
+                          onChange={handleFileUpload(lang.code, 'image')}
                           className="cursor-pointer"
                         />
                       </div>
@@ -180,7 +196,7 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
                         <Input
                           type="file"
                           accept="application/pdf"
-                          onChange={handleFileUpload(lang, 'pdf')}
+                          onChange={handleFileUpload(lang.code, 'pdf')}
                           className="cursor-pointer"
                         />
                       </div>
@@ -190,15 +206,15 @@ const InvitationManager = ({ selectedEventId, eventName }: InvitationManagerProp
 
                 {/* Current invitations for this language */}
                 <div className="space-y-3">
-                  <h4 className="font-medium">הזמנות קיימות ב{lang === 'he' ? 'עברית' : 'אנגלית'}</h4>
-                  {currentInvitations.filter(inv => inv.language === lang).length === 0 ? (
+                  <h4 className="font-medium">הזמנות קיימות ב{lang.nativeName}</h4>
+                  {currentInvitations.filter(inv => inv.language === lang.code).length === 0 ? (
                     <p className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg text-center">
-                      אין הזמנות ב{lang === 'he' ? 'עברית' : 'אנגלית'} עדיין
+                      אין הזמנות ב{lang.nativeName} עדיין
                     </p>
                   ) : (
                     <div className="space-y-2">
                       {currentInvitations
-                        .filter(inv => inv.language === lang)
+                        .filter(inv => inv.language === lang.code)
                         .map((invitation, index) => (
                           <Card key={index}>
                             <CardContent className="pt-4">

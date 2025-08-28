@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import EventManager, { Event, CustomField } from "@/components/EventManager";
 import GuestList, { Guest } from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
-import LanguageSystemManager from "@/components/LanguageSystemManager";
+import LanguageSystemManager, { LanguageConfig } from "@/components/LanguageSystemManager";
 import InvitationManager from "@/components/InvitationManager";
 import ColorManager from "@/components/ColorManager";
 import ExcelImport from "@/components/ExcelImport";
@@ -100,6 +100,12 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  
+  // Available languages for the system
+  const [availableLanguages, setAvailableLanguages] = useState<LanguageConfig[]>([
+    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
+    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
+  ]);
 
   // Mock authentication - will be replaced with Supabase auth
   const handleLogin = (e: React.FormEvent) => {
@@ -376,6 +382,7 @@ const Admin = () => {
             <InvitationManager 
               selectedEventId={selectedEventId}
               eventName={selectedEvent?.name}
+              availableLanguages={availableLanguages}
             />
           </TabsContent>
 
@@ -396,7 +403,7 @@ const Admin = () => {
         </Tabs>
         
         {/* Language System Management Section */}
-        <LanguageSystemManager />
+        <LanguageSystemManager onLanguagesChange={setAvailableLanguages} />
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ interface CustomField {
 }
 
 const RSVP = () => {
-  const { eventId, phone } = useParams<{ eventId: string; phone: string }>();
+  const { eventId, phone, guestName: urlGuestName } = useParams<{ eventId: string; phone: string; guestName: string }>();
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
@@ -25,7 +25,8 @@ const RSVP = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!phone) {
+      // Check if we have either phone or guestName from URL
+      if (!phone && !urlGuestName) {
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
@@ -94,14 +95,6 @@ const RSVP = () => {
             ]
           }
         };
-        
-        // Mock guest data
-        const mockGuests = {
-          "0501234567": i18n.language === 'he' ? "משה כהן" : "Moshe Cohen",
-          "0527654321": i18n.language === 'he' ? "שרה לוי" : "Sarah Levy",
-          "0543216789": i18n.language === 'he' ? "דוד ישראלי" : "David Israeli",
-          "0556789123": i18n.language === 'he' ? "רחל אברהם" : "Rachel Abraham"
-        };
 
         const foundEvent = mockEvents[currentEventId as keyof typeof mockEvents];
         if (!foundEvent) {
@@ -110,12 +103,25 @@ const RSVP = () => {
           return;
         }
 
-        const cleanPhone = phone.replace(/\D/g, '');
-        const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
-        
         setEventName(foundEvent.name);
         setCustomFields(foundEvent.customFields);
-        setGuestName(foundGuest || (i18n.language === 'he' ? "אורח יקר" : "Dear Guest"));
+
+        // If we have a guestName from URL, use it directly
+        if (urlGuestName) {
+          setGuestName(decodeURIComponent(urlGuestName));
+        } else if (phone) {
+          // Otherwise, look up by phone (existing logic)
+          const mockGuests = {
+            "0501234567": i18n.language === 'he' ? "משה כהן" : "Moshe Cohen",
+            "0527654321": i18n.language === 'he' ? "שרה לוי" : "Sarah Levy",
+            "0543216789": i18n.language === 'he' ? "דוד ישראלי" : "David Israeli",
+            "0556789123": i18n.language === 'he' ? "רחל אברהם" : "Rachel Abraham"
+          };
+
+          const cleanPhone = phone.replace(/\D/g, '');
+          const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
+          setGuestName(foundGuest || (i18n.language === 'he' ? "אורח יקר" : "Dear Guest"));
+        }
       } catch (err) {
         setError(t('rsvp.errors.guestDataError'));
         console.error("Error fetching data:", err);
@@ -125,7 +131,7 @@ const RSVP = () => {
     };
 
     fetchData();
-  }, [phone, eventId]);
+  }, [phone, eventId, urlGuestName, i18n.language, t]);
 
   if (loading) {
     return (

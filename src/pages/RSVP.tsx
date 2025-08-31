@@ -44,11 +44,41 @@ const RSVP = () => {
         const mockEvents = {
           "1": {
             name: i18n.language === 'he' ? "החתונה של שייקי ומיכל" : "Shaiky & Michal's Wedding",
-            customFields: []
+            customFields: [
+              {
+                id: "menCounter",
+                type: "menCounter" as const,
+                label: "👨 מספר גברים",
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter", 
+                type: "womenCounter" as const,
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women",
+                required: false
+              }
+            ]
           },
           "2": {
             name: i18n.language === 'he' ? "יום הולדת 30 לדני" : "Danny's 30th Birthday",
-            customFields: []
+            customFields: [
+              {
+                id: "menCounter",
+                type: "menCounter" as const,
+                label: "👨 מספר גברים", 
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter",
+                type: "womenCounter" as const,
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women", 
+                required: false
+              }
+            ]
           }
         };
 

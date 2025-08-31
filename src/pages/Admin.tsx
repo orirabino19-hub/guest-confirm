@@ -27,7 +27,22 @@ const Admin = () => {
       date: "2024-06-15",
       createdAt: new Date().toISOString(),
       languages: ['he'],
-      customFields: []
+      customFields: [
+        {
+          id: 'menCounter',
+          type: 'menCounter',
+          label: '👨 מספר גברים',
+          labelEn: '👨 Number of Men',
+          required: false
+        },
+        {
+          id: 'womenCounter',
+          type: 'womenCounter',
+          label: '👩 מספר נשים',
+          labelEn: '👩 Number of Women',
+          required: false
+        }
+      ]
     },
     {
       id: "2", 
@@ -36,7 +51,22 @@ const Admin = () => {
       date: "2024-07-20",
       createdAt: new Date().toISOString(),
       languages: ['he'],
-      customFields: []
+      customFields: [
+        {
+          id: 'menCounter',
+          type: 'menCounter',
+          label: '👨 מספר גברים',
+          labelEn: '👨 Number of Men',
+          required: false
+        },
+        {
+          id: 'womenCounter',
+          type: 'womenCounter',
+          label: '👩 מספר נשים',
+          labelEn: '👩 Number of Women',
+          required: false
+        }
+      ]
     }
   ]);
   

@@ -67,13 +67,57 @@ const OpenRSVP = () => {
             id: "1",
             name: "החתונה של שייקי ומיכל",
             nameEn: "Shaiky & Michal's Wedding",
-            customFields: []
+            customFields: [
+              {
+                id: "fullName",
+                type: "text",
+                label: "שם מלא",
+                labelEn: "Full Name",
+                required: true
+              },
+              {
+                id: "menCounter",
+                type: "menCounter",
+                label: "👨 מספר גברים",
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter", 
+                type: "womenCounter",
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women",
+                required: false
+              }
+            ]
           },
           "2": {
             id: "2",
             name: "יום הולדת 30 לדני",
             nameEn: "Danny's 30th Birthday",
-            customFields: []
+            customFields: [
+              {
+                id: "fullName",
+                type: "text",
+                label: "שם מלא",
+                labelEn: "Full Name",
+                required: true
+              },
+              {
+                id: "menCounter",
+                type: "menCounter",
+                label: "👨 מספר גברים", 
+                labelEn: "👨 Number of Men",
+                required: false
+              },
+              {
+                id: "womenCounter",
+                type: "womenCounter",
+                label: "👩 מספר נשים",
+                labelEn: "👩 Number of Women", 
+                required: false
+              }
+            ]
           }
         };
         

@@ -101,7 +101,22 @@ const EventManager = ({
     onEventCreate({
       ...newEvent,
       invitationImage: invitationImageUrl,
-      customFields: []
+      customFields: [
+        {
+          id: 'menCounter',
+          type: 'menCounter',
+          label: '👨 מספר גברים',
+          labelEn: '👨 Number of Men',
+          required: false
+        },
+        {
+          id: 'womenCounter',
+          type: 'womenCounter',
+          label: '👩 מספר נשים',
+          labelEn: '👩 Number of Women',
+          required: false
+        }
+      ]
     });
     
     setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });

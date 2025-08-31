@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Link, Copy, User, Users, Hash, Plus, Settings } from 'lucide-react';
+import { Link, Copy, User, Users, Plus, Settings } from 'lucide-react';
 import OpenRSVPCustomFields from './OpenRSVPCustomFields';
 import { CustomField } from './EventManager';
 
@@ -19,7 +19,7 @@ interface LinkManagerProps {
 
 interface CustomLink {
   id: string;
-  type: 'name' | 'open' | 'numbered';
+  type: 'name' | 'open';
   value: string;
   url: string;
   createdAt: string;
@@ -27,7 +27,6 @@ interface CustomLink {
 
 const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFieldsUpdate }: LinkManagerProps) => {
   const [customName, setCustomName] = useState('');
-  const [numberedCount, setNumberedCount] = useState(5);
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const { toast } = useToast();
 
@@ -86,39 +85,6 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
     toast({
       title: "🔗 קישור פתוח נוצר",
       description: "נוצר קישור שבו האורח יכניס את פרטיו בעצמו"
-    });
-  };
-
-  const generateNumberedLinks = () => {
-    if (!selectedEventId || numberedCount < 1 || numberedCount > 100) {
-      toast({
-        title: "⚠️ שגיאה",
-        description: "יש לבחור אירוע ולהזין מספר בין 1-100",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const newLinks: CustomLink[] = [];
-    
-    for (let i = 1; i <= numberedCount; i++) {
-      const paddedNumber = i.toString().padStart(2, '0');
-      const url = `${window.location.origin}/rsvp/${selectedEventId}/${paddedNumber}`;
-      
-      newLinks.push({
-        id: `${Date.now()}_${i}`,
-        type: 'numbered',
-        value: paddedNumber,
-        url: url,
-        createdAt: new Date().toISOString()
-      });
-    }
-
-    setCustomLinks(prev => [...prev, ...newLinks]);
-    
-    toast({
-      title: "🔗 קישורים ממוספרים נוצרו",
-      description: `נוצרו ${numberedCount} קישורים ממוספרים`
     });
   };
 
@@ -184,7 +150,7 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="name" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="name" className="text-xs">
               <User className="h-4 w-4 ml-1" />
               לפי שם
@@ -192,10 +158,6 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
             <TabsTrigger value="open" className="text-xs">
               <Users className="h-4 w-4 ml-1" />
               קישור פתוח
-            </TabsTrigger>
-            <TabsTrigger value="numbered" className="text-xs">
-              <Hash className="h-4 w-4 ml-1" />
-              ממוספר
             </TabsTrigger>
           </TabsList>
 
@@ -246,30 +208,6 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
               )}
             </div>
           </TabsContent>
-
-          <TabsContent value="numbered" className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="numbered-count">מספר קישורים ממוספרים</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="numbered-count"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={numberedCount}
-                  onChange={(e) => setNumberedCount(parseInt(e.target.value) || 0)}
-                  className="flex-1"
-                />
-                <Button onClick={generateNumberedLinks}>
-                  <Hash className="h-4 w-4 ml-1" />
-                  צור קישורים
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                ייוצרו קישורים: .../rsvp/{selectedEventId}/01, 02, 03...
-              </p>
-            </div>
-          </TabsContent>
         </Tabs>
 
         {/* Generated Links List */}
@@ -288,12 +226,8 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
                 <div key={link.id} className="flex items-center gap-2 p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <Badge variant={
-                        link.type === 'name' ? 'default' : 
-                        link.type === 'open' ? 'secondary' : 'outline'
-                      }>
-                        {link.type === 'name' ? 'שם' : 
-                         link.type === 'open' ? 'פתוח' : 'ממוספר'}
+                      <Badge variant={link.type === 'name' ? 'default' : 'secondary'}>
+                        {link.type === 'name' ? 'שם' : 'פתוח'}
                       </Badge>
                       <span className="text-sm font-medium">{link.value}</span>
                     </div>

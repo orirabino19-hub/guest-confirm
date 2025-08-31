@@ -67,44 +67,13 @@ const OpenRSVP = () => {
             id: "1",
             name: "החתונה של שייקי ומיכל",
             nameEn: "Shaiky & Michal's Wedding",
-            customFields: [
-              {
-                id: "guestName",
-                type: "text",
-                label: "שם האורח",
-                labelEn: "Guest Name",
-                required: true
-              },
-              {
-                id: "transport",
-                type: "select",
-                label: "האם אתה צריך הסעה לאירוע?",
-                labelEn: "Do you need transportation to the event?",
-                options: ["כן", "לא"],
-                required: false
-              },
-              {
-                id: "dietary",
-                type: "text",
-                label: "הגבלות תזונתיות",
-                labelEn: "Dietary restrictions",
-                required: false
-              }
-            ]
+            customFields: []
           },
           "2": {
             id: "2",
             name: "יום הולדת 30 לדני",
             nameEn: "Danny's 30th Birthday",
-            customFields: [
-              {
-                id: "guestName",
-                type: "text",
-                label: "שם האורח",
-                labelEn: "Guest Name",
-                required: true
-              }
-            ]
+            customFields: []
           }
         };
         

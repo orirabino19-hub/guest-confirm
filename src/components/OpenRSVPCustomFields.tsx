@@ -38,26 +38,6 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' }
   ];
 
-  // Initialize with default full name field if no custom fields exist
-  const ensureDefaultField = () => {
-    if (customFields.length === 0) {
-      const defaultField: CustomField = {
-        id: 'fullName',
-        type: 'text',
-        label: 'שם מלא',
-        labelEn: 'Full Name',
-        required: true
-      };
-      onCustomFieldsUpdate([defaultField]);
-    }
-  };
-
-  // Call this when component mounts if no fields exist
-  React.useEffect(() => {
-    if (selectedEventId && customFields.length === 0) {
-      ensureDefaultField();
-    }
-  }, [selectedEventId]);
 
   const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
     const quickFields = {

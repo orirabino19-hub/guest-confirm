@@ -101,15 +101,7 @@ const EventManager = ({
     onEventCreate({
       ...newEvent,
       invitationImage: invitationImageUrl,
-      customFields: [
-        {
-          id: "fullName",
-          type: "text",
-          label: "שם מלא",
-          labelEn: "Full Name",
-          required: true
-        }
-      ]
+      customFields: []
     });
     
     setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });

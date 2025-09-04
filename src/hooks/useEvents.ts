@@ -61,13 +61,29 @@ export const useEvents = () => {
     languages?: string[];
   }) => {
     try {
+      // Separate languages from event data
+      const { languages, ...eventFields } = eventData;
+      
       const { data, error } = await supabase
         .from('events')
-        .insert([eventData])
+        .insert([eventFields])
         .select()
         .single();
 
       if (error) throw error;
+
+      // Handle languages separately if provided
+      if (languages && languages.length > 0) {
+        const languageRecords = languages.map((locale, index) => ({
+          event_id: data.id,
+          locale,
+          is_default: index === 0
+        }));
+
+        await supabase
+          .from('event_languages')
+          .insert(languageRecords);
+      }
 
       // Add default custom fields for the new event
       const defaultFields = [

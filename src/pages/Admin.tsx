@@ -20,6 +20,7 @@ import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
+import AuthSettings from "@/components/AuthSettings";
 
 const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
@@ -41,7 +42,10 @@ const Admin = () => {
   // Mock authentication - will be replaced with Supabase auth
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "admin" && password === "123456") {
+    const storedUsername = localStorage.getItem('adminUsername') || 'admin';
+    const storedPassword = localStorage.getItem('adminPassword') || '123456';
+    
+    if (username === storedUsername && password === storedPassword) {
       setIsAuthenticated(true);
       toast({
         title: "✅ התחברות בהצלחה",
@@ -188,9 +192,6 @@ const Admin = () => {
               <Button type="submit" className="w-full">
                 התחבר
               </Button>
-              <p className="text-xs text-center text-muted-foreground">
-                דמו: admin / 123456
-              </p>
             </form>
           </CardContent>
         </Card>
@@ -275,7 +276,7 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
@@ -283,6 +284,7 @@ const Admin = () => {
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
             <TabsTrigger value="custom-fields" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שדות מותאמים</TabsTrigger>
+            <TabsTrigger value="auth" className="text-xs md:text-sm px-2 py-2 whitespace-normal">פרטי התחברות</TabsTrigger>
             <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא</TabsTrigger>
           </TabsList>
 
@@ -346,6 +348,10 @@ const Admin = () => {
               customFields={[]}
               onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
+          </TabsContent>
+
+          <TabsContent value="auth" className="space-y-4">
+            <AuthSettings />
           </TabsContent>
 
           <TabsContent value="export" className="space-y-4">

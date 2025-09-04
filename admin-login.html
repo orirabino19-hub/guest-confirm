@@ -36,9 +36,6 @@
                         <button type="submit" class="btn btn-primary w-full">
                             התחבר
                         </button>
-                        <p class="text-xs text-center text-muted-foreground">
-                            דמו: admin / 123456
-                        </p>
                     </form>
                 </div>
             </div>
@@ -90,7 +87,10 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             
-            if (username === 'admin' && password === '123456') {
+            const storedUsername = localStorage.getItem('adminUsername') || 'admin';
+            const storedPassword = localStorage.getItem('adminPassword') || '123456';
+            
+            if (username === storedUsername && password === storedPassword) {
                 showToast('✅', 'התחברות בהצלחה', 'ברוכים הבאים למערכת הניהול');
                 setTimeout(() => {
                     window.location.href = 'admin-dashboard.html';

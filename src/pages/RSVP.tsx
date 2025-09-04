@@ -85,38 +85,27 @@ const RSVP = () => {
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
         } else if (phone) {
-          // טעינת שם האורח האמיתי מהמערכת
-          const cleanPhone = phone.replace(/\D/g, '');
-          console.log('Looking for guest with phone:', cleanPhone, 'original phone:', phone, 'and eventId:', eventId);
+          // טעינת שם האורח בצורה מאובטחת באמצעות RPC
+          console.log('Looking for guest with phone:', phone, 'and eventId:', eventId);
           
-          const { data: guestData, error: guestError } = await supabase
-            .from('guests')
-            .select('full_name')
-            .eq('event_id', eventId)
-            .eq('phone', phone) // נשתמש בטלפון המקורי תחילה
-            .maybeSingle();
+          try {
+            const { data: guestName, error: guestError } = await supabase
+              .rpc('get_guest_name_by_phone', {
+                _event_id: eventId,
+                _phone: phone
+              });
 
-          console.log('Guest query result:', { guestData, guestError });
+            console.log('Guest name result:', { guestName, guestError });
 
-          if (guestData && guestData.full_name) {
-            setGuestName(guestData.full_name);
-          } else {
-            // נסה גם עם cleanPhone אם לא מצאנו עם הטלפון המקורי
-            const { data: guestData2, error: guestError2 } = await supabase
-              .from('guests')
-              .select('full_name')
-              .eq('event_id', eventId)
-              .eq('phone', cleanPhone)
-              .maybeSingle();
-
-            console.log('Second guest query result:', { guestData2, guestError2 });
-
-            if (guestData2 && guestData2.full_name) {
-              setGuestName(guestData2.full_name);
+            if (guestName) {
+              setGuestName(guestName);
             } else {
               // אם לא נמצא אורח - שם ברירת מחדל
               setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
             }
+          } catch (err) {
+            console.error('Error calling get_guest_name_by_phone:', err);
+            setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
           }
         }
       } catch (err) {

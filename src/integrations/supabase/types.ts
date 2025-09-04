@@ -320,7 +320,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_guest_name_by_phone: {
+        Args: { _event_id: string; _phone: string }
+        Returns: string
+      }
     }
     Enums: {
       field_type: "text" | "number" | "select" | "checkbox" | "textarea"

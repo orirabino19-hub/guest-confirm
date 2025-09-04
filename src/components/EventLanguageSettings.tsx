@@ -48,7 +48,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(event?.languages || []);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [textOverrides, setTextOverrides] = useState<TextOverrides>(event?.textOverrides || {});
+  const [textOverrides, setTextOverrides] = useState<TextOverrides>({});
 
   // Available languages - this matches EventManager
   const availableLanguages: LanguageConfig[] = [
@@ -87,7 +87,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
   const handleSaveTexts = () => {
     if (!event) return;
     
-    onEventUpdate(event.id, { textOverrides });
+    onEventUpdate(event.id, { languages: selectedLanguages });
     setEditingKey(null);
     
     toast({
@@ -125,8 +125,8 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
         {event && (
           <p className="text-sm text-muted-foreground">
             {i18n.language === 'he' 
-              ? `אירוע: ${event.name}`
-              : `Event: ${event.name}`
+              ? `אירוע: ${event.title}`
+              : `Event: ${event.title}`
             }
           </p>
         )}

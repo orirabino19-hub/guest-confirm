@@ -148,13 +148,12 @@ const Admin = () => {
   const exportToExcel = () => {
     if (!selectedEventId) return;
     
-    const eventGuests = guests.filter(g => g.eventId === selectedEventId);
-    const confirmedGuests = eventGuests.filter(g => g.status === 'confirmed');
-    const totalConfirmed = confirmedGuests.reduce((sum, g) => sum + (g.totalGuests || 0), 0);
+    const eventGuests = guests.filter(g => g.event_id === selectedEventId);
+    const totalGuests = eventGuests.reduce((sum, g) => sum + (g.men_count + g.women_count), 0);
     
     toast({
       title: "📊 ייצוא בהצלחה", 
-      description: `יוצאו ${confirmedGuests.length} אישורים (${totalConfirmed} מוזמנים בסה"כ)`
+      description: `יוצאו ${eventGuests.length} אורחים (${totalGuests} מוזמנים בסה"כ)`
     });
   };
 

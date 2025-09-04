@@ -126,7 +126,11 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
         processedGuests.push({
           event_id: selectedEventId,
           full_name: fullName,
-          phone: normalizedPhone
+          phone: normalizedPhone,
+          men_count: 0,
+          women_count: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
       });
 

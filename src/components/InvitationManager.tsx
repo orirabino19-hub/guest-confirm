@@ -61,20 +61,24 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
 
       if (error) throw error;
 
-      const invitationList: EventInvitation[] = data?.map(file => {
+      const invitationList: EventInvitation[] = (data || []).map(file => {
         const parts = file.name.split('.');
-        const extension = parts.pop();
+        const extension = (parts.pop() || '').toLowerCase();
         const [language, type] = parts.join('.').split('-');
+
+        const { data: publicData } = supabase.storage
+          .from('invitations')
+          .getPublicUrl(`${selectedEventId}/${file.name}`);
         
         return {
           eventId: selectedEventId,
           language: language || 'he',
-          type: (type === 'pdf' ? 'pdf' : 'image') as 'image' | 'pdf',
+          type: (type === 'pdf' || extension === 'pdf' ? 'pdf' : 'image'),
           fileName: file.name,
-          fileUrl: `https://jaddfwycowygakforhro.supabase.co/storage/v1/object/public/invitations/${selectedEventId}/${file.name}`,
+          fileUrl: publicData.publicUrl,
           uploadedAt: file.created_at || new Date().toISOString()
         };
-      }) || [];
+      });
 
       setInvitations(invitationList);
     } catch (error) {

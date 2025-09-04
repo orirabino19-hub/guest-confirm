@@ -11,6 +11,7 @@ import { Guest } from '@/hooks/useGuests';
 
 interface GuestManagerProps {
   selectedEventId: string | null;
+  selectedEventSlug: string | null;
   guests: Guest[];
   onGuestAdd: (guest: {
     eventId: string;
@@ -20,7 +21,7 @@ interface GuestManagerProps {
   onGuestDelete: (guestId: string) => void;
 }
 
-const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: GuestManagerProps) => {
+const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, onGuestDelete }: GuestManagerProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newGuest, setNewGuest] = useState({
     fullName: '',
@@ -99,7 +100,8 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
   };
 
   const copyInviteLink = (phone: string) => {
-    const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+    if (!selectedEventSlug) return;
+    const link = `${window.location.origin}/rsvp/${selectedEventSlug}/${phone}`;
     navigator.clipboard.writeText(link);
     toast({
       title: "🔗 הקישור הועתק",

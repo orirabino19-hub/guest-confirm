@@ -12,9 +12,7 @@ import { CustomField } from './EventManager';
 
 interface LinkManagerProps {
   selectedEventId: string | null;
-  eventName?: string;
-  customFields?: CustomField[];
-  onCustomFieldsUpdate?: (fields: CustomField[]) => void;
+  selectedEventSlug: string | null;
 }
 
 interface CustomLink {
@@ -25,7 +23,7 @@ interface CustomLink {
   createdAt: string;
 }
 
-const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFieldsUpdate }: LinkManagerProps) => {
+const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) => {
   const [customName, setCustomName] = useState('');
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const { toast } = useToast();
@@ -41,7 +39,7 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
     }
 
     const encodedName = encodeURIComponent(customName.trim());
-    const url = `${window.location.origin}/rsvp/${selectedEventId}/name/${encodedName}`;
+    const url = `${window.location.origin}/rsvp/${selectedEventSlug || 'event'}/${encodedName}`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -70,7 +68,7 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
       return;
     }
 
-    const url = `${window.location.origin}/rsvp/${selectedEventId}/open`;
+    const url = `${window.location.origin}/rsvp/${selectedEventSlug || 'event'}/open`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -178,7 +176,7 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                ייוצר קישור: .../rsvp/{selectedEventId}/name/[השם]
+                ייוצר קישור: .../rsvp/{selectedEventSlug || 'event'}/name/[השם]
               </p>
             </div>
           </TabsContent>
@@ -196,16 +194,7 @@ const LinkManager = ({ selectedEventId, eventName, customFields = [], onCustomFi
                 </p>
               </div>
               
-              {/* Custom Fields Manager */}
-              {onCustomFieldsUpdate && (
-                <div className="border-t pt-4">
-                  <OpenRSVPCustomFields
-                    selectedEventId={selectedEventId}
-                    customFields={customFields}
-                    onCustomFieldsUpdate={onCustomFieldsUpdate}
-                  />
-                </div>
-              )}
+              {/* Custom Fields will be managed separately */}
             </div>
           </TabsContent>
         </Tabs>

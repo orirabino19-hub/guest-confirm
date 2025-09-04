@@ -211,6 +211,7 @@ const Admin = () => {
     .reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
+  const selectedEventSlug = selectedEvent ? 'event' : null; // Default slug until we add proper slug field
 
   return (
     <div className="min-h-screen bg-background p-4" dir="rtl">
@@ -292,6 +293,7 @@ const Admin = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <GuestManager
               selectedEventId={selectedEventId}
+              selectedEventSlug={selectedEventSlug}
               guests={selectedEventGuests}
               onGuestAdd={handleGuestAdd}
               onGuestDelete={handleGuestDelete}
@@ -300,6 +302,7 @@ const Admin = () => {
               guests={selectedEventGuests}
               loading={guestsLoading}
               selectedEventId={selectedEventId}
+              selectedEventSlug={selectedEventSlug}
             />
             </div>
           </TabsContent>
@@ -357,6 +360,7 @@ const Admin = () => {
           <TabsContent value="export" className="space-y-4">
             <ExcelExport
               selectedEventId={selectedEventId}
+              selectedEventSlug={selectedEventSlug}
               eventName={selectedEvent?.title}
               guests={selectedEventGuests}
             />

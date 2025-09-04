@@ -16,9 +16,10 @@ interface CustomField {
 }
 
 const RSVP = () => {
-  const { eventId, phone, guestName: urlGuestName } = useParams<{ eventId: string; phone: string; guestName: string }>();
+  const { eventSlug, phone, guestName: urlGuestName } = useParams<{ eventSlug: string; phone: string; guestName: string }>();
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
+  const [eventId, setEventId] = useState<string>("");
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -33,19 +34,19 @@ const RSVP = () => {
         return;
       }
 
-      // אם אין eventId, צריך eventId לטעינת האירוע
-      if (!eventId) {
+      // אם אין eventSlug, צריך eventSlug לטעינת האירוע
+      if (!eventSlug) {
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
       }
 
       try {
-        // טעינת האירוע מ-Supabase
+        // טעינת האירוע מ-Supabase לפי slug
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select('*')
-          .eq('id', eventId)
+          .eq('slug', eventSlug)
           .maybeSingle();
 
         if (eventError || !eventData) {
@@ -56,12 +57,13 @@ const RSVP = () => {
         }
 
         setEventName(eventData.title);
+        setEventId(eventData.id);
 
         // טעינת השדות המותאמים אישית
         const { data: customFieldsData, error: fieldsError } = await supabase
           .from('custom_fields_config')
           .select('*')
-          .eq('event_id', eventId)
+          .eq('event_id', eventData.id)
           .eq('is_active', true)
           .order('order_index');
 
@@ -117,7 +119,7 @@ const RSVP = () => {
     };
 
     fetchData();
-  }, [phone, eventId, urlGuestName, i18n.language, t]);
+  }, [phone, eventSlug, urlGuestName, i18n.language, t]);
 
   if (loading) {
     return (

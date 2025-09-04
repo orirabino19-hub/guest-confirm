@@ -112,6 +112,7 @@ export type Database = {
           event_date: string | null
           id: string
           location: string | null
+          slug: string
           theme: Json | null
           title: string
           updated_at: string
@@ -122,6 +123,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          slug?: string
           theme?: Json | null
           title: string
           updated_at?: string
@@ -132,6 +134,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          slug?: string
           theme?: Json | null
           title?: string
           updated_at?: string

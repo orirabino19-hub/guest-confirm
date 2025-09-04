@@ -17,15 +17,16 @@ export interface Event {
 
 interface ExcelExportProps {
   selectedEventId: string | null;
+  selectedEventSlug: string | null;
   eventName?: string;
   guests: Guest[];
 }
 
-const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) => {
+const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: ExcelExportProps) => {
   const { toast } = useToast();
 
-  const generateInviteLink = (eventId: string, phone: string): string => {
-    return `${window.location.origin}/rsvp/${eventId}/${phone}`;
+  const generateInviteLink = (eventSlug: string, phone: string): string => {
+    return `${window.location.origin}/rsvp/${eventSlug}/${phone}`;
   };
 
   const exportGuestList = () => {
@@ -59,7 +60,7 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
       'נשים': guest.women_count || 0,
       'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
       'תאריך רישום': new Date(guest.created_at).toLocaleDateString('he-IL'),
-      'קישור אישי': generateInviteLink(selectedEventId, guest.phone || '')
+      'קישור אישי': selectedEventSlug ? generateInviteLink(selectedEventSlug, guest.phone || '') : ''
     }));
 
     // Create workbook and worksheet
@@ -123,11 +124,11 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
   };
 
   const copyAllLinks = () => {
-    if (!selectedEventId) return;
+    if (!selectedEventId || !selectedEventSlug) return;
 
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
     const links = filteredGuests.map(guest => 
-      `${guest.full_name}: ${generateInviteLink(selectedEventId, guest.phone || '')}`
+      `${guest.full_name}: ${generateInviteLink(selectedEventSlug, guest.phone || '')}`
     ).join('\n');
 
     navigator.clipboard.writeText(links);

@@ -8,13 +8,15 @@ interface GuestListProps {
   guests: Guest[];
   loading: boolean;
   selectedEventId: string | null;
+  selectedEventSlug: string | null;
 }
 
-const GuestList = ({ guests, loading, selectedEventId }: GuestListProps) => {
+const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: GuestListProps) => {
   const { toast } = useToast();
 
   const copyInviteLink = (phone: string) => {
-    const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+    if (!selectedEventSlug) return;
+    const link = `${window.location.origin}/rsvp/${selectedEventSlug}/${phone}`;
     navigator.clipboard.writeText(link);
     toast({
       title: "🔗 הקישור הועתק",

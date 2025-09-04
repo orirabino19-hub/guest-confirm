@@ -317,9 +317,7 @@ const Admin = () => {
           <TabsContent value="links" className="space-y-4">
             <LinkManager
               selectedEventId={selectedEventId}
-              eventName={selectedEvent?.title}
-              customFields={[]}
-              onCustomFieldsUpdate={handleCustomFieldsUpdate}
+              selectedEventSlug={selectedEventSlug}
             />
           </TabsContent>
 

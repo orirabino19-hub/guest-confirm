@@ -12,6 +12,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, Loader2 } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomField {
   id: string;
@@ -57,82 +58,54 @@ const OpenRSVP = () => {
       }
 
       try {
-        // Simulate API call to fetch event data
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock event data with custom fields - should be replaced with real API call
-        // For now, use the same structure as in Admin component  
-        const mockEvents: Record<string, Event> = {
-          "1": {
-            id: "1",
-            name: "החתונה של שייקי ומיכל",
-            nameEn: "Shaiky & Michal's Wedding",
-            customFields: [
-              {
-                id: "fullName",
-                type: "text",
-                label: "שם מלא",
-                labelEn: "Full Name",
-                required: true
-              },
-              {
-                id: "menCounter",
-                type: "menCounter",
-                label: "👨 מספר גברים",
-                labelEn: "👨 Number of Men",
-                required: false
-              },
-              {
-                id: "womenCounter", 
-                type: "womenCounter",
-                label: "👩 מספר נשים",
-                labelEn: "👩 Number of Women",
-                required: false
-              }
-            ]
-          },
-          "2": {
-            id: "2",
-            name: "יום הולדת 30 לדני",
-            nameEn: "Danny's 30th Birthday",
-            customFields: [
-              {
-                id: "fullName",
-                type: "text",
-                label: "שם מלא",
-                labelEn: "Full Name",
-                required: true
-              },
-              {
-                id: "menCounter",
-                type: "menCounter",
-                label: "👨 מספר גברים", 
-                labelEn: "👨 Number of Men",
-                required: false
-              },
-              {
-                id: "womenCounter",
-                type: "womenCounter",
-                label: "👩 מספר נשים",
-                labelEn: "👩 Number of Women", 
-                required: false
-              }
-            ]
-          }
-        };
-        
-        const foundEvent = mockEvents[eventId];
-        if (!foundEvent) {
+        // טעינת האירוע מ-Supabase
+        const { data: eventData, error: eventError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .single();
+
+        if (eventError || !eventData) {
+          console.error('Event not found:', eventError);
           setError(t('rsvp.errors.eventNotFound'));
           setLoading(false);
           return;
         }
 
-        setEvent(foundEvent);
+        // טעינת השדות המותאמים אישית
+        const { data: customFieldsData, error: fieldsError } = await supabase
+          .from('custom_fields_config')
+          .select('*')
+          .eq('event_id', eventId)
+          .eq('is_active', true)
+          .order('order_index');
+
+        if (fieldsError) {
+          console.error('Error fetching custom fields:', fieldsError);
+        }
+
+        // המרת הנתונים לפורמט הנדרש
+        const customFields: CustomField[] = customFieldsData?.map(field => ({
+          id: field.key,
+          type: field.field_type as any,
+          label: field.label,
+          labelEn: field.label, // נוכל להוסיף תמיכה בשפות מאוחר יותר
+          required: field.required,
+          options: field.options as string[] || undefined
+        })) || [];
+
+        const eventObj: Event = {
+          id: eventData.id,
+          name: eventData.title,
+          nameEn: eventData.title, // נוכל להוסיף תמיכה בשפות מאוחר יותר
+          customFields
+        };
+
+        setEvent(eventObj);
         
         // Initialize form data with default values
         const initialFormData: Record<string, any> = {};
-        foundEvent.customFields?.forEach(field => {
+        customFields.forEach(field => {
           if (field.type === 'checkbox') {
             initialFormData[field.id] = false;
           } else if (field.type === 'menCounter' || field.type === 'womenCounter') {

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import RSVPForm from "@/components/RSVPForm";
 import { Card, CardContent } from "@/components/ui/card";
 import LanguageSelector from "@/components/LanguageSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomField {
   id: string;
@@ -32,71 +33,59 @@ const RSVP = () => {
         return;
       }
 
-      // אם אין eventId, נשתמש בברירת מחדל
-      const currentEventId = eventId || "1";
+      // אם אין eventId, צריך eventId לטעינת האירוע
+      if (!eventId) {
+        setError(t('rsvp.errors.invalidLink'));
+        setLoading(false);
+        return;
+      }
 
       try {
-        // Simulate API call to fetch guest and event data
-        // This will be connected to Supabase later
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock event data with custom fields
-        const mockEvents = {
-          "1": {
-            name: i18n.language === 'he' ? "החתונה של שייקי ומיכל" : "Shaiky & Michal's Wedding",
-            customFields: [
-              {
-                id: "menCounter",
-                type: "menCounter" as const,
-                label: "👨 מספר גברים",
-                labelEn: "👨 Number of Men",
-                required: false
-              },
-              {
-                id: "womenCounter", 
-                type: "womenCounter" as const,
-                label: "👩 מספר נשים",
-                labelEn: "👩 Number of Women",
-                required: false
-              }
-            ]
-          },
-          "2": {
-            name: i18n.language === 'he' ? "יום הולדת 30 לדני" : "Danny's 30th Birthday",
-            customFields: [
-              {
-                id: "menCounter",
-                type: "menCounter" as const,
-                label: "👨 מספר גברים", 
-                labelEn: "👨 Number of Men",
-                required: false
-              },
-              {
-                id: "womenCounter",
-                type: "womenCounter" as const,
-                label: "👩 מספר נשים",
-                labelEn: "👩 Number of Women", 
-                required: false
-              }
-            ]
-          }
-        };
+        // טעינת האירוע מ-Supabase
+        const { data: eventData, error: eventError } = await supabase
+          .from('events')
+          .select('*')
+          .eq('id', eventId)
+          .single();
 
-        const foundEvent = mockEvents[currentEventId as keyof typeof mockEvents];
-        if (!foundEvent) {
+        if (eventError || !eventData) {
+          console.error('Event not found:', eventError);
           setError(t('rsvp.errors.eventNotFound'));
           setLoading(false);
           return;
         }
 
-        setEventName(foundEvent.name);
-        setCustomFields(foundEvent.customFields);
+        setEventName(eventData.title);
+
+        // טעינת השדות המותאמים אישית
+        const { data: customFieldsData, error: fieldsError } = await supabase
+          .from('custom_fields_config')
+          .select('*')
+          .eq('event_id', eventId)
+          .eq('is_active', true)
+          .order('order_index');
+
+        if (fieldsError) {
+          console.error('Error fetching custom fields:', fieldsError);
+        }
+
+        // המרת הנתונים לפורמט הנדרש
+        const fields: CustomField[] = customFieldsData?.map(field => ({
+          id: field.key,
+          type: field.field_type as any,
+          label: field.label,
+          labelEn: field.label, // נוכל להוסיף תמיכה בשפות מאוחר יותר
+          required: field.required,
+          options: field.options as string[] || undefined
+        })) || [];
+
+        setCustomFields(fields);
 
         // If we have a guestName from URL, use it directly
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
         } else if (phone) {
-          // Otherwise, look up by phone (existing logic)
+          // מידע מזויף לדמו - ניתן להסיר בגרסה הסופית
           const mockGuests = {
             "0501234567": i18n.language === 'he' ? "משה כהן" : "Moshe Cohen",
             "0527654321": i18n.language === 'he' ? "שרה לוי" : "Sarah Levy",

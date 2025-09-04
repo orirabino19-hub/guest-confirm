@@ -14,7 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      custom_fields_config: {
+        Row: {
+          created_at: string
+          event_id: string
+          field_type: Database["public"]["Enums"]["field_type"]
+          id: string
+          is_active: boolean
+          key: string
+          label: string
+          link_type: Database["public"]["Enums"]["link_type"]
+          options: Json | null
+          order_index: number
+          required: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          field_type: Database["public"]["Enums"]["field_type"]
+          id?: string
+          is_active?: boolean
+          key: string
+          label: string
+          link_type: Database["public"]["Enums"]["link_type"]
+          options?: Json | null
+          order_index?: number
+          required?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          field_type?: Database["public"]["Enums"]["field_type"]
+          id?: string
+          is_active?: boolean
+          key?: string
+          label?: string
+          link_type?: Database["public"]["Enums"]["link_type"]
+          options?: Json | null
+          order_index?: number
+          required?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_fields_config_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_languages: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          is_default: boolean
+          locale: string
+          translations: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          is_default?: boolean
+          locale: string
+          translations?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          is_default?: boolean
+          locale?: string
+          translations?: Json | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_languages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string | null
+          id: string
+          location: string | null
+          theme: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          theme?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          theme?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      guests: {
+        Row: {
+          created_at: string
+          email: string | null
+          event_id: string
+          full_name: string | null
+          group_name: string | null
+          id: string
+          language: string | null
+          men_count: number
+          notes: string | null
+          phone: string | null
+          updated_at: string
+          women_count: number
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event_id: string
+          full_name?: string | null
+          group_name?: string | null
+          id?: string
+          language?: string | null
+          men_count?: number
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          women_count?: number
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event_id?: string
+          full_name?: string | null
+          group_name?: string | null
+          id?: string
+          language?: string | null
+          men_count?: number
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+          women_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      links: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string | null
+          guest_id: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          settings: Json | null
+          slug: string
+          type: Database["public"]["Enums"]["link_type"]
+          updated_at: string
+          uses_count: number
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at?: string | null
+          guest_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          settings?: Json | null
+          slug: string
+          type: Database["public"]["Enums"]["link_type"]
+          updated_at?: string
+          uses_count?: number
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string | null
+          guest_id?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          settings?: Json | null
+          slug?: string
+          type?: Database["public"]["Enums"]["link_type"]
+          updated_at?: string
+          uses_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "links_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rsvp_submissions: {
+        Row: {
+          answers: Json
+          event_id: string
+          full_name: string | null
+          guest_id: string | null
+          id: string
+          link_id: string | null
+          men_count: number
+          status: string
+          submitted_at: string
+          updated_at: string
+          women_count: number
+        }
+        Insert: {
+          answers?: Json
+          event_id: string
+          full_name?: string | null
+          guest_id?: string | null
+          id?: string
+          link_id?: string | null
+          men_count?: number
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          women_count?: number
+        }
+        Update: {
+          answers?: Json
+          event_id?: string
+          full_name?: string | null
+          guest_id?: string | null
+          id?: string
+          link_id?: string | null
+          men_count?: number
+          status?: string
+          submitted_at?: string
+          updated_at?: string
+          women_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_submissions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvp_submissions_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvp_submissions_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +323,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      field_type: "text" | "number" | "select" | "checkbox" | "textarea"
+      link_type: "open" | "personal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +451,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      field_type: ["text", "number", "select", "checkbox", "textarea"],
+      link_type: ["open", "personal"],
+    },
   },
 } as const

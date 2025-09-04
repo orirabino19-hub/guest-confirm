@@ -43,6 +43,32 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
+  // Add default men and women counters if not present in custom fields
+  const defaultCounters: CustomField[] = [
+    {
+      id: 'menCount',
+      type: 'menCounter',
+      label: 'גברים',
+      labelEn: 'Men',
+      required: false
+    },
+    {
+      id: 'womenCount',  
+      type: 'womenCounter',
+      label: 'נשים',
+      labelEn: 'Women',
+      required: false
+    }
+  ];
+
+  // Check if custom fields already have counters
+  const hasCustomCounters = customFields.some(field => 
+    field.type === 'menCounter' || field.type === 'womenCounter'
+  );
+
+  // Use custom fields or add default counters
+  const allFields = hasCustomCounters ? customFields : [...customFields, ...defaultCounters];
+
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -55,7 +81,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     setIsSubmitting(true);
 
     // Check required fields
-    const missingFields = customFields.filter(field => 
+    const missingFields = allFields.filter(field => 
       field.required && (!formData[field.id] || formData[field.id] === '' || formData[field.id] === 0)
     );
 
@@ -109,7 +135,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     }
   };
 
-  const totalGuests = customFields
+  const totalGuests = allFields
     .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
     .reduce((sum, field) => sum + (formData[field.id] || 0), 0);
 
@@ -216,7 +242,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     }
   };
 
-  const hasRequiredFields = customFields.filter(field => field.required).every(field => {
+  const hasRequiredFields = allFields.filter(field => field.required).every(field => {
     const value = formData[field.id];
     return value !== undefined && value !== '' && value !== 0;
   });
@@ -265,7 +291,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {customFields.map(field => (
+                {allFields.map(field => (
                   <div key={field.id} className="col-span-1">
                     {renderCustomField(field)}
                   </div>
@@ -284,7 +310,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required))}
+                disabled={isSubmitting || (!hasRequiredFields && allFields.some(f => f.required))}
                 className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {isSubmitting ? (
@@ -297,7 +323,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
                 )}
               </Button>
 
-              {customFields.length === 0 && (
+              {allFields.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground">
                   {t('rsvp.noFieldsConfigured')}
                 </p>

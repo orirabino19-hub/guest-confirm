@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Image, FileText, Eye, Trash2 } from "lucide-react";
 import { LanguageConfig } from "@/components/LanguageSystemManager";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventInvitation {
   eventId: string;
@@ -36,19 +37,59 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
   
   const languages = availableLanguages || defaultLanguages;
   
-  // Mock data - in real app this would come from backend
-  const [invitations, setInvitations] = useState<EventInvitation[]>([
-    {
-      eventId: "1",
-      language: "he", 
-      type: "image",
-      fileName: "invitation-he.jpg",
-      fileUrl: "/lovable-uploads/2ed7e50b-48f4-4be4-b874-a19830a05aaf.png",
-      uploadedAt: new Date().toISOString()
-    }
-  ]);
+  const [invitations, setInvitations] = useState<EventInvitation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFileUpload = (language: string, type: 'image' | 'pdf') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Fetch invitations for selected event
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchInvitations();
+    }
+  }, [selectedEventId]);
+
+  const fetchInvitations = async () => {
+    if (!selectedEventId) return;
+    
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from('invitations')
+        .list(selectedEventId, {
+          limit: 100,
+          offset: 0
+        });
+
+      if (error) throw error;
+
+      const invitationList: EventInvitation[] = data?.map(file => {
+        const parts = file.name.split('.');
+        const extension = parts.pop();
+        const [language, type] = parts.join('.').split('-');
+        
+        return {
+          eventId: selectedEventId,
+          language: language || 'he',
+          type: (type === 'pdf' ? 'pdf' : 'image') as 'image' | 'pdf',
+          fileName: file.name,
+          fileUrl: `https://jaddfwycowygakforhro.supabase.co/storage/v1/object/public/invitations/${selectedEventId}/${file.name}`,
+          uploadedAt: file.created_at || new Date().toISOString()
+        };
+      }) || [];
+
+      setInvitations(invitationList);
+    } catch (error) {
+      console.error('Error fetching invitations:', error);
+      toast({
+        title: "❌ שגיאה",
+        description: "שגיאה בטעינת ההזמנות",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileUpload = (language: string, type: 'image' | 'pdf') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !selectedEventId) return;
 
@@ -74,45 +115,78 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
       return;
     }
 
-    // In real app, this would upload to storage (Supabase Storage)
-    const newInvitation: EventInvitation = {
-      eventId: selectedEventId,
-      language,
-      type,
-      fileName: file.name,
-      fileUrl: URL.createObjectURL(file), // Mock URL
-      uploadedAt: new Date().toISOString()
-    };
-
-    // Remove existing invitation for same event+language+type
-    setInvitations(prev => 
-      prev.filter(inv => 
-        !(inv.eventId === selectedEventId && inv.language === language && inv.type === type)
-      ).concat(newInvitation)
-    );
-
-    const languageConfig = languages.find(lang => lang.code === language);
-    const languageName = languageConfig ? languageConfig.nativeName : language;
+    setIsLoading(true);
     
-    toast({
-      title: "✅ הזמנה הועלתה",
-      description: `הזמנה ב${languageName} הועלתה בהצלחה`
-    });
+    try {
+      // Create file path: {eventId}/{language}-{type}.{extension}
+      const extension = file.name.split('.').pop();
+      const fileName = `${language}-${type}.${extension}`;
+      const filePath = `${selectedEventId}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('invitations')
+        .upload(filePath, file, {
+          upsert: true // Replace if exists
+        });
+
+      if (error) throw error;
+
+      const languageConfig = languages.find(lang => lang.code === language);
+      const languageName = languageConfig ? languageConfig.nativeName : language;
+      
+      toast({
+        title: "✅ הזמנה הועלתה",
+        description: `הזמנה ב${languageName} הועלתה בהצלחה`
+      });
+
+      // Refresh the invitations list
+      await fetchInvitations();
+
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "❌ שגיאה בהעלאה",
+        description: "לא ניתן להעלות את הקובץ, נסה שוב",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      // Clear the input
+      e.target.value = '';
+    }
   };
 
-  const handleDelete = (invitation: EventInvitation) => {
-    setInvitations(prev => 
-      prev.filter(inv => 
-        !(inv.eventId === invitation.eventId && 
-          inv.language === invitation.language && 
-          inv.type === invitation.type)
-      )
-    );
+  const handleDelete = async (invitation: EventInvitation) => {
+    setIsLoading(true);
     
-    toast({
-      title: "🗑️ הזמנה נמחקה",
-      description: "ההזמנה נמחקה בהצלחה"
-    });
+    try {
+      const filePath = `${invitation.eventId}/${invitation.fileName}`;
+      
+      const { error } = await supabase.storage
+        .from('invitations')
+        .remove([filePath]);
+
+      if (error) throw error;
+
+      toast({
+        title: "🗑️ הזמנה נמחקה",
+        description: "ההזמנה נמחקה בהצלחה"
+      });
+
+      // Refresh the invitations list
+      await fetchInvitations();
+
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      toast({
+        title: "❌ שגיאה במחיקה",
+        description: "לא ניתן למחוק את הקובץ, נסה שוב",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const currentInvitations = invitations.filter(inv => inv.eventId === selectedEventId);
@@ -179,6 +253,7 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
                           accept="image/jpeg,image/png,image/webp"
                           onChange={handleFileUpload(lang.code, 'image')}
                           className="cursor-pointer"
+                          disabled={isLoading}
                         />
                       </div>
                     </CardContent>
@@ -198,6 +273,7 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
                           accept="application/pdf"
                           onChange={handleFileUpload(lang.code, 'pdf')}
                           className="cursor-pointer"
+                          disabled={isLoading}
                         />
                       </div>
                     </CardContent>
@@ -245,6 +321,7 @@ const InvitationManager = ({ selectedEventId, eventName, availableLanguages }: I
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleDelete(invitation)}
+                                    disabled={isLoading}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>

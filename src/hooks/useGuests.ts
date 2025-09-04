@@ -58,15 +58,15 @@ export const useGuests = (eventId?: string) => {
     women_count?: number;
   }) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('guests')
-        .insert([{
-          ...guestData,
-          men_count: guestData.men_count || 0,
-          women_count: guestData.women_count || 0
-        }])
-        .select()
-        .single();
+        .insert([
+          {
+            ...guestData,
+            men_count: guestData.men_count || 0,
+            women_count: guestData.women_count || 0,
+          },
+        ]);
 
       if (error) throw error;
 
@@ -77,7 +77,7 @@ export const useGuests = (eventId?: string) => {
         description: `נוסף אורח: ${guestData.full_name}`
       });
 
-      return data;
+      return;
     } catch (err: any) {
       toast({
         title: "❌ שגיאה בהוספת אורח",

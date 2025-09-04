@@ -117,7 +117,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
   };
 
   const eventCustomLinks = customLinks.filter(link => 
-    link.url.includes(selectedEventId || '')
+    selectedEventSlug && link.url.includes(`/rsvp/${selectedEventSlug}/`)
   );
 
   if (!selectedEventId) {

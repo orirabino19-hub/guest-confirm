@@ -46,7 +46,7 @@ const RSVP = () => {
           .from('events')
           .select('*')
           .eq('id', eventId)
-          .single();
+          .maybeSingle();
 
         if (eventError || !eventData) {
           console.error('Event not found:', eventError);
@@ -87,19 +87,36 @@ const RSVP = () => {
         } else if (phone) {
           // טעינת שם האורח האמיתי מהמערכת
           const cleanPhone = phone.replace(/\D/g, '');
+          console.log('Looking for guest with phone:', cleanPhone, 'original phone:', phone, 'and eventId:', eventId);
           
           const { data: guestData, error: guestError } = await supabase
             .from('guests')
             .select('full_name')
             .eq('event_id', eventId)
-            .eq('phone', cleanPhone)
-            .single();
+            .eq('phone', phone) // נשתמש בטלפון המקורי תחילה
+            .maybeSingle();
+
+          console.log('Guest query result:', { guestData, guestError });
 
           if (guestData && guestData.full_name) {
             setGuestName(guestData.full_name);
           } else {
-            // אם לא נמצא אורח - שם ברירת מחדל
-            setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
+            // נסה גם עם cleanPhone אם לא מצאנו עם הטלפון המקורי
+            const { data: guestData2, error: guestError2 } = await supabase
+              .from('guests')
+              .select('full_name')
+              .eq('event_id', eventId)
+              .eq('phone', cleanPhone)
+              .maybeSingle();
+
+            console.log('Second guest query result:', { guestData2, guestError2 });
+
+            if (guestData2 && guestData2.full_name) {
+              setGuestName(guestData2.full_name);
+            } else {
+              // אם לא נמצא אורח - שם ברירת מחדל
+              setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
+            }
           }
         }
       } catch (err) {

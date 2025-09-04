@@ -39,35 +39,11 @@ const getInvitationForGuest = (phone: string, language: string) => {
 
 const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [menCount, setMenCount] = useState(0);
+  const [womenCount, setWomenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
-
-  // Add default men and women counters if not present in custom fields
-  const defaultCounters: CustomField[] = [
-    {
-      id: 'menCount',
-      type: 'menCounter',
-      label: 'גברים',
-      labelEn: 'Men',
-      required: false
-    },
-    {
-      id: 'womenCount',  
-      type: 'womenCounter',
-      label: 'נשים',
-      labelEn: 'Women',
-      required: false
-    }
-  ];
-
-  // Check if custom fields already have counters
-  const hasCustomCounters = customFields.some(field => 
-    field.type === 'menCounter' || field.type === 'womenCounter'
-  );
-
-  // Use custom fields or add default counters
-  const allFields = hasCustomCounters ? customFields : [...customFields, ...defaultCounters];
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
@@ -81,7 +57,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     setIsSubmitting(true);
 
     // Check required fields
-    const missingFields = allFields.filter(field => 
+    const missingFields = customFields.filter(field => 
       field.required && (!formData[field.id] || formData[field.id] === '' || formData[field.id] === 0)
     );
 
@@ -135,9 +111,12 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     }
   };
 
-  const totalGuests = allFields
+  // Calculate total guests from default counters plus custom fields
+  const customFieldsGuests = customFields
     .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
     .reduce((sum, field) => sum + (formData[field.id] || 0), 0);
+  
+  const totalGuests = menCount + womenCount + customFieldsGuests;
 
   const renderCustomField = (field: CustomField) => {
     const label = i18n.language === 'he' ? field.label : (field.labelEn || field.label);
@@ -242,7 +221,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
     }
   };
 
-  const hasRequiredFields = allFields.filter(field => field.required).every(field => {
+  const hasRequiredFields = customFields.filter(field => field.required).every(field => {
     const value = formData[field.id];
     return value !== undefined && value !== '' && value !== 0;
   });
@@ -290,13 +269,97 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {allFields.map(field => (
-                  <div key={field.id} className="col-span-1">
-                    {renderCustomField(field)}
+              {/* Default Guest Counters */}
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                <h3 className="font-medium text-center text-foreground mb-4">
+                  {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
+                </h3>
+                
+                {/* Men Counter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {i18n.language === 'he' ? "גברים" : "Men"}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMenCount(Math.max(0, menCount - 1))}
+                      disabled={menCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={menCount}
+                      onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMenCount(Math.min(20, menCount + 1))}
+                      disabled={menCount >= 20}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
-                ))}
+                </div>
+
+                {/* Women Counter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {i18n.language === 'he' ? "נשים" : "Women"}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
+                      disabled={womenCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={womenCount}
+                      onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
+                      disabled={womenCount >= 20}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
+
+              {/* Custom Fields */}
+              {customFields.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {customFields.map(field => (
+                    <div key={field.id} className="col-span-1">
+                      {renderCustomField(field)}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Total Display */}
               {totalGuests > 0 && (
@@ -310,7 +373,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={isSubmitting || (!hasRequiredFields && allFields.some(f => f.required))}
+                disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required))}
                 className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {isSubmitting ? (
@@ -323,7 +386,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
                 )}
               </Button>
 
-              {allFields.length === 0 && (
+              {customFields.length === 0 && (
                 <p className="text-center text-sm text-muted-foreground">
                   {t('rsvp.noFieldsConfigured')}
                 </p>

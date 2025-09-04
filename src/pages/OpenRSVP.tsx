@@ -43,6 +43,8 @@ const OpenRSVP = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [menCount, setMenCount] = useState(0);
+  const [womenCount, setWomenCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -151,7 +153,7 @@ const OpenRSVP = () => {
     if (totalGuests === 0) {
       toast({
         title: t('rsvp.error.title'),
-        description: t('rsvp.pleaseEnterGuests'),
+        description: i18n.language === 'he' ? "יש להזין לפחות אורח אחד" : "Please enter at least one guest",
         variant: "destructive"
       });
       return;
@@ -185,11 +187,15 @@ const OpenRSVP = () => {
       
       console.log("Open RSVP Submitted:", {
         totalGuests,
+        menCount,
+        womenCount,
         customFields: formData,
         timestamp: new Date().toISOString()
       });
       
       // Reset form
+      setMenCount(0);
+      setWomenCount(0);
       const initialFormData: Record<string, any> = {};
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
@@ -213,10 +219,12 @@ const OpenRSVP = () => {
     }
   };
 
-  // Calculate total guests from counter fields
-  const totalGuests = (event?.customFields || [])
+  // Calculate total guests from default counters plus custom fields
+  const customFieldsGuests = (event?.customFields || [])
     .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
     .reduce((total, field) => total + (formData[field.id] || 0), 0);
+  
+  const totalGuests = menCount + womenCount + customFieldsGuests;
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
@@ -440,11 +448,92 @@ const OpenRSVP = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Default Guest Counters */}
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                <h3 className="font-medium text-center text-foreground mb-4">
+                  {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
+                </h3>
+                
+                {/* Men Counter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {i18n.language === 'he' ? "גברים" : "Men"}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMenCount(Math.max(0, menCount - 1))}
+                      disabled={menCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={menCount}
+                      onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMenCount(Math.min(20, menCount + 1))}
+                      disabled={menCount >= 20}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Women Counter */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {i18n.language === 'he' ? "נשים" : "Women"}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
+                      disabled={womenCount <= 0}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={womenCount}
+                      onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
+                      className="text-center text-lg border-border/50 focus:border-primary"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
+                      disabled={womenCount >= 20}
+                      className="h-10 w-10 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               {/* Custom Fields Section */}
               {event.customFields && event.customFields.length > 0 && (
                 <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
                   <h3 className="font-medium text-center text-foreground mb-4">
-                    {i18n.language === 'he' ? "פרטי האורח" : "Guest Information"}
+                    {i18n.language === 'he' ? "פרטים נוספים" : "Additional Information"}
                   </h3>
                   {event.customFields.map(renderCustomField)}
                 </div>

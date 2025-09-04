@@ -85,17 +85,22 @@ const RSVP = () => {
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
         } else if (phone) {
-          // מידע מזויף לדמו - ניתן להסיר בגרסה הסופית
-          const mockGuests = {
-            "0501234567": i18n.language === 'he' ? "משה כהן" : "Moshe Cohen",
-            "0527654321": i18n.language === 'he' ? "שרה לוי" : "Sarah Levy",
-            "0543216789": i18n.language === 'he' ? "דוד ישראלי" : "David Israeli",
-            "0556789123": i18n.language === 'he' ? "רחל אברהם" : "Rachel Abraham"
-          };
-
+          // טעינת שם האורח האמיתי מהמערכת
           const cleanPhone = phone.replace(/\D/g, '');
-          const foundGuest = mockGuests[cleanPhone as keyof typeof mockGuests];
-          setGuestName(foundGuest || (i18n.language === 'he' ? "אורח יקר" : "Dear Guest"));
+          
+          const { data: guestData, error: guestError } = await supabase
+            .from('guests')
+            .select('full_name')
+            .eq('event_id', eventId)
+            .eq('phone', cleanPhone)
+            .single();
+
+          if (guestData && guestData.full_name) {
+            setGuestName(guestData.full_name);
+          } else {
+            // אם לא נמצא אורח - שם ברירת מחדל
+            setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
+          }
         }
       } catch (err) {
         setError(t('rsvp.errors.guestDataError'));

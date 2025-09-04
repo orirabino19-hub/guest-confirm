@@ -39,7 +39,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     }
 
     const encodedName = encodeURIComponent(customName.trim());
-    const url = `${window.location.origin}/rsvp/${selectedEventSlug || 'event'}/${encodedName}`;
+    const url = `${window.location.origin}/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -68,7 +68,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       return;
     }
 
-    const url = `${window.location.origin}/rsvp/${selectedEventSlug || 'event'}/open`;
+    const url = `${window.location.origin}/rsvp/${selectedEventId || 'event'}/open`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -117,7 +117,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
   };
 
   const eventCustomLinks = customLinks.filter(link => 
-    selectedEventSlug && link.url.includes(`/rsvp/${selectedEventSlug}/`)
+    selectedEventId && link.url.includes(`/rsvp/${selectedEventId}/`)
   );
 
   if (!selectedEventId) {
@@ -176,7 +176,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
-                ייוצר קישור: .../rsvp/{selectedEventSlug || 'event'}/name/[השם]
+                ייוצר קישור: .../rsvp/{selectedEventId || 'event'}/name/[השם]
               </p>
             </div>
           </TabsContent>

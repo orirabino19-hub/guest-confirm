@@ -40,7 +40,7 @@ const getInvitationForGuest = (phone: string, language: string) => {
 };
 
 const OpenRSVP = () => {
-  const { eventSlug } = useParams<{ eventSlug: string }>();
+  const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
@@ -53,18 +53,18 @@ const OpenRSVP = () => {
 
   useEffect(() => {
     const fetchEventData = async () => {
-      if (!eventSlug) {
+      if (!eventId) {
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
       }
 
       try {
-        // טעינת האירוע מ-Supabase לפי slug
+        // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select('*')
-          .eq('slug', eventSlug)
+          .eq('id', eventId)
           .maybeSingle();
 
         if (eventError || !eventData) {
@@ -127,7 +127,7 @@ const OpenRSVP = () => {
     };
 
     fetchEventData();
-  }, [eventSlug, t]);
+  }, [eventId, t]);
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({

@@ -20,9 +20,9 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/rsvp/:phone" element={<RSVP />} />
-          <Route path="/rsvp/:eventSlug/:phone" element={<RSVP />} />
-          <Route path="/rsvp/:eventSlug/name/:guestName" element={<RSVP />} />
-          <Route path="/rsvp/:eventSlug/open" element={<OpenRSVP />} />
+          <Route path="/rsvp/:eventId/:phone" element={<RSVP />} />
+          <Route path="/rsvp/:eventId/name/:guestName" element={<RSVP />} />
+          <Route path="/rsvp/:eventId/open" element={<OpenRSVP />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

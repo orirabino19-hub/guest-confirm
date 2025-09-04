@@ -25,8 +25,8 @@ interface ExcelExportProps {
 const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: ExcelExportProps) => {
   const { toast } = useToast();
 
-  const generateInviteLink = (eventSlug: string, phone: string): string => {
-    return `${window.location.origin}/rsvp/${eventSlug}/${phone}`;
+  const generateInviteLink = (eventId: string, phone: string): string => {
+    return `${window.location.origin}/rsvp/${eventId}/${phone}`;
   };
 
   const exportGuestList = () => {
@@ -60,7 +60,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
       'נשים': guest.women_count || 0,
       'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
       'תאריך רישום': new Date(guest.created_at).toLocaleDateString('he-IL'),
-      'קישור אישי': selectedEventSlug ? generateInviteLink(selectedEventSlug, guest.phone || '') : ''
+      'קישור אישי': selectedEventId ? generateInviteLink(selectedEventId, guest.phone || '') : ''
     }));
 
     // Create workbook and worksheet

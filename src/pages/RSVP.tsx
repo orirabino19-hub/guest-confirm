@@ -16,10 +16,10 @@ interface CustomField {
 }
 
 const RSVP = () => {
-  const { eventSlug, phone, guestName: urlGuestName } = useParams<{ eventSlug: string; phone: string; guestName: string }>();
+  const { eventId, phone, guestName: urlGuestName } = useParams<{ eventId: string; phone: string; guestName: string }>();
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
-  const [eventId, setEventId] = useState<string>("");
+  const [currentEventId, setCurrentEventId] = useState<string>("");
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
@@ -34,19 +34,19 @@ const RSVP = () => {
         return;
       }
 
-      // אם אין eventSlug, צריך eventSlug לטעינת האירוע
-      if (!eventSlug) {
+      // אם אין eventId, צריך eventId לטעינת האירוע
+      if (!eventId) {
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
       }
 
       try {
-        // טעינת האירוע מ-Supabase לפי slug
+        // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select('*')
-          .eq('slug', eventSlug)
+          .eq('id', eventId)
           .maybeSingle();
 
         if (eventError || !eventData) {
@@ -57,7 +57,7 @@ const RSVP = () => {
         }
 
         setEventName(eventData.title);
-        setEventId(eventData.id);
+        setCurrentEventId(eventData.id);
 
         // טעינת השדות המותאמים אישית
         const { data: customFieldsData, error: fieldsError } = await supabase
@@ -119,7 +119,7 @@ const RSVP = () => {
     };
 
     fetchData();
-  }, [phone, eventSlug, urlGuestName, i18n.language, t]);
+  }, [phone, eventId, urlGuestName, i18n.language, t]);
 
   if (loading) {
     return (

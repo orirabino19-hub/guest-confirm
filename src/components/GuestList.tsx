@@ -15,8 +15,8 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
   const { toast } = useToast();
 
   const copyInviteLink = (phone: string) => {
-    if (!selectedEventSlug) return;
-    const link = `${window.location.origin}/rsvp/${selectedEventSlug}/${phone}`;
+    if (!selectedEventId) return;
+    const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
     navigator.clipboard.writeText(link);
     toast({
       title: "🔗 הקישור הועתק",

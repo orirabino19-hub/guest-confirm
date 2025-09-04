@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileSpreadsheet, Users, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { Guest } from './GuestList';
+import { Guest } from '@/hooks/useGuests';
 
 interface ExcelImportProps {
   selectedEventId: string | null;
@@ -124,10 +124,9 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
         
         processedGuests.push({
-          eventId: selectedEventId,
-          fullName: fullName,
-          phone: normalizedPhone,
-          status: 'pending'
+          event_id: selectedEventId,
+          full_name: fullName,
+          phone: normalizedPhone
         });
       });
 

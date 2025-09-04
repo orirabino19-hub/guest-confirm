@@ -28,25 +28,27 @@ export interface CustomField {
 
 export interface Event {
   id: string;
-  name: string;
-  description: string;
-  date: string;
-  createdAt: string;
-  invitationImage?: string;
-  languages: string[]; // Array of language codes for multi-language support
-  customFields?: CustomField[]; // Custom fields for open RSVP
-  textOverrides?: {
-    [key: string]: {
-      [language: string]: string;
-    };
-  };
+  title: string;
+  description?: string;
+  event_date?: string;
+  location?: string;
+  theme?: any;
+  created_at: string;
+  updated_at: string;
+  languages?: string[];
+  customFields?: CustomField[];
 }
 
 interface EventManagerProps {
   events: Event[];
   selectedEventId: string | null;
   onEventSelect: (eventId: string) => void;
-  onEventCreate: (event: Omit<Event, 'id' | 'createdAt'>) => void;
+  onEventCreate: (event: {
+    title: string;
+    description?: string;
+    event_date?: string;
+    languages?: string[];
+  }) => void;
   onEventDelete: (eventId: string) => void;
 }
 
@@ -59,9 +61,9 @@ const EventManager = ({
 }: EventManagerProps) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
-    name: "",
+    title: "",
     description: "",
-    date: "",
+    event_date: "",
     invitationImage: "",
     languages: ["he"] // Default to Hebrew
   });
@@ -82,7 +84,7 @@ const EventManager = ({
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEvent.name || !newEvent.date || newEvent.languages.length === 0) {
+    if (!newEvent.title || !newEvent.event_date || newEvent.languages.length === 0) {
       toast({
         title: "❌ שגיאה",
         description: "יש למלא את כל השדות הנדרשים ולבחור לפחות שפה אחת",
@@ -91,41 +93,20 @@ const EventManager = ({
       return;
     }
 
-    // Handle image upload (mock for now)
-    let invitationImageUrl = "";
-    if (selectedFile) {
-      // In real implementation, upload to server/cloud storage
-      invitationImageUrl = URL.createObjectURL(selectedFile);
-    }
-
     onEventCreate({
-      ...newEvent,
-      invitationImage: invitationImageUrl,
-      customFields: [
-        {
-          id: 'menCounter',
-          type: 'menCounter',
-          label: '👨 מספר גברים',
-          labelEn: '👨 Number of Men',
-          required: false
-        },
-        {
-          id: 'womenCounter',
-          type: 'womenCounter',
-          label: '👩 מספר נשים',
-          labelEn: '👩 Number of Women',
-          required: false
-        }
-      ]
+      title: newEvent.title,
+      description: newEvent.description,
+      event_date: newEvent.event_date,
+      languages: newEvent.languages
     });
     
-    setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });
+    setNewEvent({ title: "", description: "", event_date: "", invitationImage: "", languages: ["he"] });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
     toast({
       title: "✅ אירוע נוצר בהצלחה",
-      description: `האירוע "${newEvent.name}" נוסף למערכת`
+      description: `האירוע "${newEvent.title}" נוסף למערכת`
     });
   };
 
@@ -172,8 +153,8 @@ const EventManager = ({
                    <Label htmlFor="event-name">שם האירוע *</Label>
                    <Input
                      id="event-name"
-                     value={newEvent.name}
-                     onChange={(e) => setNewEvent(prev => ({ ...prev, name: e.target.value }))}
+                     value={newEvent.title}
+                     onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
                      placeholder="לדוגמא: החתונה של שייקי ומיכל"
                      required
                    />
@@ -192,8 +173,8 @@ const EventManager = ({
                    <Input
                      id="event-date"
                      type="date"
-                     value={newEvent.date}
-                     onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
+                     value={newEvent.event_date}
+                     onChange={(e) => setNewEvent(prev => ({ ...prev, event_date: e.target.value }))}
                      required
                    />
                  </div>
@@ -268,9 +249,9 @@ const EventManager = ({
                     type="button" 
                     variant="outline" 
                     onClick={() => {
-                      setIsCreateOpen(false);
-                      setSelectedFile(null);
-                      setNewEvent({ name: "", description: "", date: "", invitationImage: "", languages: ["he"] });
+                     setIsCreateOpen(false);
+                     setSelectedFile(null);
+                     setNewEvent({ title: "", description: "", event_date: "", invitationImage: "", languages: ["he"] });
                     }}
                   >
                     ביטול
@@ -300,10 +281,10 @@ const EventManager = ({
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                     <div className="flex items-center gap-2 mb-1">
-                       <h3 className="font-medium">{event.name}</h3>
-                       <div className="flex flex-wrap gap-1">
-                         {event.languages.map(langCode => {
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium">{event.title}</h3>
+                        <div className="flex flex-wrap gap-1">
+                          {event.languages?.map(langCode => {
                            const lang = availableLanguages.find(l => l.code === langCode);
                            return (
                              <Badge key={langCode} variant="outline" className="text-xs">
@@ -321,16 +302,16 @@ const EventManager = ({
                         {event.description}
                       </p>
                     )}
-                    <p className="text-sm text-muted-foreground">
-                      📅 {new Date(event.date).toLocaleDateString('he-IL')}
-                    </p>
+                     <p className="text-sm text-muted-foreground">
+                       📅 {event.event_date ? new Date(event.event_date).toLocaleDateString('he-IL') : 'לא נקבע תאריך'}
+                     </p>
                   </div>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`האם אתה בטוח שברצונך למחוק את האירוע "${event.name}"?`)) {
+                      if (confirm(`האם אתה בטוח שברצונך למחוק את האירוע "${event.title}"?`)) {
                         onEventDelete(event.id);
                       }
                     }}

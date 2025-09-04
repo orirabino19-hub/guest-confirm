@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Download, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { Guest } from './GuestList';
+import { Guest } from '@/hooks/useGuests';
 
 export interface Event {
   id: string;
@@ -38,7 +38,7 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
       return;
     }
 
-    const filteredGuests = guests.filter(guest => guest.eventId === selectedEventId);
+    const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
 
     if (filteredGuests.length === 0) {
       toast({
@@ -52,14 +52,14 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
     // Prepare data for export
     const exportData = filteredGuests.map((guest, index) => ({
       'מס רשומה': index + 1,
-      'שם מלא': guest.fullName,
+      'שם מלא': guest.full_name,
       'טלפון': guest.phone,
-      'סטטוס': guest.status === 'confirmed' ? 'אישר הגעה' : 'ממתין לתשובה',
-      'גברים': guest.menCount || 0,
-      'נשים': guest.womenCount || 0,
-      'סה"כ מוזמנים': guest.totalGuests || 0,
-      'תאריך אישור': guest.confirmedAt ? new Date(guest.confirmedAt).toLocaleDateString('he-IL') : '',
-      'קישור אישי': generateInviteLink(selectedEventId, guest.phone)
+      'סטטוס': 'אורח',
+      'גברים': guest.men_count || 0,
+      'נשים': guest.women_count || 0,
+      'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
+      'תאריך רישום': new Date(guest.created_at).toLocaleDateString('he-IL'),
+      'קישור אישי': generateInviteLink(selectedEventId, guest.phone || '')
     }));
 
     // Create workbook and worksheet
@@ -83,11 +83,11 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'רשימת אורחים');
 
-    // Generate summary data
-    const confirmedGuests = filteredGuests.filter(g => g.status === 'confirmed');
-    const totalConfirmedMen = confirmedGuests.reduce((sum, g) => sum + (g.menCount || 0), 0);
-    const totalConfirmedWomen = confirmedGuests.reduce((sum, g) => sum + (g.womenCount || 0), 0);
-    const totalConfirmedGuests = confirmedGuests.reduce((sum, g) => sum + (g.totalGuests || 0), 0);
+  // Simplified compatibility stats since we don't have status field yet
+  const confirmedGuests = []; // Will be updated when RSVP submissions are integrated
+  const totalConfirmedMen = 0;
+  const totalConfirmedWomen = 0;
+  const totalConfirmedGuests = 0;
 
     const summaryData = [
       { 'פרטי האירוע': '', 'ערך': '' },
@@ -125,9 +125,9 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
   const copyAllLinks = () => {
     if (!selectedEventId) return;
 
-    const filteredGuests = guests.filter(guest => guest.eventId === selectedEventId);
+    const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
     const links = filteredGuests.map(guest => 
-      `${guest.fullName}: ${generateInviteLink(selectedEventId, guest.phone)}`
+      `${guest.full_name}: ${generateInviteLink(selectedEventId, guest.phone || '')}`
     ).join('\n');
 
     navigator.clipboard.writeText(links);
@@ -138,11 +138,11 @@ const ExcelExport = ({ selectedEventId, eventName, guests }: ExcelExportProps) =
   };
 
   const filteredGuests = selectedEventId 
-    ? guests.filter(guest => guest.eventId === selectedEventId)
+    ? guests.filter(guest => guest.event_id === selectedEventId)
     : [];
 
-  const confirmedGuests = filteredGuests.filter(g => g.status === 'confirmed');
-  const pendingGuests = filteredGuests.filter(g => g.status === 'pending');
+  const confirmedGuests = []; // Will be updated when RSVP integration is complete
+  const pendingGuests = filteredGuests;
 
   if (!selectedEventId) {
     return (

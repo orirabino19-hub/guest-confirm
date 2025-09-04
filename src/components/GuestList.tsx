@@ -2,18 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-
-export interface Guest {
-  id: string;
-  eventId: string;
-  fullName: string;
-  phone: string;
-  menCount?: number;
-  womenCount?: number;
-  totalGuests?: number;
-  confirmedAt?: string;
-  status: 'pending' | 'confirmed';
-}
+import { Guest } from "@/hooks/useGuests";
 
 interface GuestListProps {
   guests: Guest[];
@@ -33,9 +22,7 @@ const GuestList = ({ guests, loading, selectedEventId }: GuestListProps) => {
     });
   };
 
-  const filteredGuests = selectedEventId 
-    ? guests.filter(g => g.eventId === selectedEventId)
-    : [];
+  const filteredGuests = guests; // Already filtered in parent
 
   if (!selectedEventId) {
     return (
@@ -72,18 +59,16 @@ const GuestList = ({ guests, loading, selectedEventId }: GuestListProps) => {
             {filteredGuests.map((guest) => (
               <div key={guest.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1 text-right">
-                  <div className="flex items-center gap-2 mb-1 justify-end">
-                    <Badge variant={guest.status === 'confirmed' ? 'default' : 'secondary'}>
-                      {guest.status === 'confirmed' ? 'אישר' : 'ממתין'}
-                    </Badge>
-                    <h3 className="font-medium">{guest.fullName}</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">📞 {guest.phone}</p>
-                  {guest.status === 'confirmed' && (
-                    <p className="text-sm text-green-600">
-                      👥 {guest.totalGuests} מוזמנים ({guest.menCount} גברים, {guest.womenCount} נשים)
-                    </p>
-                  )}
+                   <div className="flex items-center gap-2 mb-1 justify-end">
+                     <Badge variant="secondary">אורח</Badge>
+                     <h3 className="font-medium">{guest.full_name}</h3>
+                   </div>
+                   <p className="text-sm text-muted-foreground">📞 {guest.phone}</p>
+                   {(guest.men_count > 0 || guest.women_count > 0) && (
+                     <p className="text-sm text-green-600">
+                       👥 {guest.men_count + guest.women_count} מוזמנים ({guest.men_count} גברים, {guest.women_count} נשים)
+                     </p>
+                   )}
                 </div>
                 <Button 
                   variant="outline" 

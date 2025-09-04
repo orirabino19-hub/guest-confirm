@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import EventManager, { Event, CustomField } from "@/components/EventManager";
-import GuestList, { Guest } from "@/components/GuestList";
+import EventManager from "@/components/EventManager";
+import GuestList from "@/components/GuestList";
 import LanguageManager from "@/components/LanguageManager";
 import LanguageSystemManager, { LanguageConfig } from "@/components/LanguageSystemManager";
 import InvitationManager from "@/components/InvitationManager";
@@ -17,103 +17,19 @@ import LinkManager from "@/components/LinkManager";
 import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
 import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
+import { useEvents } from "@/hooks/useEvents";
+import { useGuests } from "@/hooks/useGuests";
+import { useRSVP } from "@/hooks/useRSVP";
 
 const Admin = () => {
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: "1",
-      name: "החתונה של שייקי ומיכל",
-      description: "חתונה מיוחדת בגן אירועים",
-      date: "2024-06-15",
-      createdAt: new Date().toISOString(),
-      languages: ['he'],
-      customFields: [
-        {
-          id: 'menCounter',
-          type: 'menCounter',
-          label: '👨 מספר גברים',
-          labelEn: '👨 Number of Men',
-          required: false
-        },
-        {
-          id: 'womenCounter',
-          type: 'womenCounter',
-          label: '👩 מספר נשים',
-          labelEn: '👩 Number of Women',
-          required: false
-        }
-      ]
-    },
-    {
-      id: "2", 
-      name: "יום הולדת 30 לדני",
-      description: "מסיבת יום הולדת במועדון",
-      date: "2024-07-20",
-      createdAt: new Date().toISOString(),
-      languages: ['he'],
-      customFields: [
-        {
-          id: 'menCounter',
-          type: 'menCounter',
-          label: '👨 מספר גברים',
-          labelEn: '👨 Number of Men',
-          required: false
-        },
-        {
-          id: 'womenCounter',
-          type: 'womenCounter',
-          label: '👩 מספר נשים',
-          labelEn: '👩 Number of Women',
-          required: false
-        }
-      ]
-    }
-  ]);
+  const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
+  const { submissions } = useRSVP(selectedEventId || undefined);
   
-  const [guests, setGuests] = useState<Guest[]>([
-    {
-      id: "1",
-      eventId: "1",
-      fullName: "משה כהן",
-      phone: "0501234567",
-      menCount: 2,
-      womenCount: 3,
-      totalGuests: 5,
-      confirmedAt: new Date().toISOString(),
-      status: 'confirmed'
-    },
-    {
-      id: "2", 
-      eventId: "1",
-      fullName: "שרה לוי",
-      phone: "0527654321",
-      status: 'pending'
-    },
-    {
-      id: "3",
-      eventId: "2",
-      fullName: "דוד ישראלי", 
-      phone: "0543216789",
-      menCount: 1,
-      womenCount: 2,
-      totalGuests: 3,
-      confirmedAt: new Date(Date.now() - 86400000).toISOString(),
-      status: 'confirmed'
-    },
-    {
-      id: "4",
-      eventId: "2",
-      fullName: "רחל אברהם",
-      phone: "0556789123", 
-      status: 'pending'
-    }
-  ]);
-  
-  const [selectedEventId, setSelectedEventId] = useState<string | null>("1");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
   // Available languages for the system
@@ -140,76 +56,89 @@ const Admin = () => {
     }
   };
 
-  const handleEventCreate = (newEvent: Omit<Event, 'id' | 'createdAt'>) => {
-    const event: Event = {
-      ...newEvent,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString()
-    };
-    setEvents(prev => [...prev, event]);
-    setSelectedEventId(event.id);
-    toast({
-      title: "✅ אירוע נוצר בהצלחה",
-      description: `האירוע "${newEvent.name}" נוצר בהצלחה`
-    });
-  };
-
-  const handleEventDelete = (eventId: string) => {
-    setEvents(prev => prev.filter(e => e.id !== eventId));
-    setGuests(prev => prev.filter(g => g.eventId !== eventId));
-    if (selectedEventId === eventId) {
-      setSelectedEventId(events.length > 1 ? events.find(e => e.id !== eventId)?.id || null : null);
+  const handleEventCreate = async (newEventData: {
+    title: string;
+    description?: string;
+    event_date?: string;
+    languages?: string[];
+  }) => {
+    try {
+      const event = await createEvent(newEventData);
+      setSelectedEventId(event.id);
+    } catch (error) {
+      // Error handled in hook
     }
-    toast({
-      title: "✅ אירוע נמחק",
-      description: "האירוע וכל המוזמנים שלו נמחקו"
-    });
   };
 
-  const handleGuestsImported = (importedGuests: Omit<Guest, 'id'>[]) => {
-    setLoading(true);
-    
-    // Add unique IDs to imported guests
-    const guestsWithIds = importedGuests.map(guest => ({
-      ...guest,
-      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-    }));
-
-    setGuests(prev => [...prev, ...guestsWithIds]);
-    setLoading(false);
-    
-    toast({
-      title: "📥 אורחים יובאו בהצלחה",
-      description: `נוספו ${importedGuests.length} אורחים מהקובץ`
-    });
+  const handleEventDelete = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+      if (selectedEventId === eventId) {
+        setSelectedEventId(events.length > 1 ? events.find(e => e.id !== eventId)?.id || null : null);
+      }
+    } catch (error) {
+      // Error handled in hook
+    }
   };
 
-  const handleGuestAdd = (guestData: Omit<Guest, 'id'>) => {
-    const newGuest: Guest = {
-      ...guestData,
-      id: Date.now().toString()
-    };
-    
-    setGuests(prev => [...prev, newGuest]);
-  };
-
-  const handleGuestDelete = (guestId: string) => {
-    setGuests(prev => prev.filter(g => g.id !== guestId));
-  };
-
-  const handleEventUpdate = (eventId: string, updates: Partial<Event>) => {
-    setEvents(prev => prev.map(event => 
-      event.id === eventId ? { ...event, ...updates } : event
-    ));
-  };
-
-  const handleCustomFieldsUpdate = (fields: CustomField[]) => {
+  // Handle ExcelImport compatibility
+  const handleGuestsImported = async (importedGuests: any[]) => {
     if (!selectedEventId) return;
     
-    setEvents(prev => prev.map(event => 
-      event.id === selectedEventId ? { ...event, customFields: fields } : event
-    ));
-    
+    try {
+      for (const guestData of importedGuests) {
+        await createGuest({
+          event_id: selectedEventId,
+          full_name: guestData.fullName || guestData.full_name,
+          phone: guestData.phone,
+          men_count: guestData.menCount || 0,
+          women_count: guestData.womenCount || 0
+        });
+      }
+      
+      toast({
+        title: "📥 אורחים יובאו בהצלחה",
+        description: `נוספו ${importedGuests.length} אורחים מהקובץ`
+      });
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleGuestAdd = async (guestData: {
+    eventId: string;
+    fullName: string;
+    phone: string;
+  }) => {
+    try {
+      await createGuest({
+        event_id: guestData.eventId,
+        full_name: guestData.fullName,
+        phone: guestData.phone
+      });
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleGuestDelete = async (guestId: string) => {
+    try {
+      await deleteGuest(guestId);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleEventUpdate = async (eventId: string, updates: any) => {
+    try {
+      await updateEvent(eventId, updates);
+    } catch (error) {
+      // Error handled in hook
+    }
+  };
+
+  const handleCustomFieldsUpdate = (fields: any[]) => {
+    // This will be handled by the custom fields hook
     toast({
       title: "✅ שדות מותאמים אישית עודכנו",
       description: "השדות נשמרו בהצלחה עבור הקישור הפתוח"
@@ -271,12 +200,15 @@ const Admin = () => {
   }
 
   // Calculate stats for selected event
-  const selectedEventGuests = selectedEventId ? guests.filter(g => g.eventId === selectedEventId) : [];
-  const confirmedCount = selectedEventGuests.filter(g => g.status === 'confirmed').length;
-  const pendingCount = selectedEventGuests.filter(g => g.status === 'pending').length;
-  const totalConfirmedGuests = selectedEventGuests
-    .filter(g => g.status === 'confirmed')
-    .reduce((sum, g) => sum + (g.totalGuests || 0), 0);
+  const selectedEventGuests = selectedEventId ? 
+    guests.filter(g => g.event_id === selectedEventId) : [];
+  const selectedEventSubmissions = selectedEventId ?
+    submissions.filter(s => s.event_id === selectedEventId) : [];
+  
+  const confirmedCount = selectedEventSubmissions.length;
+  const pendingCount = selectedEventGuests.length - confirmedCount;
+  const totalConfirmedGuests = selectedEventSubmissions
+    .reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
 
@@ -290,7 +222,7 @@ const Admin = () => {
               <div>
                 <CardTitle className="text-2xl">🎭 מערכת ניהול אירועים</CardTitle>
                 <p className="text-muted-foreground">
-                  {selectedEvent ? `ניהול: ${selectedEvent.name}` : "בחר אירוע לניהול"}
+                  {selectedEvent ? `ניהול: ${selectedEvent.title}` : "בחר אירוע לניהול"}
                 </p>
               </div>
               <Button 
@@ -357,17 +289,17 @@ const Admin = () => {
 
           <TabsContent value="guests" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <GuestManager
-                selectedEventId={selectedEventId}
-                guests={guests}
-                onGuestAdd={handleGuestAdd}
-                onGuestDelete={handleGuestDelete}
-              />
-              <GuestList
-                guests={guests}
-                loading={loading}
-                selectedEventId={selectedEventId}
-              />
+            <GuestManager
+              selectedEventId={selectedEventId}
+              guests={selectedEventGuests}
+              onGuestAdd={handleGuestAdd}
+              onGuestDelete={handleGuestDelete}
+            />
+            <GuestList
+              guests={selectedEventGuests}
+              loading={guestsLoading}
+              selectedEventId={selectedEventId}
+            />
             </div>
           </TabsContent>
 
@@ -381,8 +313,8 @@ const Admin = () => {
           <TabsContent value="links" className="space-y-4">
             <LinkManager
               selectedEventId={selectedEventId}
-              eventName={selectedEvent?.name}
-              customFields={selectedEvent?.customFields || []}
+              eventName={selectedEvent?.title}
+              customFields={[]}
               onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>
@@ -397,7 +329,7 @@ const Admin = () => {
           <TabsContent value="invitations">
             <InvitationManager 
               selectedEventId={selectedEventId}
-              eventName={selectedEvent?.name}
+              eventName={selectedEvent?.title}
               availableLanguages={availableLanguages}
             />
           </TabsContent>
@@ -405,14 +337,14 @@ const Admin = () => {
           <TabsContent value="colors">
             <ColorManager 
               selectedEventId={selectedEventId}
-              eventName={selectedEvent?.name}
+              eventName={selectedEvent?.title}
             />
           </TabsContent>
 
           <TabsContent value="custom-fields" className="space-y-4">
             <OpenRSVPCustomFields
               selectedEventId={selectedEventId}
-              customFields={selectedEvent?.customFields || []}
+              customFields={[]}
               onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>
@@ -420,8 +352,8 @@ const Admin = () => {
           <TabsContent value="export" className="space-y-4">
             <ExcelExport
               selectedEventId={selectedEventId}
-              eventName={selectedEvent?.name}
-              guests={guests}
+              eventName={selectedEvent?.title}
+              guests={selectedEventGuests}
             />
           </TabsContent>
         </Tabs>

@@ -7,12 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Phone, User, Copy, Trash2 } from 'lucide-react';
-import { Guest } from './GuestList';
+import { Guest } from '@/hooks/useGuests';
 
 interface GuestManagerProps {
   selectedEventId: string | null;
   guests: Guest[];
-  onGuestAdd: (guest: Omit<Guest, 'id'>) => void;
+  onGuestAdd: (guest: {
+    eventId: string;
+    fullName: string;
+    phone: string;
+  }) => void;
   onGuestDelete: (guestId: string) => void;
 }
 
@@ -65,7 +69,7 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
     
     // Check if guest with same phone already exists for this event
     const existingGuest = guests.find(
-      g => g.eventId === selectedEventId && g.phone === normalizedPhone
+      g => g.event_id === selectedEventId && g.phone === normalizedPhone
     );
 
     if (existingGuest) {
@@ -77,11 +81,10 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
       return;
     }
 
-    const guestData: Omit<Guest, 'id'> = {
+    const guestData = {
       eventId: selectedEventId,
       fullName: newGuest.fullName.trim(),
-      phone: normalizedPhone,
-      status: 'pending'
+      phone: normalizedPhone
     };
 
     onGuestAdd(guestData);
@@ -113,7 +116,7 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
   };
 
   const filteredGuests = selectedEventId 
-    ? guests.filter(g => g.eventId === selectedEventId)
+    ? guests.filter(g => g.event_id === selectedEventId)
     : [];
 
   if (!selectedEventId) {
@@ -201,19 +204,17 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4" />
-                      <span className="font-medium">{guest.fullName}</span>
-                      <Badge variant={guest.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {guest.status === 'confirmed' ? 'אישר' : 'ממתין'}
-                      </Badge>
+                      <span className="font-medium">{guest.full_name}</span>
+                      <Badge variant="secondary">אורח</Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-3 w-3" />
                       <span className="font-mono">{guest.phone}</span>
-                      {guest.status === 'confirmed' && guest.totalGuests && (
+                      {guest.men_count > 0 || guest.women_count > 0 ? (
                         <span className="text-green-600 font-medium">
-                          • {guest.totalGuests} מוזמנים
+                          • {guest.men_count + guest.women_count} מוזמנים
                         </span>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   <div className="flex gap-1">
@@ -228,7 +229,7 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteGuest(guest.id, guest.fullName)}
+                      onClick={() => handleDeleteGuest(guest.id, guest.full_name || 'אורח לא ידוע')}
                       className="text-red-500 hover:text-red-700"
                       title="מחק אורח"
                     >
@@ -250,15 +251,15 @@ const GuestManager = ({ selectedEventId, guests, onGuestAdd, onGuestDelete }: Gu
           <div className="grid grid-cols-2 gap-4 pt-2 border-t">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {filteredGuests.filter(g => g.status === 'confirmed').length}
+                {filteredGuests.filter(g => g.men_count > 0 || g.women_count > 0).length}
               </div>
-              <div className="text-sm text-muted-foreground">אישרו</div>
+              <div className="text-sm text-muted-foreground">עם נתונים</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {filteredGuests.filter(g => g.status === 'pending').length}
+                {filteredGuests.reduce((sum, g) => sum + g.men_count + g.women_count, 0)}
               </div>
-              <div className="text-sm text-muted-foreground">ממתינים</div>
+              <div className="text-sm text-muted-foreground">סה"כ מוזמנים</div>
             </div>
           </div>
         )}

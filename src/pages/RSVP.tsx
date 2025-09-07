@@ -51,13 +51,20 @@ const RSVP = () => {
         if (!phone?.includes('@') && phone && !urlGuestName) {
           console.log('Attempting to resolve short codes:', eventId, phone);
           const resolved = await resolveShortCodes(eventId, phone);
+          console.log('Resolution result:', resolved);
           if (resolved) {
             actualEventId = resolved.eventId;
             actualPhone = phone; // Keep original for guest lookup
-            console.log('Resolved to:', resolved);
+            console.log('Resolved to eventId:', actualEventId, 'phone:', actualPhone);
           } else {
             // If resolution fails, assume it's the old UUID format
-            console.log('Short code resolution failed, using as UUID');
+            console.log('Short code resolution failed, using as UUID - eventId:', eventId);
+            // Don't continue with invalid UUID - show error instead
+            if (eventId && eventId.length < 10) { // likely a short code, not UUID
+              setError(t('rsvp.errors.eventNotFound'));
+              setLoading(false);
+              return;
+            }
           }
         }
 

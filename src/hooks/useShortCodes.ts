@@ -71,30 +71,38 @@ export const useShortCodes = () => {
   // Resolve short codes to actual IDs
   const resolveShortCodes = async (eventCode: string, guestCode: string): Promise<ShortCodeMapping | null> => {
     try {
+      console.log('Resolving short codes:', eventCode, guestCode);
+      
       // First try to resolve by short codes
-      const { data: eventData } = await supabase
+      const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('id, short_code')
         .eq('short_code', eventCode)
-        .single();
+        .maybeSingle();
+
+      console.log('Event lookup result:', eventData, eventError);
 
       if (!eventData) {
         // Fallback: check if eventCode is actually a UUID
-        const { data: eventByUuid } = await supabase
+        const { data: eventByUuid, error: uuidError } = await supabase
           .from('events')
           .select('id, short_code')
           .eq('id', eventCode)
-          .single();
+          .maybeSingle();
+        
+        console.log('UUID lookup result:', eventByUuid, uuidError);
         
         if (!eventByUuid) return null;
         
         // If it's a UUID, check if guest code is a phone number
-        const { data: guestByPhone } = await supabase
+        const { data: guestByPhone, error: phoneError } = await supabase
           .from('guests')
           .select('id, short_code, phone')
           .eq('event_id', eventByUuid.id)
           .eq('phone', guestCode)
-          .single();
+          .maybeSingle();
+
+        console.log('Phone lookup result:', guestByPhone, phoneError);
 
         if (guestByPhone) {
           return {
@@ -108,21 +116,26 @@ export const useShortCodes = () => {
       }
 
       // Look for guest by short code in this event
-      const { data: guestData } = await supabase
+      const { data: guestData, error: guestError } = await supabase
         .from('guests')
         .select('id, short_code')
         .eq('event_id', eventData.id)
         .eq('short_code', guestCode)
-        .single();
+        .maybeSingle();
+
+      console.log('Guest lookup result:', guestData, guestError);
 
       if (!guestData) return null;
 
-      return {
+      const result = {
         eventCode: eventData.short_code,
         eventId: eventData.id,
         guestCode: guestData.short_code,
         guestId: guestData.id
       };
+      
+      console.log('Successfully resolved short codes:', result);
+      return result;
 
     } catch (err: any) {
       console.error('Error resolving short codes:', err);
@@ -140,7 +153,7 @@ export const useShortCodes = () => {
         .from('guests')
         .select('full_name')
         .eq('id', mapping.guestId)
-        .single();
+        .maybeSingle();
 
       return guestData?.full_name || null;
 
@@ -158,7 +171,7 @@ export const useShortCodes = () => {
         .from('events')
         .select('short_code')
         .eq('id', eventId)
-        .single();
+        .maybeSingle();
 
       if (!eventData?.short_code) {
         // Generate code if missing
@@ -180,7 +193,7 @@ export const useShortCodes = () => {
         .select('short_code')
         .eq('event_id', eventId)
         .eq('phone', phone)
-        .single();
+        .maybeSingle();
 
       if (!guestData?.short_code) {
         // Generate code if missing

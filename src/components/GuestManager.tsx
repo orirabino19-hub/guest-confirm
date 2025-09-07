@@ -112,13 +112,16 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     if (!selectedEventId) return;
     
     try {
+      console.log('Generating short link for:', { eventId: selectedEventId, phone });
       const shortLink = await generateShortLink(selectedEventId, phone);
+      console.log('Generated short link:', shortLink);
       navigator.clipboard.writeText(shortLink);
       toast({
         title: "🔗 הקישור הועתק",
         description: "קישור קצר הועתק ללוח"
       });
     } catch (error) {
+      console.error('Error generating short link:', error);
       // Fallback to old format
       const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
       navigator.clipboard.writeText(link);

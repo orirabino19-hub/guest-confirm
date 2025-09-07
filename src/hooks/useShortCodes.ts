@@ -71,7 +71,7 @@ export const useShortCodes = () => {
   // Resolve short codes to actual IDs
   const resolveShortCodes = async (eventCode: string, guestCode: string): Promise<ShortCodeMapping | null> => {
     try {
-      console.log('Resolving short codes:', eventCode, guestCode);
+      console.log('🔍 Resolving short codes:', eventCode, guestCode);
       
       // First try to resolve by short codes
       const { data: eventData, error: eventError } = await supabase
@@ -80,7 +80,7 @@ export const useShortCodes = () => {
         .eq('short_code', eventCode)
         .maybeSingle();
 
-      console.log('Event lookup result:', eventData, eventError);
+      console.log('📅 Event lookup result:', { eventData, eventError, searchedFor: eventCode });
 
       if (!eventData) {
         // Fallback: check if eventCode is actually a UUID

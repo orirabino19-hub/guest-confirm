@@ -58,22 +58,22 @@ const RSVP = () => {
         const isShortCode = eventId && /^\d+$/.test(eventId) && eventId.length < 10;
         
         if (isShortCode && phone && !urlGuestName) {
-          console.log('Attempting to resolve short codes:', eventId, phone);
+          console.log('🔄 Attempting to resolve short codes:', eventId, phone);
           const resolved = await resolveShortCodes(eventId, phone);
-          console.log('Resolution result:', resolved);
+          console.log('✅ Resolution result:', resolved);
           if (resolved) {
             actualEventId = resolved.eventId;
             actualPhone = phone; // Keep original for guest lookup
-            console.log('Resolved to eventId:', actualEventId, 'phone:', actualPhone);
+            console.log('🎯 Resolved to eventId:', actualEventId, 'phone:', actualPhone);
           } else {
-            console.log('Short code resolution failed');
+            console.log('❌ Short code resolution failed - no matching event/guest found');
             setError(t('rsvp.errors.eventNotFound'));
             setLoading(false);
             return;
           }
         }
 
-        console.log('About to query database with actualEventId:', actualEventId);
+        console.log('🔍 About to query database with actualEventId:', actualEventId);
         
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase

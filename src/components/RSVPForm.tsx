@@ -242,14 +242,14 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
   });
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
-      <div className="max-w-2xl mx-auto space-y-8">
+    <div className="min-h-screen bg-background py-4 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+      <div className="max-w-2xl mx-auto space-y-4">
         {/* Event Invitation Image with Language Selector */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
           <img 
             src={getInvitationForGuest(phone, i18n.language)} 
             alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-            className="w-full h-auto max-h-[90vh] object-contain bg-white"
+            className="w-full h-auto max-h-[50vh] object-contain bg-white"
           />
           
           {/* Language Selector - Top Right */}
@@ -262,11 +262,11 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
         {/* Welcome Card */}
         <Card className="bg-gradient-card shadow-soft border-border/50">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl md:text-2xl font-bold text-foreground">
               {t('rsvp.welcome', { name: guestName })}
             </CardTitle>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground">
               {t('rsvp.eventInvitation', { eventName })}
             </p>
           </CardHeader>
@@ -274,18 +274,18 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
         {/* RSVP Form */}
         <Card className="bg-gradient-card shadow-elegant border-border/50">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-center text-primary">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg font-semibold text-center text-primary">
               {t('rsvp.confirmTitle')}
             </CardTitle>
-            <p className="text-center text-muted-foreground">
+            <p className="text-center text-muted-foreground text-sm">
               {t('rsvp.confirmDescription')}
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* CRITICAL: Default Guest Counters - Always show for personal RSVP links */}
-              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+              <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border/30">
                 <h3 className="font-medium text-center text-foreground mb-4">
                   {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
                 </h3>
@@ -367,7 +367,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
               {/* Custom Fields */}
               {customFields.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {customFields.map(field => (
                     <div key={field.id} className="col-span-1">
                       {renderCustomField(field)}
@@ -378,8 +378,8 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
               {/* Total Display */}
               {totalGuests > 0 && (
-                <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
-                  <p className="text-lg font-medium text-accent-foreground">
+                <div className="text-center p-3 bg-accent/50 rounded-lg border border-accent">
+                  <p className="text-base font-medium text-accent-foreground">
                     {t('rsvp.totalGuests', { count: totalGuests })}
                   </p>
                 </div>
@@ -389,7 +389,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
               <Button 
                 type="submit" 
                 disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required))}
-                className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                className="w-full text-lg py-4 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">

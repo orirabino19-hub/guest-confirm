@@ -73,6 +73,8 @@ const RSVP = () => {
           }
         }
 
+        console.log('About to query database with actualEventId:', actualEventId);
+        
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')
@@ -80,8 +82,11 @@ const RSVP = () => {
           .eq('id', actualEventId)
           .maybeSingle();
 
+        console.log('Database query result:', { eventData, eventError });
+
         if (eventError || !eventData) {
           console.error('Event not found:', eventError);
+          console.error('Searched for eventId:', actualEventId);
           setError(t('rsvp.errors.eventNotFound'));
           setLoading(false);
           return;

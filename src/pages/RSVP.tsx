@@ -25,7 +25,7 @@ const RSVP = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
-  const { resolveShortCodes, getGuestNameByCodes } = useShortCodes();
+  const { resolveShortCodes, getGuestNameByEventCodeAndPhone } = useShortCodes();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +58,7 @@ const RSVP = () => {
         const isShortCode = eventId && /^\d+$/.test(eventId) && eventId.length < 10;
         
         if (isShortCode && phone && !urlGuestName) {
-          console.log('🔄 Attempting to resolve short codes:', eventId, phone);
+          console.log('🔄 Attempting to resolve event code and phone:', eventId, phone);
           const resolved = await resolveShortCodes(eventId, phone);
           console.log('✅ Resolution result:', resolved);
           if (resolved) {
@@ -66,7 +66,7 @@ const RSVP = () => {
             actualPhone = phone; // Keep original for guest lookup
             console.log('🎯 Resolved to eventId:', actualEventId, 'phone:', actualPhone);
           } else {
-            console.log('❌ Short code resolution failed - no matching event/guest found');
+            console.log('❌ Event code/phone resolution failed - no matching event/guest found');
             setError(t('rsvp.errors.eventNotFound'));
             setLoading(false);
             return;
@@ -141,8 +141,8 @@ const RSVP = () => {
           let guestNameResult = null;
           
           if (eventId !== actualEventId) {
-            // We resolved short codes, try to get name by codes
-            guestNameResult = await getGuestNameByCodes(eventId, phone!);
+            // We resolved short codes, try to get name by event code and phone
+            guestNameResult = await getGuestNameByEventCodeAndPhone(eventId, phone!);
           }
           
           if (!guestNameResult) {
@@ -180,7 +180,7 @@ const RSVP = () => {
     };
 
     fetchData();
-  }, [phone, eventId, urlGuestName, i18n.language, t, resolveShortCodes, getGuestNameByCodes]);
+  }, [phone, eventId, urlGuestName, i18n.language, t, resolveShortCodes, getGuestNameByEventCodeAndPhone]);
 
   if (loading) {
     return (

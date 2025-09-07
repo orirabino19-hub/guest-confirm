@@ -68,12 +68,12 @@ export const useShortCodes = () => {
     }
   };
 
-  // Resolve short codes to actual IDs
-  const resolveShortCodes = async (eventCode: string, guestCode: string): Promise<ShortCodeMapping | null> => {
+  // Resolve event code and phone to actual IDs
+  const resolveShortCodes = async (eventCode: string, phone: string): Promise<ShortCodeMapping | null> => {
     try {
-      console.log('🔍 Resolving short codes:', eventCode, guestCode);
+      console.log('🔍 Resolving event code and phone:', eventCode, phone);
       
-      // First try to resolve by short codes
+      // Try to resolve event by short code
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('id, short_code')
@@ -90,77 +90,63 @@ export const useShortCodes = () => {
           .eq('id', eventCode)
           .maybeSingle();
         
-        console.log('UUID lookup result:', eventByUuid, uuidError);
+        console.log('🆔 UUID lookup result:', eventByUuid, uuidError);
         
         if (!eventByUuid) return null;
         
-        // If it's a UUID, check if guest code is a phone number
+        // If it's a UUID, check if phone exists in this event
         const { data: guestByPhone, error: phoneError } = await supabase
           .from('guests')
-          .select('id, short_code, phone')
+          .select('id, phone')
           .eq('event_id', eventByUuid.id)
-          .eq('phone', guestCode)
+          .eq('phone', phone)
           .maybeSingle();
 
-        console.log('Phone lookup result:', guestByPhone, phoneError);
+        console.log('📱 Phone lookup result:', guestByPhone, phoneError);
 
         if (guestByPhone) {
           return {
             eventCode: eventByUuid.short_code || eventCode,
             eventId: eventByUuid.id,
-            guestCode: guestByPhone.short_code || guestCode,
+            guestCode: phone, // Use phone as guest code
             guestId: guestByPhone.id
           };
         }
         return null;
       }
 
-      // Look for guest by short code in this event
+      // Look for guest by phone in this event
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
-        .select('id, short_code, phone')
+        .select('id, phone')
         .eq('event_id', eventData.id)
-        .eq('short_code', guestCode)
+        .eq('phone', phone)
         .maybeSingle();
 
-      console.log('🧾 Guest lookup by short_code result:', { guestData, guestError, searchedFor: guestCode });
+      console.log('📱 Guest lookup by phone result:', { guestData, guestError, searchedFor: phone });
 
-      let guest = guestData;
-
-      // Fallback: if not found by short_code, try by phone within same event (legacy links)
-      if (!guest) {
-        const { data: guestByPhone, error: guestByPhoneError } = await supabase
-          .from('guests')
-          .select('id, short_code, phone')
-          .eq('event_id', eventData.id)
-          .eq('phone', guestCode)
-          .maybeSingle();
-        console.log('📱 Guest lookup by phone result:', { guestByPhone, guestByPhoneError, searchedFor: guestCode });
-        guest = guestByPhone || null;
-      }
-
-      if (!guest) return null;
+      if (!guestData) return null;
 
       const result = {
         eventCode: eventData.short_code,
         eventId: eventData.id,
-        guestCode: guest.short_code,
-        guestId: guest.id
+        guestCode: phone, // Use phone as guest code
+        guestId: guestData.id
       };
       
-      console.log('✅ Successfully resolved short codes:', result);
+      console.log('✅ Successfully resolved event code and phone:', result);
       return result;
 
     } catch (err: any) {
-      console.error('Error resolving short codes:', err);
+      console.error('Error resolving event code and phone:', err);
       return null;
     }
   };
 
-  // Get guest name by event and guest codes
-  const getGuestNameByCodes = async (eventCode: string, guestCode: string): Promise<string | null> => {
+  // Get guest name by event code and phone
+  const getGuestNameByEventCodeAndPhone = async (eventCode: string, phone: string): Promise<string | null> => {
     try {
-      const mapping = await resolveShortCodes(eventCode, guestCode);
+      const mapping = await resolveShortCodes(eventCode, phone);
       if (!mapping) return null;
 
       const { data: guestData } = await supabase
@@ -172,12 +158,12 @@ export const useShortCodes = () => {
       return guestData?.full_name || null;
 
     } catch (err: any) {
-      console.error('Error getting guest name by codes:', err);
+      console.error('Error getting guest name by event code and phone:', err);
       return null;
     }
   };
 
-  // Generate link using short codes
+  // Generate link using event short code and phone
   const generateShortLink = async (eventId: string, phone: string): Promise<string> => {
     try {
       // Get event short code
@@ -201,30 +187,8 @@ export const useShortCodes = () => {
         }
       }
 
-      // Get guest short code
-      const { data: guestData } = await supabase
-        .from('guests')
-        .select('short_code')
-        .eq('event_id', eventId)
-        .eq('phone', phone)
-        .maybeSingle();
-
-      if (!guestData?.short_code) {
-        // Generate code if missing
-        const { data: newGuestCode } = await supabase
-          .rpc('generate_guest_code', { p_event_id: eventId });
-        
-        if (newGuestCode) {
-          await supabase
-            .from('guests')
-            .update({ short_code: newGuestCode })
-            .eq('event_id', eventId)
-            .eq('phone', phone);
-          guestData.short_code = newGuestCode;
-        }
-      }
-
-      return `https://fp-pro.info/rsvp/${eventData.short_code}/${guestData.short_code}`;
+      // Use phone directly instead of guest code
+      return `https://fp-pro.info/rsvp/${eventData.short_code}/${phone}`;
 
     } catch (err: any) {
       console.error('Error generating short link:', err);
@@ -238,7 +202,7 @@ export const useShortCodes = () => {
     error,
     generateMissingCodes,
     resolveShortCodes,
-    getGuestNameByCodes,
+    getGuestNameByEventCodeAndPhone,
     generateShortLink
   };
 };

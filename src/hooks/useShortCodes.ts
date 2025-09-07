@@ -166,6 +166,9 @@ export const useShortCodes = () => {
   // Generate link using event short code and phone
   const generateShortLink = async (eventId: string, phone: string): Promise<string> => {
     try {
+      // Get current domain
+      const currentDomain = window.location.origin;
+      
       // Get event short code
       const { data: eventData } = await supabase
         .from('events')
@@ -188,12 +191,13 @@ export const useShortCodes = () => {
       }
 
       // Use phone directly instead of guest code
-      return `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${eventData.short_code}/${phone}`;
+      return `${currentDomain}/rsvp/${eventData.short_code}/${phone}`;
 
     } catch (err: any) {
       console.error('Error generating short link:', err);
       // Fallback to old format
-      return `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${eventId}/${phone}`;
+      const currentDomain = window.location.origin;
+      return `${currentDomain}/rsvp/${eventId}/${phone}`;
     }
   };
 

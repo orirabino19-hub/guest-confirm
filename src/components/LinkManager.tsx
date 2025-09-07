@@ -39,7 +39,8 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     }
 
     const encodedName = encodeURIComponent(customName.trim());
-    const url = `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
+    const currentDomain = window.location.origin;
+    const url = `${currentDomain}/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -68,7 +69,8 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       return;
     }
 
-    const url = `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${selectedEventId || 'event'}/open`;
+    const currentDomain = window.location.origin;
+    const url = `${currentDomain}/rsvp/${selectedEventId || 'event'}/open`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),

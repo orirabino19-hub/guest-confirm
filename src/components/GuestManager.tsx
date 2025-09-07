@@ -123,7 +123,8 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     } catch (error) {
       console.error('Error generating short link:', error);
       // Fallback to old format
-      const link = `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${selectedEventId}/${phone}`;
+      const currentDomain = window.location.origin;
+      const link = `${currentDomain}/rsvp/${selectedEventId}/${phone}`;
       navigator.clipboard.writeText(link);
       toast({
         title: "🔗 הקישור הועתק",

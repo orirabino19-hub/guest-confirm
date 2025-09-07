@@ -36,6 +36,9 @@ export const useRSVP = (eventId?: string) => {
 
       if (error) throw error;
 
+      console.log('RSVP Submissions fetched:', data);
+      console.log('Event ID filter:', eventId);
+
       setSubmissions(data || []);
     } catch (err: any) {
       setError(err.message);

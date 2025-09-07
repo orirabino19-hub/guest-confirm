@@ -271,8 +271,11 @@ const Admin = () => {
   // Calculate stats for selected event
   const selectedEventGuests = selectedEventId ? 
     guests.filter(g => g.event_id === selectedEventId) : [];
-  const selectedEventSubmissions = selectedEventId ?
-    submissions.filter(s => s.event_id === selectedEventId) : [];
+  const selectedEventSubmissions = submissions || [];
+  
+  console.log('Selected Event ID:', selectedEventId);
+  console.log('All submissions:', submissions);
+  console.log('Filtered submissions for event:', selectedEventSubmissions);
   
   const confirmedCount = selectedEventSubmissions.length;
   const pendingCount = selectedEventGuests.length - confirmedCount;

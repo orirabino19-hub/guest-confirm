@@ -20,6 +20,7 @@ import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
+import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 import AuthSettings from "@/components/AuthSettings";
 
 const Admin = () => {
@@ -373,6 +374,14 @@ const Admin = () => {
               selectedEventSlug={selectedEventSlug}
             />
             </div>
+            
+            {/* RSVP Submissions */}
+            {selectedEventId && (
+              <RSVPSubmissionsList 
+                submissions={selectedEventSubmissions}
+                loading={false}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="import" className="space-y-4">

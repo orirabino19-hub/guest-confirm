@@ -17,7 +17,9 @@ interface CustomField {
 }
 
 const RSVP = () => {
+  console.log('🚀 RSVP Component mounted!');
   const { eventId, phone, guestName: urlGuestName } = useParams<{ eventId: string; phone: string; guestName: string }>();
+  console.log('📋 URL Params:', { eventId, phone, urlGuestName });
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
   const [currentEventId, setCurrentEventId] = useState<string>("");

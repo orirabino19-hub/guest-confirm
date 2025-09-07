@@ -167,6 +167,7 @@ const RSVP = () => {
       phone={phone || ""} 
       eventName={eventName}
       customFields={customFields}
+      eventId={currentEventId}
     />
   );
 };

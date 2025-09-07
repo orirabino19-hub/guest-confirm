@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +28,26 @@ const Admin = () => {
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
   const { submissions } = useRSVP(selectedEventId || undefined);
   
+  // Enhanced authentication with session expiry
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Check if user has valid session (24 hours)
+    const sessionData = localStorage.getItem('adminSession');
+    if (sessionData) {
+      try {
+        const { timestamp } = JSON.parse(sessionData);
+        const now = new Date().getTime();
+        const sessionAge = now - timestamp;
+        const twentyFourHours = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        return sessionAge < twentyFourHours;
+      } catch {
+        localStorage.removeItem('adminSession');
+        return false;
+      }
+    }
+    return false;
+  });
   const { toast } = useToast();
   
   // Available languages for the system
@@ -39,7 +56,41 @@ const Admin = () => {
     { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
   ]);
 
-  // Mock authentication - will be replaced with Supabase auth
+  // Check session expiry periodically
+  useEffect(() => {
+    const checkSessionExpiry = () => {
+      const sessionData = localStorage.getItem('adminSession');
+      if (sessionData && isAuthenticated) {
+        try {
+          const { timestamp } = JSON.parse(sessionData);
+          const now = new Date().getTime();
+          const sessionAge = now - timestamp;
+          const twentyFourHours = 24 * 60 * 60 * 1000;
+          
+          if (sessionAge >= twentyFourHours) {
+            setIsAuthenticated(false);
+            localStorage.removeItem('adminSession');
+            toast({
+              title: "⏰ פג תוקף הסשן",
+              description: "אנא התחבר שוב",
+              variant: "destructive"
+            });
+          }
+        } catch {
+          setIsAuthenticated(false);
+          localStorage.removeItem('adminSession');
+        }
+      }
+    };
+
+    // Check immediately and then every 5 minutes
+    checkSessionExpiry();
+    const interval = setInterval(checkSessionExpiry, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated, toast]);
+
+  // Enhanced authentication - will be replaced with Supabase auth
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     const storedUsername = localStorage.getItem('adminUsername') || 'admin';
@@ -47,9 +98,17 @@ const Admin = () => {
     
     if (username === storedUsername && password === storedPassword) {
       setIsAuthenticated(true);
+      
+      // Create 24-hour session
+      const sessionData = {
+        timestamp: new Date().getTime(),
+        username: username
+      };
+      localStorage.setItem('adminSession', JSON.stringify(sessionData));
+      
       toast({
         title: "✅ התחברות בהצלחה",
-        description: "ברוכים הבאים למערכת הניהול"
+        description: "ברוכים הבאים למערכת הניהול (בתוקף ל-24 שעות)"
       });
     } else {
       toast({
@@ -58,6 +117,15 @@ const Admin = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    localStorage.removeItem('adminSession');
+    toast({
+      title: "👋 התנתקת בהצלחה",
+      description: "להתראות!"
+    });
   };
 
   const handleEventCreate = async (newEventData: {
@@ -228,7 +296,7 @@ const Admin = () => {
               </div>
               <Button 
                 variant="outline" 
-                onClick={() => setIsAuthenticated(false)}
+                onClick={handleLogout}
               >
                 התנתק
               </Button>

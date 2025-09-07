@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/event-invitation.jpg";
+import { useRSVP } from "@/hooks/useRSVP";
+import { useParams } from "react-router-dom";
 
 interface CustomField {
   id: string;
@@ -26,6 +28,7 @@ interface RSVPFormProps {
   phone: string;
   eventName: string;
   customFields?: CustomField[];
+  eventId?: string;
 }
 
 const getInvitationForGuest = (phone: string, language: string) => {
@@ -37,13 +40,15 @@ const getInvitationForGuest = (phone: string, language: string) => {
   return eventInvitation;
 };
 
-const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormProps) => {
+const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: RSVPFormProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
+  const { submitRSVP } = useRSVP();
+  const { eventId: urlEventId } = useParams<{ eventId: string }>();
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
@@ -71,25 +76,35 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
       return;
     }
 
-    // Simulate API call - will be connected to Supabase later
+    // Submit to Supabase
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const currentEventId = eventId || urlEventId;
+      if (!currentEventId) {
+        throw new Error('Event ID is required');
+      }
+
+      const submissionData = {
+        event_id: currentEventId,
+        full_name: guestName,
+        men_count: menCount,
+        women_count: womenCount,
+        answers: formData
+      };
+
+      console.log('Submitting RSVP:', submissionData);
+      
+      await submitRSVP(submissionData);
       
       toast({
         title: t('rsvp.success.title'),
         description: t('rsvp.success.description', { name: guestName }),
       });
       
-      console.log("RSVP Submitted:", {
-        guestName,
-        phone,
-        formData,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('RSVP submission error:', error);
       toast({
         title: t('rsvp.error.title'),
-        description: t('rsvp.error.description'),
+        description: error.message || t('rsvp.error.description'),
         variant: "destructive"
       });
     } finally {

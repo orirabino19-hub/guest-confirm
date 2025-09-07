@@ -75,6 +75,15 @@ const RSVP = () => {
 
         console.log('🔍 About to query database with actualEventId:', actualEventId);
         
+        // Guard: ensure we have a UUID before querying by id
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(actualEventId)) {
+          console.error('❗ Invalid eventId format (not UUID):', actualEventId);
+          setError(t('rsvp.errors.eventNotFound'));
+          setLoading(false);
+          return;
+        }
+        
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')

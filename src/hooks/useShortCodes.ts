@@ -118,23 +118,37 @@ export const useShortCodes = () => {
       // Look for guest by short code in this event
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
-        .select('id, short_code')
+        .select('id, short_code, phone')
         .eq('event_id', eventData.id)
         .eq('short_code', guestCode)
         .maybeSingle();
 
-      console.log('Guest lookup result:', guestData, guestError);
+      console.log('🧾 Guest lookup by short_code result:', { guestData, guestError, searchedFor: guestCode });
 
-      if (!guestData) return null;
+      let guest = guestData;
+
+      // Fallback: if not found by short_code, try by phone within same event (legacy links)
+      if (!guest) {
+        const { data: guestByPhone, error: guestByPhoneError } = await supabase
+          .from('guests')
+          .select('id, short_code, phone')
+          .eq('event_id', eventData.id)
+          .eq('phone', guestCode)
+          .maybeSingle();
+        console.log('📱 Guest lookup by phone result:', { guestByPhone, guestByPhoneError, searchedFor: guestCode });
+        guest = guestByPhone || null;
+      }
+
+      if (!guest) return null;
 
       const result = {
         eventCode: eventData.short_code,
         eventId: eventData.id,
-        guestCode: guestData.short_code,
-        guestId: guestData.id
+        guestCode: guest.short_code,
+        guestId: guest.id
       };
       
-      console.log('Successfully resolved short codes:', result);
+      console.log('✅ Successfully resolved short codes:', result);
       return result;
 
     } catch (err: any) {

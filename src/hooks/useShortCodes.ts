@@ -71,7 +71,7 @@ export const useShortCodes = () => {
   // Resolve event code and phone to actual IDs
   const resolveShortCodes = async (eventCode: string, phone: string): Promise<ShortCodeMapping | null> => {
     try {
-      console.log('🔍 Resolving event code and phone:', eventCode, phone);
+      console.log('🔍 [useShortCodes] Starting resolution for:', { eventCode, phone });
       
       // Try to resolve event by short code
       const { data: eventData, error: eventError } = await supabase
@@ -80,9 +80,15 @@ export const useShortCodes = () => {
         .eq('short_code', eventCode)
         .maybeSingle();
 
-      console.log('📅 Event lookup result:', { eventData, eventError, searchedFor: eventCode });
+      console.log('📅 [useShortCodes] Event lookup result:', { 
+        eventData, 
+        eventError, 
+        searchedFor: eventCode,
+        queryType: 'by_short_code'
+      });
 
       if (!eventData) {
+        console.log('🔄 [useShortCodes] Event not found by short code, trying UUID fallback');
         // Fallback: check if eventCode is actually a UUID
         const { data: eventByUuid, error: uuidError } = await supabase
           .from('events')
@@ -90,9 +96,17 @@ export const useShortCodes = () => {
           .eq('id', eventCode)
           .maybeSingle();
         
-        console.log('🆔 UUID lookup result:', eventByUuid, uuidError);
+        console.log('🆔 [useShortCodes] UUID lookup result:', { 
+          eventByUuid, 
+          uuidError,
+          searchedFor: eventCode,
+          queryType: 'by_uuid'
+        });
         
-        if (!eventByUuid) return null;
+        if (!eventByUuid) {
+          console.log('❌ [useShortCodes] No event found at all, returning null');
+          return null;
+        }
         
         // If it's a UUID, check if phone exists in this event
         const { data: guestByPhone, error: phoneError } = await supabase
@@ -102,19 +116,28 @@ export const useShortCodes = () => {
           .eq('phone', phone)
           .maybeSingle();
 
-        console.log('📱 Phone lookup result:', guestByPhone, phoneError);
+        console.log('📱 [useShortCodes] Phone lookup result (UUID path):', { 
+          guestByPhone, 
+          phoneError, 
+          searchedFor: phone,
+          eventId: eventByUuid.id
+        });
 
         if (guestByPhone) {
-          return {
+          const result = {
             eventCode: eventByUuid.short_code || eventCode,
             eventId: eventByUuid.id,
             guestCode: phone, // Use phone as guest code
             guestId: guestByPhone.id
           };
+          console.log('✅ [useShortCodes] Successfully resolved (UUID path):', result);
+          return result;
         }
+        console.log('❌ [useShortCodes] No guest found for phone in UUID path');
         return null;
       }
 
+      console.log('📞 [useShortCodes] Event found, now looking for guest by phone');
       // Look for guest by phone in this event
       const { data: guestData, error: guestError } = await supabase
         .from('guests')
@@ -123,9 +146,17 @@ export const useShortCodes = () => {
         .eq('phone', phone)
         .maybeSingle();
 
-      console.log('📱 Guest lookup by phone result:', { guestData, guestError, searchedFor: phone });
+      console.log('📱 [useShortCodes] Guest lookup by phone result:', { 
+        guestData, 
+        guestError, 
+        searchedFor: phone,
+        eventId: eventData.id
+      });
 
-      if (!guestData) return null;
+      if (!guestData) {
+        console.log('❌ [useShortCodes] No guest found for phone in this event');
+        return null;
+      }
 
       const result = {
         eventCode: eventData.short_code,
@@ -134,11 +165,11 @@ export const useShortCodes = () => {
         guestId: guestData.id
       };
       
-      console.log('✅ Successfully resolved event code and phone:', result);
+      console.log('✅ [useShortCodes] Successfully resolved (normal path):', result);
       return result;
 
     } catch (err: any) {
-      console.error('Error resolving event code and phone:', err);
+      console.error('💥 [useShortCodes] Error resolving event code and phone:', err);
       return null;
     }
   };

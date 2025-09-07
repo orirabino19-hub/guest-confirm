@@ -277,11 +277,12 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
             <TabsTrigger value="language" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שפה וטקסטים</TabsTrigger>
+            <TabsTrigger value="auth" className="text-xs md:text-sm px-2 py-2 whitespace-normal">פרטי התחברות</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
             <TabsTrigger value="custom-fields" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שדות מותאמים</TabsTrigger>
@@ -325,6 +326,9 @@ const Admin = () => {
               event={selectedEvent}
               onEventUpdate={handleEventUpdate}
             />
+          </TabsContent>
+
+          <TabsContent value="auth" className="space-y-4">
             <AuthSettings />
           </TabsContent>
 

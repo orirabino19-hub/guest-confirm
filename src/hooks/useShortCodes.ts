@@ -188,12 +188,12 @@ export const useShortCodes = () => {
       }
 
       // Use phone directly instead of guest code
-      return `https://fp-pro.info/rsvp/${eventData.short_code}/${phone}`;
+      return `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${eventData.short_code}/${phone}`;
 
     } catch (err: any) {
       console.error('Error generating short link:', err);
       // Fallback to old format
-      return `https://fp-pro.info/rsvp/${eventId}/${phone}`;
+      return `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${eventId}/${phone}`;
     }
   };
 

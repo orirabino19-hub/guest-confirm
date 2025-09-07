@@ -37,7 +37,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
   }, [selectedEventId]); // הסרת generateMissingCodes מהdependency array
 
   const generateInviteLink = (eventId: string, phone: string): string => {
-    return `https://fp-pro.info/rsvp/${eventId}/${phone}`;
+    return `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${eventId}/${phone}`;
   };
 
   const exportGuestList = async () => {

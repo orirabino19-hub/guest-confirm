@@ -36,7 +36,7 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
       });
     } catch (error) {
       // Fallback to old format
-      const link = `https://fp-pro.info/rsvp/${selectedEventId}/${phone}`;
+      const link = `https://051bd908-619c-4c76-b223-2a29b67f0ecf.sandbox.lovable.dev/rsvp/${selectedEventId}/${phone}`;
       navigator.clipboard.writeText(link);
       toast({
         title: "🔗 הקישור הועתק",

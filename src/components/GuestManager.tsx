@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Phone, User, Copy, Trash2 } from 'lucide-react';
 import { Guest } from '@/hooks/useGuests';
+import { useShortCodes } from '@/hooks/useShortCodes';
 
 interface GuestManagerProps {
   selectedEventId: string | null;
@@ -28,6 +29,14 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     phone: ''
   });
   const { toast } = useToast();
+  const { generateShortLink, generateMissingCodes } = useShortCodes();
+
+  // Generate missing codes when component mounts
+  useEffect(() => {
+    if (selectedEventId) {
+      generateMissingCodes();
+    }
+  }, [selectedEventId, generateMissingCodes]);
 
   const validatePhoneNumber = (phone: string): boolean => {
     const cleanPhone = phone.replace(/\D/g, '');
@@ -99,14 +108,25 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     setIsDialogOpen(false);
   };
 
-  const copyInviteLink = (phone: string) => {
+  const copyInviteLink = async (phone: string) => {
     if (!selectedEventId) return;
-    const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
-    navigator.clipboard.writeText(link);
-    toast({
-      title: "🔗 הקישור הועתק",
-      description: "הקישור הועתק ללוח"
-    });
+    
+    try {
+      const shortLink = await generateShortLink(selectedEventId, phone);
+      navigator.clipboard.writeText(shortLink);
+      toast({
+        title: "🔗 הקישור הועתק",
+        description: "קישור קצר הועתק ללוח"
+      });
+    } catch (error) {
+      // Fallback to old format
+      const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+      navigator.clipboard.writeText(link);
+      toast({
+        title: "🔗 הקישור הועתק",
+        description: "הקישור הועתק ללוח"
+      });
+    }
   };
 
   const handleDeleteGuest = (guestId: string, guestName: string) => {

@@ -59,11 +59,9 @@ export const useRSVP = (eventId?: string) => {
     answers: Json;
   }) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('rsvp_submissions')
-        .insert([submissionData])
-        .select()
-        .single();
+        .insert([submissionData]);
 
       if (error) throw error;
 
@@ -85,7 +83,7 @@ export const useRSVP = (eventId?: string) => {
         description: "תודה על אישור ההגעה!"
       });
 
-      return data;
+      return { success: true };
     } catch (err: any) {
       toast({
         title: "❌ שגיאה בשליחת אישור",

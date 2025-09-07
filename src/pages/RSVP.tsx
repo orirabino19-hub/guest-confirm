@@ -59,11 +59,12 @@ const RSVP = () => {
         setEventName(eventData.title);
         setCurrentEventId(eventData.id);
 
-        // טעינת השדות המותאמים אישית
+        // טעינת השדות המותאמים אישית - רק עבור לינקים אישיים
         const { data: customFieldsData, error: fieldsError } = await supabase
           .from('custom_fields_config')
           .select('*')
           .eq('event_id', eventData.id)
+          .eq('link_type', 'personal')
           .eq('is_active', true)
           .order('order_index');
 

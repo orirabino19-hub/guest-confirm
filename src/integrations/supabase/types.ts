@@ -112,6 +112,7 @@ export type Database = {
           event_date: string | null
           id: string
           location: string | null
+          short_code: string | null
           slug: string
           theme: Json | null
           title: string
@@ -123,6 +124,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          short_code?: string | null
           slug?: string
           theme?: Json | null
           title: string
@@ -134,6 +136,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          short_code?: string | null
           slug?: string
           theme?: Json | null
           title?: string
@@ -153,6 +156,7 @@ export type Database = {
           men_count: number
           notes: string | null
           phone: string | null
+          short_code: string | null
           updated_at: string
           women_count: number
         }
@@ -167,6 +171,7 @@ export type Database = {
           men_count?: number
           notes?: string | null
           phone?: string | null
+          short_code?: string | null
           updated_at?: string
           women_count?: number
         }
@@ -181,6 +186,7 @@ export type Database = {
           men_count?: number
           notes?: string | null
           phone?: string | null
+          short_code?: string | null
           updated_at?: string
           women_count?: number
         }
@@ -323,6 +329,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_event_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_guest_code: {
+        Args: { p_event_id: string }
+        Returns: string
+      }
       get_guest_name_by_phone: {
         Args: { _event_id: string; _phone: string }
         Returns: string

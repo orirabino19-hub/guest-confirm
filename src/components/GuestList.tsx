@@ -36,7 +36,7 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
       });
     } catch (error) {
       // Fallback to old format
-      const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+      const link = `https://fp-pro.info/rsvp/${selectedEventId}/${phone}`;
       navigator.clipboard.writeText(link);
       toast({
         title: "🔗 הקישור הועתק",

@@ -39,7 +39,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     }
 
     const encodedName = encodeURIComponent(customName.trim());
-    const url = `${window.location.origin}/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
+    const url = `https://fp-pro.info/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),
@@ -68,7 +68,7 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       return;
     }
 
-    const url = `${window.location.origin}/rsvp/${selectedEventId || 'event'}/open`;
+    const url = `https://fp-pro.info/rsvp/${selectedEventId || 'event'}/open`;
     
     const newLink: CustomLink = {
       id: Date.now().toString(),

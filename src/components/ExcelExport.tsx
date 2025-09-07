@@ -37,7 +37,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
   }, [selectedEventId, generateMissingCodes]);
 
   const generateInviteLink = (eventId: string, phone: string): string => {
-    return `${window.location.origin}/rsvp/${eventId}/${phone}`;
+    return `https://fp-pro.info/rsvp/${eventId}/${phone}`;
   };
 
   const exportGuestList = async () => {

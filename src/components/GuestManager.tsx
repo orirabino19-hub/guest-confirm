@@ -123,7 +123,7 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     } catch (error) {
       console.error('Error generating short link:', error);
       // Fallback to old format
-      const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+      const link = `https://fp-pro.info/rsvp/${selectedEventId}/${phone}`;
       navigator.clipboard.writeText(link);
       toast({
         title: "🔗 הקישור הועתק",

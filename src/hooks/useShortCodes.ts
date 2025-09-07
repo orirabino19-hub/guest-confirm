@@ -197,12 +197,12 @@ export const useShortCodes = () => {
         }
       }
 
-      return `${window.location.origin}/rsvp/${eventData.short_code}/${guestData.short_code}`;
+      return `https://fp-pro.info/rsvp/${eventData.short_code}/${guestData.short_code}`;
 
     } catch (err: any) {
       console.error('Error generating short link:', err);
       // Fallback to old format
-      return `${window.location.origin}/rsvp/${eventId}/${phone}`;
+      return `https://fp-pro.info/rsvp/${eventId}/${phone}`;
     }
   };
 

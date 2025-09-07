@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Download, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Guest } from '@/hooks/useGuests';
 import { RSVPSubmission } from '@/hooks/useRSVP';
+import { useShortCodes } from '@/hooks/useShortCodes';
 
 export interface Event {
   id: string;
@@ -26,12 +27,20 @@ interface ExcelExportProps {
 
 const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, submissions }: ExcelExportProps) => {
   const { toast } = useToast();
+  const { generateShortLink, generateMissingCodes } = useShortCodes();
+
+  // Generate missing codes on component mount
+  useEffect(() => {
+    if (selectedEventId) {
+      generateMissingCodes();
+    }
+  }, [selectedEventId, generateMissingCodes]);
 
   const generateInviteLink = (eventId: string, phone: string): string => {
     return `${window.location.origin}/rsvp/${eventId}/${phone}`;
   };
 
-  const exportGuestList = () => {
+  const exportGuestList = async () => {
     if (!selectedEventId) {
       toast({
         title: "⚠️ שגיאה",
@@ -53,8 +62,10 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     }
 
     // Prepare data for export (Guests sheet)
-    const exportData = filteredGuests.map((guest, index) => {
+    const exportData = await Promise.all(filteredGuests.map(async (guest, index) => {
       const hasSubmission = submissions.some(s => (s.full_name || '').trim() === (guest.full_name || '').trim());
+      const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
+      
       return {
         'מס רשומה': index + 1,
         'שם מלא': guest.full_name,
@@ -63,9 +74,9 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'גברים (מוזמנים)': guest.men_count || 0,
         'נשים (מוזמנים)': guest.women_count || 0,
         'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
-        'קישור אישי': selectedEventId ? generateInviteLink(selectedEventId, guest.phone || '') : ''
+        'קישור אישי': shortLink
       };
-    });
+    }));
 
     // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
@@ -147,18 +158,22 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     });
   };
 
-  const copyAllLinks = () => {
+  const copyAllLinks = async () => {
     if (!selectedEventId || !selectedEventSlug) return;
 
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
-    const links = filteredGuests.map(guest => 
-      `${guest.full_name}: ${generateInviteLink(selectedEventId, guest.phone || '')}`
-    ).join('\n');
+    
+    const linksPromises = filteredGuests.map(async (guest) => {
+      const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
+      return `${guest.full_name}: ${shortLink}`;
+    });
+    
+    const links = await Promise.all(linksPromises);
 
-    navigator.clipboard.writeText(links);
+    navigator.clipboard.writeText(links.join('\n'));
     toast({
       title: "🔗 קישורים הועתקו",
-      description: `הועתקו ${filteredGuests.length} קישורים ללוח`
+      description: `הועתקו ${filteredGuests.length} קישורים קצרים ללוח`
     });
   };
 

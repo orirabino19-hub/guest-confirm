@@ -5,6 +5,7 @@ import RSVPForm from "@/components/RSVPForm";
 import { Card, CardContent } from "@/components/ui/card";
 import LanguageSelector from "@/components/LanguageSelector";
 import { supabase } from "@/integrations/supabase/client";
+import { useShortCodes } from "@/hooks/useShortCodes";
 
 interface CustomField {
   id: string;
@@ -24,6 +25,7 @@ const RSVP = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
+  const { resolveShortCodes, getGuestNameByCodes } = useShortCodes();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,11 +44,28 @@ const RSVP = () => {
       }
 
       try {
+        let actualEventId = eventId;
+        let actualPhone = phone;
+
+        // Try to resolve short codes first
+        if (!phone?.includes('@') && phone && !urlGuestName) {
+          console.log('Attempting to resolve short codes:', eventId, phone);
+          const resolved = await resolveShortCodes(eventId, phone);
+          if (resolved) {
+            actualEventId = resolved.eventId;
+            actualPhone = phone; // Keep original for guest lookup
+            console.log('Resolved to:', resolved);
+          } else {
+            // If resolution fails, assume it's the old UUID format
+            console.log('Short code resolution failed, using as UUID');
+          }
+        }
+
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select('*')
-          .eq('id', eventId)
+          .eq('id', actualEventId)
           .maybeSingle();
 
         if (eventError || !eventData) {
@@ -91,27 +110,38 @@ const RSVP = () => {
         // If we have a guestName from URL, use it directly
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
-        } else if (phone) {
-          // טעינת שם האורח בצורה מאובטחת באמצעות RPC
-          console.log('Looking for guest with phone:', phone, 'and eventId:', eventId);
+        } else if (actualPhone) {
+          // Try to get guest name using short codes first
+          let guestNameResult = null;
           
-          try {
-            const { data: guestName, error: guestError } = await supabase
-              .rpc('get_guest_name_by_phone', {
-                _event_id: eventId,
-                _phone: phone
-              });
+          if (eventId !== actualEventId) {
+            // We resolved short codes, try to get name by codes
+            guestNameResult = await getGuestNameByCodes(eventId, phone!);
+          }
+          
+          if (!guestNameResult) {
+            // Fallback to old phone-based lookup
+            try {
+              const { data: guestNameFromRPC, error: guestError } = await supabase
+                .rpc('get_guest_name_by_phone', {
+                  _event_id: actualEventId,
+                  _phone: actualPhone
+                });
 
-            console.log('Guest name result:', { guestName, guestError });
+              console.log('Guest name result:', { guestNameFromRPC, guestError });
 
-            if (guestName) {
-              setGuestName(guestName);
-            } else {
-              // אם לא נמצא אורח - שם ברירת מחדל
-              setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
+              if (guestNameFromRPC) {
+                guestNameResult = guestNameFromRPC;
+              }
+            } catch (err) {
+              console.error('Error calling get_guest_name_by_phone:', err);
             }
-          } catch (err) {
-            console.error('Error calling get_guest_name_by_phone:', err);
+          }
+
+          if (guestNameResult) {
+            setGuestName(guestNameResult);
+          } else {
+            // אם לא נמצא אורח - שם ברירת מחדל
             setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
           }
         }
@@ -124,7 +154,7 @@ const RSVP = () => {
     };
 
     fetchData();
-  }, [phone, eventId, urlGuestName, i18n.language, t]);
+  }, [phone, eventId, urlGuestName, i18n.language, t, resolveShortCodes, getGuestNameByCodes]);
 
   if (loading) {
     return (

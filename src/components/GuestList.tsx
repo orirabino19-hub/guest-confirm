@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Guest } from "@/hooks/useGuests";
+import { useShortCodes } from "@/hooks/useShortCodes";
+import { useEffect } from "react";
 
 interface GuestListProps {
   guests: Guest[];
@@ -13,15 +15,34 @@ interface GuestListProps {
 
 const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: GuestListProps) => {
   const { toast } = useToast();
+  const { generateShortLink, generateMissingCodes } = useShortCodes();
 
-  const copyInviteLink = (phone: string) => {
+  // Generate missing codes when component mounts
+  useEffect(() => {
+    if (selectedEventId) {
+      generateMissingCodes();
+    }
+  }, [selectedEventId, generateMissingCodes]);
+
+  const copyInviteLink = async (phone: string) => {
     if (!selectedEventId) return;
-    const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
-    navigator.clipboard.writeText(link);
-    toast({
-      title: "🔗 הקישור הועתק",
-      description: "הקישור הועתק ללוח"
-    });
+    
+    try {
+      const shortLink = await generateShortLink(selectedEventId, phone);
+      navigator.clipboard.writeText(shortLink);
+      toast({
+        title: "🔗 הקישור הועתק",
+        description: "קישור קצר הועתק ללוח"
+      });
+    } catch (error) {
+      // Fallback to old format
+      const link = `${window.location.origin}/rsvp/${selectedEventId}/${phone}`;
+      navigator.clipboard.writeText(link);
+      toast({
+        title: "🔗 הקישור הועתק",
+        description: "הקישור הועתק ללוח"
+      });
+    }
   };
 
   const filteredGuests = guests; // Already filtered in parent

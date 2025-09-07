@@ -7,6 +7,8 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
 
+console.log('🔥 RSVP.tsx file loaded');
+
 interface CustomField {
   id: string;
   type: 'text' | 'select' | 'checkbox' | 'menCounter' | 'womenCounter';
@@ -17,9 +19,10 @@ interface CustomField {
 }
 
 const RSVP = () => {
-  console.log('🚀 RSVP Component mounted!');
-  const { eventId, phone, guestName: urlGuestName } = useParams<{ eventId: string; phone: string; guestName: string }>();
-  console.log('📋 URL Params:', { eventId, phone, urlGuestName });
+  console.log('🚀 RSVP Component function called!');
+  const params = useParams<{ eventId: string; phone: string; guestName: string }>();
+  console.log('📋 useParams result:', params);
+  const { eventId, phone, guestName: urlGuestName } = params;
   const [guestName, setGuestName] = useState<string>("");
   const [eventName, setEventName] = useState<string>("");
   const [currentEventId, setCurrentEventId] = useState<string>("");

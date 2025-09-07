@@ -62,6 +62,15 @@ const RSVP = () => {
         // Check if eventId looks like a short code (numeric and short)
         const isShortCode = eventId && /^\d+$/.test(eventId) && eventId.length < 10;
         
+        console.log('🔍 Short code detection:', {
+          eventId,
+          phone,
+          urlGuestName,
+          isShortCode,
+          phoneExists: !!phone,
+          guestNameExists: !!urlGuestName
+        });
+        
         if (isShortCode && phone && !urlGuestName) {
           console.log('🔄 Attempting to resolve event code and phone:', eventId, phone);
           const resolved = await resolveShortCodes(eventId, phone);
@@ -72,6 +81,7 @@ const RSVP = () => {
             console.log('🎯 Resolved to eventId:', actualEventId, 'phone:', actualPhone);
           } else {
             console.log('❌ Event code/phone resolution failed - no matching event/guest found');
+            console.log('🔍 Debugging: eventId=', eventId, 'phone=', phone);
             setError(t('rsvp.errors.eventNotFound'));
             setLoading(false);
             return;
@@ -79,11 +89,15 @@ const RSVP = () => {
         }
 
         console.log('🔍 About to query database with actualEventId:', actualEventId);
+        console.log('🔍 Is actualEventId a UUID?', /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(actualEventId));
         
         // Guard: ensure we have a UUID before querying by id
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
         if (!uuidRegex.test(actualEventId)) {
           console.error('❗ Invalid eventId format (not UUID):', actualEventId);
+          console.error('❗ Original eventId was:', eventId);
+          console.error('❗ isShortCode was:', isShortCode);
+          console.error('❗ Resolution failed or did not happen');
           setError(t('rsvp.errors.eventNotFound'));
           setLoading(false);
           return;

@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Download, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Guest } from '@/hooks/useGuests';
+import { RSVPSubmission } from '@/hooks/useRSVP';
 
 export interface Event {
   id: string;
@@ -20,9 +21,10 @@ interface ExcelExportProps {
   selectedEventSlug: string | null;
   eventName?: string;
   guests: Guest[];
+  submissions: RSVPSubmission[];
 }
 
-const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: ExcelExportProps) => {
+const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, submissions }: ExcelExportProps) => {
   const { toast } = useToast();
 
   const generateInviteLink = (eventId: string, phone: string): string => {
@@ -50,18 +52,20 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
       return;
     }
 
-    // Prepare data for export
-    const exportData = filteredGuests.map((guest, index) => ({
-      'מס רשומה': index + 1,
-      'שם מלא': guest.full_name,
-      'טלפון': guest.phone,
-      'סטטוס': 'אורח',
-      'גברים': guest.men_count || 0,
-      'נשים': guest.women_count || 0,
-      'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
-      'תאריך רישום': new Date(guest.created_at).toLocaleDateString('he-IL'),
-      'קישור אישי': selectedEventId ? generateInviteLink(selectedEventId, guest.phone || '') : ''
-    }));
+    // Prepare data for export (Guests sheet)
+    const exportData = filteredGuests.map((guest, index) => {
+      const hasSubmission = submissions.some(s => (s.full_name || '').trim() === (guest.full_name || '').trim());
+      return {
+        'מס רשומה': index + 1,
+        'שם מלא': guest.full_name,
+        'טלפון': guest.phone,
+        'סטטוס': hasSubmission ? 'אישר' : 'ממתין',
+        'גברים (מוזמנים)': guest.men_count || 0,
+        'נשים (מוזמנים)': guest.women_count || 0,
+        'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
+        'קישור אישי': selectedEventId ? generateInviteLink(selectedEventId, guest.phone || '') : ''
+      };
+    });
 
     // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
@@ -72,11 +76,10 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
       { wch: 8 },  // מס רשומה
       { wch: 25 }, // שם מלא
       { wch: 15 }, // טלפון
-      { wch: 15 }, // סטטוס
-      { wch: 8 },  // גברים
-      { wch: 8 },  // נשים
-      { wch: 12 }, // סה"כ מוזמנים
-      { wch: 15 }, // תאריך אישור
+      { wch: 12 }, // סטטוס
+      { wch: 14 }, // גברים (מוזמנים)
+      { wch: 14 }, // נשים (מוזמנים)
+      { wch: 16 }, // סה"כ מוזמנים
       { wch: 50 }  // קישור אישי
     ];
     worksheet['!cols'] = columnWidths;
@@ -84,11 +87,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'רשימת אורחים');
 
-  // Simplified compatibility stats since we don't have status field yet
-  const confirmedGuests = []; // Will be updated when RSVP submissions are integrated
-  const totalConfirmedMen = 0;
-  const totalConfirmedWomen = 0;
-  const totalConfirmedGuests = 0;
+    // Compute summary from submissions
+    const confirmedSubs = submissions;
+    const totalConfirmedMen = confirmedSubs.reduce((sum, s) => sum + (s.men_count || 0), 0);
+    const totalConfirmedWomen = confirmedSubs.reduce((sum, s) => sum + (s.women_count || 0), 0);
+    const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
 
     const summaryData = [
       { 'פרטי האירוע': '', 'ערך': '' },
@@ -97,8 +100,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'סיכום אורחים', 'ערך': '' },
       { 'פרטי האירוע': 'סה"כ מוזמנים במערכת', 'ערך': filteredGuests.length },
-      { 'פרטי האירוע': 'אישרו הגעה', 'ערך': confirmedGuests.length },
-      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': filteredGuests.length - confirmedGuests.length },
+      { 'פרטי האירוע': 'אישרו הגעה', 'ערך': confirmedSubs.length },
+      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': filteredGuests.length - confirmedSubs.length },
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'מספר מוזמנים שיגיעו', 'ערך': '' },
       { 'פרטי האירוע': 'גברים', 'ערך': totalConfirmedMen },
@@ -109,6 +112,27 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
     const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
     summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'סיכום');
+
+    // Add RSVPs worksheet
+    const rsvpData = confirmedSubs.map((s, index) => ({
+      'מס רשומה': index + 1,
+      'שם מלא': s.full_name || '',
+      'גברים (מאושרים)': s.men_count,
+      'נשים (מאושרות)': s.women_count,
+      'סה"כ מאושרים': (s.men_count + s.women_count),
+      'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
+    }));
+
+    const rsvpSheet = XLSX.utils.json_to_sheet(rsvpData);
+    rsvpSheet['!cols'] = [
+      { wch: 8 },
+      { wch: 25 },
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 16 },
+      { wch: 22 }
+    ];
+    XLSX.utils.book_append_sheet(workbook, rsvpSheet, 'אישורי הגעה');
 
     // Generate filename
     const currentDate = new Date().toISOString().split('T')[0];
@@ -128,7 +152,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
 
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
     const links = filteredGuests.map(guest => 
-      `${guest.full_name}: ${generateInviteLink(selectedEventSlug, guest.phone || '')}`
+      `${guest.full_name}: ${generateInviteLink(selectedEventId, guest.phone || '')}`
     ).join('\n');
 
     navigator.clipboard.writeText(links);
@@ -142,8 +166,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
     ? guests.filter(guest => guest.event_id === selectedEventId)
     : [];
 
-  const confirmedGuests = []; // Will be updated when RSVP integration is complete
-  const pendingGuests = filteredGuests;
+  const confirmedCount = submissions.length;
+  const pendingGuests = filteredGuests.length - confirmedCount;
 
   if (!selectedEventId) {
     return (
@@ -175,11 +199,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
         {/* Statistics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-3 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{confirmedGuests.length}</div>
+            <div className="text-2xl font-bold text-green-600">{confirmedCount}</div>
             <div className="text-sm text-green-600">אישרו הגעה</div>
           </div>
           <div className="p-3 bg-yellow-50 rounded-lg">
-            <div className="text-2xl font-bold text-yellow-600">{pendingGuests.length}</div>
+            <div className="text-2xl font-bold text-yellow-600">{pendingGuests}</div>
             <div className="text-sm text-yellow-600">ממתינים לתשובה</div>
           </div>
           <div className="p-3 bg-blue-50 rounded-lg">
@@ -216,10 +240,10 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests }: 
           <div className="text-sm text-muted-foreground space-y-1">
             <div className="font-medium">הקובץ יכלול:</div>
             <div className="space-y-1 pr-4">
-              <div>• רשימת אורחים מלאה עם קישורים אישיים</div>
-              <div>• סיכום סטטיסטיקות</div>
-              <div>• פירוט מספר מוזמנים לפי מגדר</div>
-              <div>• תאריכי אישור הגעה</div>
+            <div>• רשימת אורחים מלאה עם קישורים אישיים + סטטוס אישור</div>
+            <div>• סיכום סטטיסטיקות כולל מאושרים בפועל</div>
+            <div>• פירוט מספר מוזמנים לפי מגדר</div>
+            <div>• גיליון "אישורי הגעה" עם כל האישים המאושרים</div>
             </div>
           </div>
         )}

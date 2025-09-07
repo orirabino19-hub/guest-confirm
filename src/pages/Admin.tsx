@@ -442,6 +442,7 @@ const Admin = () => {
               selectedEventSlug={selectedEventSlug}
               eventName={selectedEvent?.title}
               guests={selectedEventGuests}
+              submissions={selectedEventId ? submissions.filter(s => s.event_id === selectedEventId) : []}
             />
           </TabsContent>
         </Tabs>

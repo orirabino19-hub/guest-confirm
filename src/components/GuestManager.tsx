@@ -36,7 +36,7 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
     if (selectedEventId) {
       generateMissingCodes();
     }
-  }, [selectedEventId, generateMissingCodes]);
+  }, [selectedEventId]); // הסרת generateMissingCodes מהdependency array
 
   const validatePhoneNumber = (phone: string): boolean => {
     const cleanPhone = phone.replace(/\D/g, '');

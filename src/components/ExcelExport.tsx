@@ -29,12 +29,12 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
   const { toast } = useToast();
   const { generateShortLink, generateMissingCodes } = useShortCodes();
 
-  // Generate missing codes on component mount
+  // Generate missing codes when component mounts
   useEffect(() => {
     if (selectedEventId) {
       generateMissingCodes();
     }
-  }, [selectedEventId, generateMissingCodes]);
+  }, [selectedEventId]); // הסרת generateMissingCodes מהdependency array
 
   const generateInviteLink = (eventId: string, phone: string): string => {
     return `https://fp-pro.info/rsvp/${eventId}/${phone}`;

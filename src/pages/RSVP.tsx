@@ -29,8 +29,14 @@ const RSVP = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log('RSVP Page Debug:');
+      console.log('- eventId:', eventId);
+      console.log('- phone:', phone);
+      console.log('- urlGuestName:', urlGuestName);
+
       // Check if we have either phone or guestName from URL
       if (!phone && !urlGuestName) {
+        console.log('Missing both phone and guestName');
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;
@@ -38,6 +44,7 @@ const RSVP = () => {
 
       // אם אין eventId, צריך eventId לטעינת האירוע
       if (!eventId) {
+        console.log('Missing eventId');
         setError(t('rsvp.errors.invalidLink'));
         setLoading(false);
         return;

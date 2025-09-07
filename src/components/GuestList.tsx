@@ -22,7 +22,7 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
     if (selectedEventId) {
       generateMissingCodes();
     }
-  }, [selectedEventId, generateMissingCodes]);
+  }, [selectedEventId]); // הסרת generateMissingCodes מהdependency array
 
   const copyInviteLink = async (phone: string) => {
     if (!selectedEventId) return;

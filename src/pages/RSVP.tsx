@@ -84,6 +84,10 @@ const RSVP = () => {
 
         setCustomFields(fields);
 
+        console.log('Custom fields loaded:', fields);
+        console.log('Event ID:', eventData.id);
+        console.log('Link type: personal');
+
         // If we have a guestName from URL, use it directly
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));

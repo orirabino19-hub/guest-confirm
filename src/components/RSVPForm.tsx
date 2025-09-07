@@ -269,7 +269,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [] }: RSVPFormPr
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Default Guest Counters */}
+              {/* CRITICAL: Default Guest Counters - Always show for personal RSVP links */}
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
                 <h3 className="font-medium text-center text-foreground mb-4">
                   {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}

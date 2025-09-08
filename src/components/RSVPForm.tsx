@@ -308,7 +308,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
   return (
     <div className="min-h-screen bg-background py-4 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="max-w-lg mx-auto space-y-4">
         {/* Event Invitation Image with Language Selector */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
           {invitationLoading ? (

@@ -26,6 +26,7 @@ interface ColorManagerProps {
 const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   const { toast } = useToast();
   const { i18n } = useTranslation();
+  const [activeTab, setActiveTab] = useState("colors");
   
   // Event invitation state
   const [invitationUrl, setInvitationUrl] = useState<string>(eventInvitation);
@@ -169,10 +170,11 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   };
 
   const handlePreview = () => {
-    // In real app, this would open a preview of the RSVP page with the selected colors
+    // Switch to preview tab to show the actual preview
+    setActiveTab("preview");
     toast({
       title: "👁️ תצוגה מקדימה",
-      description: "פותח תצוגה מקדימה של דף ההזמנה עם הצבעים החדשים"
+      description: "מעבר לכרטיסיית התצוגה המקדימה"
     });
   };
 
@@ -203,7 +205,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="colors" className="space-y-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="colors">צבעים</TabsTrigger>
             <TabsTrigger value="preview">תצוגה מקדימה</TabsTrigger>

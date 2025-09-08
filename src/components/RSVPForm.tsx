@@ -34,12 +34,14 @@ interface RSVPFormProps {
 
 const useEventInvitation = (eventId: string, language: string) => {
   const [invitationUrl, setInvitationUrl] = useState<string>(eventInvitation);
+  const [invitationType, setInvitationType] = useState<'image' | 'pdf'>('image');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchInvitation = async () => {
       if (!eventId) {
         setInvitationUrl(eventInvitation);
+        setInvitationType('image');
         setIsLoading(false);
         return;
       }
@@ -52,6 +54,7 @@ const useEventInvitation = (eventId: string, language: string) => {
         // Check for image files with different extensions
         const extensions = ['jpg', 'jpeg', 'png', 'webp'];
         let foundUrl = null;
+        let fileType: 'image' | 'pdf' = 'image';
         
         for (const ext of extensions) {
           try {
@@ -63,6 +66,7 @@ const useEventInvitation = (eventId: string, language: string) => {
             const response = await fetch(data.publicUrl, { method: 'HEAD' });
             if (response.ok) {
               foundUrl = data.publicUrl;
+              fileType = 'image';
               break;
             }
           } catch (error) {
@@ -80,6 +84,7 @@ const useEventInvitation = (eventId: string, language: string) => {
             const response = await fetch(data.publicUrl, { method: 'HEAD' });
             if (response.ok) {
               foundUrl = data.publicUrl;
+              fileType = 'pdf';
             }
           } catch (error) {
             // Use default if PDF also not found
@@ -87,9 +92,11 @@ const useEventInvitation = (eventId: string, language: string) => {
         }
         
         setInvitationUrl(foundUrl || eventInvitation);
+        setInvitationType(fileType);
       } catch (error) {
         console.error('Error fetching invitation:', error);
         setInvitationUrl(eventInvitation);
+        setInvitationType('image');
       } finally {
         setIsLoading(false);
       }
@@ -98,7 +105,7 @@ const useEventInvitation = (eventId: string, language: string) => {
     fetchInvitation();
   }, [eventId, language]);
 
-  return { invitationUrl, isLoading };
+  return { invitationUrl, invitationType, isLoading };
 };
 
 const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: RSVPFormProps) => {
@@ -113,7 +120,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
   
   // Use the hook to get the correct invitation
   const currentEventId = eventId || urlEventId || "";
-  const { invitationUrl, isLoading: invitationLoading } = useEventInvitation(currentEventId, i18n.language);
+  const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(currentEventId, i18n.language);
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
@@ -316,15 +323,25 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
             </div>
           ) : (
-            <img 
-              src={invitationUrl} 
-              alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-              className="w-full h-auto max-h-[50vh] object-contain"
-              onError={(e) => {
-                // Fallback to default invitation if image fails to load
-                e.currentTarget.src = eventInvitation;
-              }}
-            />
+            <>
+              {invitationType === 'pdf' ? (
+                <iframe 
+                  src={invitationUrl}
+                  className="w-full h-[70vh] border-0 rounded-lg"
+                  title={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                />
+              ) : (
+                <img 
+                  src={invitationUrl} 
+                  alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+                  className="w-full h-auto max-h-[50vh] object-contain"
+                  onError={(e) => {
+                    // Fallback to default invitation if image fails to load
+                    e.currentTarget.src = eventInvitation;
+                  }}
+                />
+              )}
+            </>
           )}
           
           {/* Language Selector - Top Right */}
@@ -332,7 +349,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
             <LanguageSelector />
           </div>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          {invitationType !== 'pdf' && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          )}
         </div>
 
         {/* Combined Welcome and RSVP Form */}

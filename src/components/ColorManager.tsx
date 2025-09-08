@@ -27,19 +27,19 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   const [colorThemes, setColorThemes] = useState<ColorTheme[]>([
     {
       eventId: "1",
-      backgroundColor: "#ffffff",
-      textColor: "#000000", 
-      primaryColor: "#3b82f6",
-      secondaryColor: "#64748b"
+      backgroundColor: "#faf9f7", // hsl(42, 15%, 98%) - matches system background
+      textColor: "#302921",       // hsl(25, 25%, 15%) - matches system foreground  
+      primaryColor: "#d4910b",    // hsl(38, 85%, 45%) - matches system primary
+      secondaryColor: "#7a6f63"   // hsl(25, 15%, 45%) - matches system muted-foreground
     }
   ]);
 
   const currentTheme = colorThemes.find(theme => theme.eventId === selectedEventId) || {
     eventId: selectedEventId || "",
-    backgroundColor: "#ffffff",
-    textColor: "#000000",
-    primaryColor: "#3b82f6", 
-    secondaryColor: "#64748b"
+    backgroundColor: "#faf9f7",  // matches system background
+    textColor: "#302921",        // matches system foreground
+    primaryColor: "#d4910b",     // matches system primary
+    secondaryColor: "#7a6f63"    // matches system muted-foreground
   };
 
   const [tempTheme, setTempTheme] = useState<ColorTheme>(currentTheme);
@@ -77,10 +77,10 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   const handleReset = () => {
     const defaultTheme = {
       eventId: selectedEventId || "",
-      backgroundColor: "#ffffff",
-      textColor: "#000000",
-      primaryColor: "#3b82f6",
-      secondaryColor: "#64748b"
+      backgroundColor: "#faf9f7",  // matches system background
+      textColor: "#302921",        // matches system foreground
+      primaryColor: "#d4910b",     // matches system primary
+      secondaryColor: "#7a6f63"    // matches system muted-foreground
     };
     setTempTheme(defaultTheme);
     

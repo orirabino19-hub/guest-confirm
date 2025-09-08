@@ -279,8 +279,87 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                 </p>
               </div>
               
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">תצוגה מקדימה תופעל בגרסה הבאה</p>
+              {/* Mock RSVP Preview */}
+              <div 
+                className="border-2 rounded-lg p-8 space-y-6"
+                style={{ 
+                  backgroundColor: tempTheme.backgroundColor,
+                  color: tempTheme.textColor,
+                  borderColor: tempTheme.primaryColor + '40'
+                }}
+              >
+                {/* Mock Welcome Message */}
+                <div className="text-center space-y-4">
+                  <h1 className="text-3xl font-bold" style={{ color: tempTheme.textColor }}>
+                    שלום דינה ממן! 👋
+                  </h1>
+                  <h2 className="text-xl" style={{ color: tempTheme.textColor }}>
+                    אנחנו מתכבדים להזמינכם לחתונה של מאיר ובסי
+                  </h2>
+                </div>
+
+                {/* Mock Form */}
+                <div className="space-y-4 max-w-md mx-auto">
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
+                      האם תגיעו לאירוע?
+                    </label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <div 
+                          className="w-4 h-4 rounded-full border-2"
+                          style={{ borderColor: tempTheme.primaryColor, backgroundColor: tempTheme.primaryColor }}
+                        />
+                        <span style={{ color: tempTheme.textColor }}>כן, אני משתתף/ת</span>
+                      </div>
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <div 
+                          className="w-4 h-4 rounded-full border-2"
+                          style={{ borderColor: tempTheme.secondaryColor }}
+                        />
+                        <span style={{ color: tempTheme.textColor }}>לא, לא אוכל להגיע</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
+                      מספר משתתפים
+                    </label>
+                    <div 
+                      className="w-full px-3 py-2 border rounded-md"
+                      style={{ 
+                        borderColor: tempTheme.primaryColor + '60',
+                        backgroundColor: tempTheme.backgroundColor,
+                        color: tempTheme.textColor
+                      }}
+                    >
+                      2
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
+                      הערות (אופציונלי)
+                    </label>
+                    <div 
+                      className="w-full px-3 py-2 border rounded-md h-20"
+                      style={{ 
+                        borderColor: tempTheme.primaryColor + '60',
+                        backgroundColor: tempTheme.backgroundColor,
+                        color: tempTheme.textColor
+                      }}
+                    >
+                    </div>
+                  </div>
+
+                  <button 
+                    className="w-full px-6 py-3 rounded-lg text-white font-medium transition-colors"
+                    style={{ backgroundColor: tempTheme.primaryColor }}
+                  >
+                    שלח אישור הגעה
+                  </button>
+                </div>
               </div>
             </div>
           </TabsContent>

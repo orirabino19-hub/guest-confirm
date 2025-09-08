@@ -279,86 +279,168 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                 </p>
               </div>
               
-              {/* Mock RSVP Preview */}
+              {/* Exact RSVP Page Preview */}
               <div 
-                className="border-2 rounded-lg p-8 space-y-6"
+                className="min-h-screen py-4 px-4 rounded-lg border-2"
                 style={{ 
                   backgroundColor: tempTheme.backgroundColor,
-                  color: tempTheme.textColor,
                   borderColor: tempTheme.primaryColor + '40'
                 }}
               >
-                {/* Mock Welcome Message */}
-                <div className="text-center space-y-4">
-                  <h1 className="text-3xl font-bold" style={{ color: tempTheme.textColor }}>
-                    שלום דינה ממן! 👋
-                  </h1>
-                  <h2 className="text-xl" style={{ color: tempTheme.textColor }}>
-                    אנחנו מתכבדים להזמינכם לחתונה של מאיר ובסי
-                  </h2>
-                </div>
-
-                {/* Mock Form */}
-                <div className="space-y-4 max-w-md mx-auto">
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
-                      האם תגיעו לאירוע?
-                    </label>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <div 
-                          className="w-4 h-4 rounded-full border-2"
-                          style={{ borderColor: tempTheme.primaryColor, backgroundColor: tempTheme.primaryColor }}
-                        />
-                        <span style={{ color: tempTheme.textColor }}>כן, אני משתתף/ת</span>
-                      </div>
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <div 
-                          className="w-4 h-4 rounded-full border-2"
-                          style={{ borderColor: tempTheme.secondaryColor }}
-                        />
-                        <span style={{ color: tempTheme.textColor }}>לא, לא אוכל להגיע</span>
-                      </div>
-                    </div>
+                <div className="max-w-lg mx-auto space-y-4">
+                  {/* Event Invitation Image */}
+                  <div className="relative overflow-hidden rounded-lg shadow-lg">
+                    <img 
+                      src="/src/assets/event-invitation.jpg" 
+                      alt="הזמנה לאירוע" 
+                      className="w-full h-auto max-h-[30vh] object-contain"
+                      style={{ backgroundColor: tempTheme.backgroundColor }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
-                      מספר משתתפים
-                    </label>
-                    <div 
-                      className="w-full px-3 py-2 border rounded-md"
-                      style={{ 
-                        borderColor: tempTheme.primaryColor + '60',
-                        backgroundColor: tempTheme.backgroundColor,
-                        color: tempTheme.textColor
-                      }}
-                    >
-                      2
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: tempTheme.secondaryColor }}>
-                      הערות (אופציונלי)
-                    </label>
-                    <div 
-                      className="w-full px-3 py-2 border rounded-md h-20"
-                      style={{ 
-                        borderColor: tempTheme.primaryColor + '60',
-                        backgroundColor: tempTheme.backgroundColor,
-                        color: tempTheme.textColor
-                      }}
-                    >
-                    </div>
-                  </div>
-
-                  <button 
-                    className="w-full px-6 py-3 rounded-lg text-white font-medium transition-colors"
-                    style={{ backgroundColor: tempTheme.primaryColor }}
+                  {/* Combined Welcome and RSVP Form */}
+                  <div 
+                    className="rounded-lg shadow-lg border p-6"
+                    style={{ 
+                      backgroundColor: tempTheme.backgroundColor,
+                      borderColor: tempTheme.primaryColor + '30'
+                    }}
                   >
-                    שלח אישור הגעה
-                  </button>
+                    {/* Header */}
+                    <div className="text-center pb-4">
+                      <h1 className="text-xl md:text-2xl font-bold mb-2" style={{ color: tempTheme.textColor }}>
+                        שלום דינה ממן! 👋
+                      </h1>
+                      <p className="mb-3" style={{ color: tempTheme.secondaryColor }}>
+                        אנחנו מתכבדים להזמינכם לחתונה של מאיר ובסי
+                      </p>
+                      <div 
+                        className="border-t pt-4"
+                        style={{ borderColor: tempTheme.primaryColor + '30' }}
+                      >
+                        <h2 className="text-lg font-semibold" style={{ color: tempTheme.primaryColor }}>
+                          🎉 אישור הגעה
+                        </h2>
+                        <p className="text-sm mt-1" style={{ color: tempTheme.secondaryColor }}>
+                          אנא אשרו את הגעתכם לאירוע
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Form Content */}
+                    <div className="space-y-4">
+                      {/* Guest Counters */}
+                      <div 
+                        className="space-y-3 p-3 rounded-lg border"
+                        style={{ 
+                          backgroundColor: tempTheme.backgroundColor + '20',
+                          borderColor: tempTheme.primaryColor + '30'
+                        }}
+                      >
+                        <h3 className="font-medium text-center mb-4" style={{ color: tempTheme.textColor }}>
+                          מספר משתתפים
+                        </h3>
+                        
+                        {/* Men Counter */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium" style={{ color: tempTheme.textColor }}>
+                            גברים
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              className="h-10 w-10 rounded border flex items-center justify-center"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor,
+                                color: tempTheme.primaryColor,
+                                backgroundColor: tempTheme.backgroundColor
+                              }}
+                            >
+                              -
+                            </button>
+                            <div 
+                              className="flex-1 text-center text-lg py-2 border rounded"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor + '60',
+                                backgroundColor: tempTheme.backgroundColor,
+                                color: tempTheme.textColor
+                              }}
+                            >
+                              1
+                            </div>
+                            <button 
+                              className="h-10 w-10 rounded border flex items-center justify-center"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor,
+                                color: tempTheme.primaryColor,
+                                backgroundColor: tempTheme.backgroundColor
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Women Counter */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium" style={{ color: tempTheme.textColor }}>
+                            נשים
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              className="h-10 w-10 rounded border flex items-center justify-center"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor,
+                                color: tempTheme.primaryColor,
+                                backgroundColor: tempTheme.backgroundColor
+                              }}
+                            >
+                              -
+                            </button>
+                            <div 
+                              className="flex-1 text-center text-lg py-2 border rounded"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor + '60',
+                                backgroundColor: tempTheme.backgroundColor,
+                                color: tempTheme.textColor
+                              }}
+                            >
+                              1
+                            </div>
+                            <button 
+                              className="h-10 w-10 rounded border flex items-center justify-center"
+                              style={{ 
+                                borderColor: tempTheme.primaryColor,
+                                color: tempTheme.primaryColor,
+                                backgroundColor: tempTheme.backgroundColor
+                              }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Total Guests Display */}
+                      <div 
+                        className="text-center py-3 rounded-lg"
+                        style={{ 
+                          backgroundColor: tempTheme.primaryColor + '10',
+                          color: tempTheme.primaryColor
+                        }}
+                      >
+                        <span className="font-medium">סה״כ משתתפים: 2</span>
+                      </div>
+
+                      {/* Submit Button */}
+                      <button 
+                        className="w-full px-6 py-3 rounded-lg text-white font-medium transition-colors"
+                        style={{ backgroundColor: tempTheme.primaryColor }}
+                      >
+                        שלח אישור הגעה
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

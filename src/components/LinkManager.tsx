@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Link, Copy, User, Users, Plus, Settings } from 'lucide-react';
 import OpenRSVPCustomFields from './OpenRSVPCustomFields';
 import { CustomField } from './EventManager';
+import { useShortCodes } from '@/hooks/useShortCodes';
+import { supabase } from '@/integrations/supabase/client';
 
 interface LinkManagerProps {
   selectedEventId: string | null;
@@ -27,8 +29,9 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
   const [customName, setCustomName] = useState('');
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const { toast } = useToast();
+  const { generateShortLink } = useShortCodes();
 
-  const generateNameLink = () => {
+  const generateNameLink = async () => {
     if (!selectedEventId || !customName.trim()) {
       toast({
         title: "⚠️ שגיאה", 
@@ -38,28 +41,59 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       return;
     }
 
-    const encodedName = encodeURIComponent(customName.trim());
-    const currentDomain = window.location.origin;
-    const url = `${currentDomain}/rsvp/${selectedEventId || 'event'}/name/${encodedName}`;
-    
-    const newLink: CustomLink = {
-      id: Date.now().toString(),
-      type: 'name',
-      value: customName.trim(),
-      url: url,
-      createdAt: new Date().toISOString()
-    };
+    try {
+      // Get event short code
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('short_code')
+        .eq('id', selectedEventId)
+        .maybeSingle();
 
-    setCustomLinks(prev => [...prev, newLink]);
-    setCustomName('');
-    
-    toast({
-      title: "🔗 קישור נוצר בהצלחה",
-      description: `נוצר קישור עבור: ${customName}`
-    });
+      let eventCode = eventData?.short_code;
+      
+      // If no short code, generate one
+      if (!eventCode) {
+        const { data: newCode } = await supabase
+          .rpc('generate_event_code');
+        
+        if (newCode) {
+          await supabase
+            .from('events')
+            .update({ short_code: newCode })
+            .eq('id', selectedEventId);
+          eventCode = newCode;
+        }
+      }
+
+      const encodedName = encodeURIComponent(customName.trim());
+      const currentDomain = window.location.origin;
+      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/name/${encodedName}`;
+      
+      const newLink: CustomLink = {
+        id: Date.now().toString(),
+        type: 'name',
+        value: customName.trim(),
+        url: url,
+        createdAt: new Date().toISOString()
+      };
+
+      setCustomLinks(prev => [...prev, newLink]);
+      setCustomName('');
+      
+      toast({
+        title: "🔗 קישור נוצר בהצלחה",
+        description: `נוצר קישור עבור: ${customName}`
+      });
+    } catch (error) {
+      toast({
+        title: "⚠️ שגיאה",
+        description: "לא ניתן היה ליצור קישור",
+        variant: "destructive"
+      });
+    }
   };
 
-  const generateOpenLink = () => {
+  const generateOpenLink = async () => {
     if (!selectedEventId) {
       toast({
         title: "⚠️ שגיאה",
@@ -69,23 +103,54 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       return;
     }
 
-    const currentDomain = window.location.origin;
-    const url = `${currentDomain}/rsvp/${selectedEventId || 'event'}/open`;
-    
-    const newLink: CustomLink = {
-      id: Date.now().toString(),
-      type: 'open',
-      value: 'קישור פתוח',
-      url: url,
-      createdAt: new Date().toISOString()
-    };
+    try {
+      // Get event short code
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('short_code')
+        .eq('id', selectedEventId)
+        .maybeSingle();
 
-    setCustomLinks(prev => [...prev, newLink]);
-    
-    toast({
-      title: "🔗 קישור פתוח נוצר",
-      description: "נוצר קישור שבו האורח יכניס את פרטיו בעצמו"
-    });
+      let eventCode = eventData?.short_code;
+      
+      // If no short code, generate one
+      if (!eventCode) {
+        const { data: newCode } = await supabase
+          .rpc('generate_event_code');
+        
+        if (newCode) {
+          await supabase
+            .from('events')
+            .update({ short_code: newCode })
+            .eq('id', selectedEventId);
+          eventCode = newCode;
+        }
+      }
+
+      const currentDomain = window.location.origin;
+      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/open`;
+      
+      const newLink: CustomLink = {
+        id: Date.now().toString(),
+        type: 'open',
+        value: 'קישור פתוח',
+        url: url,
+        createdAt: new Date().toISOString()
+      };
+
+      setCustomLinks(prev => [...prev, newLink]);
+      
+      toast({
+        title: "🔗 קישור פתוח נוצר",
+        description: "נוצר קישור שבו האורח יכניס את פרטיו בעצמו"
+      });
+    } catch (error) {
+      toast({
+        title: "⚠️ שגיאה",
+        description: "לא ניתן היה ליצור קישור",
+        variant: "destructive"
+      });
+    }
   };
 
   const copyLink = (url: string, description: string) => {

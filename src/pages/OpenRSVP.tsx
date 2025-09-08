@@ -116,12 +116,13 @@ const OpenRSVP = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
+  const [resolvedEventId, setResolvedEventId] = useState<string>("");
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
 
-  // Use the hook to get the correct invitation
-  const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(eventId || "", i18n.language);
+  // Use the hook to get the correct invitation - only after we have resolved the eventId
+  const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(resolvedEventId, i18n.language);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -169,6 +170,9 @@ const OpenRSVP = () => {
             actualEventId = eventByCode.id;
           }
         }
+
+        console.log('🎯 Resolved actualEventId:', actualEventId);
+        setResolvedEventId(actualEventId);
 
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase

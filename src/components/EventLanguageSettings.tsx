@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Plus, Save, X, Edit3, RotateCcw } from "lucide-react";
 import type { Event } from "@/components/EventManager";
-
+import { supabase } from "@/integrations/supabase/client";
 // Language configuration interface
 interface LanguageConfig {
   code: string;
@@ -49,6 +49,27 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>(event?.languages || []);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [textOverrides, setTextOverrides] = useState<TextOverrides>({});
+  const [storedLanguages, setStoredLanguages] = useState<string[]>([]);
+  // Load event languages from Supabase when event changes
+  // Keep local state (selectedLanguages) in sync so the UI reflects reality
+  // Note: event.languages is not persisted in DB; we use table event_languages
+  // to store languages per event
+  
+  useEffect(() => {
+    const loadLanguages = async () => {
+      if (!event?.id) return;
+      const { data, error } = await supabase
+        .from('event_languages')
+        .select('locale, is_default')
+        .eq('event_id', event.id);
+      if (!error && data) {
+        const locales = data.map(l => l.locale as string);
+        setStoredLanguages(locales);
+        setSelectedLanguages(locales);
+      }
+    };
+    loadLanguages();
+  }, [event?.id]);
 
   // Available languages - this matches EventManager
   const availableLanguages: LanguageConfig[] = [
@@ -62,16 +83,54 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
   ];
 
-  const handleSaveLanguages = () => {
+  const handleSaveLanguages = async () => {
     if (!event) return;
-    
-    onEventUpdate(event.id, { languages: selectedLanguages });
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
-      description: i18n.language === 'he' ? "שפות האירוע עודכנו" : "Event languages have been updated",
-    });
+
+    try {
+      const toAdd = selectedLanguages.filter(l => !storedLanguages.includes(l));
+      const toDelete = storedLanguages.filter(l => !selectedLanguages.includes(l));
+
+      if (toDelete.length > 0) {
+        const { error: delErr } = await supabase
+          .from('event_languages')
+          .delete()
+          .eq('event_id', event.id)
+          .in('locale', toDelete);
+        if (delErr) throw delErr;
+      }
+
+      if (toAdd.length > 0) {
+        const inserts = toAdd.map(locale => ({ event_id: event.id, locale, is_default: false }));
+        const { error: insErr } = await supabase
+          .from('event_languages')
+          .insert(inserts);
+        if (insErr) throw insErr;
+      }
+
+      if (selectedLanguages.length > 0) {
+        await supabase.from('event_languages')
+          .update({ is_default: false })
+          .eq('event_id', event.id);
+        await supabase.from('event_languages')
+          .update({ is_default: true })
+          .eq('event_id', event.id)
+          .eq('locale', selectedLanguages[0]);
+      }
+
+      setStoredLanguages(selectedLanguages);
+      setIsEditDialogOpen(false);
+
+      toast({
+        title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
+        description: i18n.language === 'he' ? "שפות האירוע עודכנו" : "Event languages have been updated",
+      });
+    } catch (err: any) {
+      toast({
+        title: i18n.language === 'he' ? 'שגיאה בשמירת שפות' : 'Error saving languages',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleTextChange = (textKey: string, language: string, value: string) => {
@@ -204,7 +263,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
-                  {event.languages?.map((langCode) => {
+                  {selectedLanguages.map((langCode) => {
                     const language = availableLanguages.find(l => l.code === langCode);
                     return language ? (
                       <Badge key={langCode} variant="secondary" className="flex items-center gap-1">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Palette, Eye, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import eventInvitation from "@/assets/event-invitation.jpg";
 
 interface ColorTheme {
   eventId: string;
@@ -22,6 +25,81 @@ interface ColorManagerProps {
 
 const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   const { toast } = useToast();
+  const { i18n } = useTranslation();
+  
+  // Event invitation state
+  const [invitationUrl, setInvitationUrl] = useState<string>(eventInvitation);
+  const [invitationType, setInvitationType] = useState<'image' | 'pdf'>('image');
+  const [isLoadingInvitation, setIsLoadingInvitation] = useState(true);
+
+  // Load event invitation when selectedEventId changes
+  useEffect(() => {
+    const fetchInvitation = async () => {
+      if (!selectedEventId) {
+        setInvitationUrl(eventInvitation);
+        setInvitationType('image');
+        setIsLoadingInvitation(false);
+        return;
+      }
+
+      try {
+        // Try to fetch invitation image first, then PDF
+        const imageFileName = `${i18n.language}-image`;
+        const pdfFileName = `${i18n.language}-pdf`;
+        
+        // Check for image files with different extensions
+        const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+        let foundUrl = null;
+        let fileType: 'image' | 'pdf' = 'image';
+        
+        for (const ext of extensions) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${selectedEventId}/${imageFileName}.${ext}`);
+            
+            // Check if file actually exists
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+              fileType = 'image';
+              break;
+            }
+          } catch (error) {
+            // Continue to next extension
+          }
+        }
+        
+        // If no image found, try PDF
+        if (!foundUrl) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${selectedEventId}/${pdfFileName}.pdf`);
+            
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+              fileType = 'pdf';
+            }
+          } catch (error) {
+            // Use default if PDF also not found
+          }
+        }
+        
+        setInvitationUrl(foundUrl || eventInvitation);
+        setInvitationType(fileType);
+      } catch (error) {
+        console.error('Error fetching invitation:', error);
+        setInvitationUrl(eventInvitation);
+        setInvitationType('image');
+      } finally {
+        setIsLoadingInvitation(false);
+      }
+    };
+
+    fetchInvitation();
+  }, [selectedEventId, i18n.language]);
   
   // Mock data - in real app this would come from backend
   const [colorThemes, setColorThemes] = useState<ColorTheme[]>([
@@ -290,13 +368,48 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                 <div className="max-w-lg mx-auto space-y-4">
                   {/* Event Invitation Image */}
                   <div className="relative overflow-hidden rounded-lg shadow-lg">
-                    <img 
-                      src="/src/assets/event-invitation.jpg" 
-                      alt="הזמנה לאירוע" 
-                      className="w-full h-auto max-h-[30vh] object-contain"
-                      style={{ backgroundColor: tempTheme.backgroundColor }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                    {isLoadingInvitation ? (
+                      <div className="w-full h-64 bg-muted flex items-center justify-center">
+                        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      </div>
+                    ) : (
+                      <>
+                        {invitationType === 'pdf' ? (
+                          <div className="w-full h-[30vh] border border-border/30 rounded-lg bg-muted/50 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                            <div className="text-4xl mb-2">📄</div>
+                            <h3 className="text-lg font-semibold" style={{ color: tempTheme.textColor }}>
+                              {i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                            </h3>
+                            <p className="text-sm" style={{ color: tempTheme.secondaryColor }}>
+                              {i18n.language === 'he' ? "לחץ כדי לצפות בהזמנה" : "Click to view invitation"}
+                            </p>
+                            <a 
+                              href={invitationUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-4 py-2 rounded-lg text-white font-medium"
+                              style={{ backgroundColor: tempTheme.primaryColor }}
+                            >
+                              {i18n.language === 'he' ? "פתח הזמנה" : "Open Invitation"}
+                            </a>
+                          </div>
+                        ) : (
+                          <img 
+                            src={invitationUrl} 
+                            alt="הזמנה לאירוע" 
+                            className="w-full h-auto max-h-[30vh] object-contain"
+                            style={{ backgroundColor: tempTheme.backgroundColor }}
+                            onError={(e) => {
+                              // Fallback to default invitation if image fails to load
+                              e.currentTarget.src = eventInvitation;
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                    {invitationType !== 'pdf' && !isLoadingInvitation && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+                    )}
                   </div>
 
                   {/* Combined Welcome and RSVP Form */}

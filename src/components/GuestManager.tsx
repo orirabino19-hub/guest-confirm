@@ -272,23 +272,6 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
           </div>
         )}
 
-        {/* Quick Stats */}
-        {filteredGuests.length > 0 && (
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {filteredGuests.filter(g => g.men_count > 0 || g.women_count > 0).length}
-              </div>
-              <div className="text-sm text-muted-foreground">עם נתונים</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {filteredGuests.reduce((sum, g) => sum + g.men_count + g.women_count, 0)}
-              </div>
-              <div className="text-sm text-muted-foreground">סה"כ מוזמנים</div>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

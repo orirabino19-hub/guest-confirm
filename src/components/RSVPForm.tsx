@@ -489,7 +489,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required))}
+                disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required)) || totalGuests === 0}
                 className="w-full text-lg py-4 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
               >
                 {isSubmitting ? (

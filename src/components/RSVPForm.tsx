@@ -364,7 +364,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
         </div>
 
         {/* Combined Welcome and RSVP Form */}
-        <Card className="bg-gradient-card shadow-elegant border-border/50">
+        <Card 
+          className="shadow-elegant border-border/50 bg-card-background"
+        >
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl md:text-2xl font-bold text-foreground mb-2">
               {t('rsvp.welcome', { name: guestName })}

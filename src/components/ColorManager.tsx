@@ -16,6 +16,7 @@ interface ColorTheme {
   textColor: string;
   primaryColor: string;
   secondaryColor: string;
+  cardBackground: string;
 }
 
 interface ColorManagerProps {
@@ -109,7 +110,8 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
       backgroundColor: "#faf9f7", // hsl(42, 15%, 98%) - matches system background
       textColor: "#302921",       // hsl(25, 25%, 15%) - matches system foreground  
       primaryColor: "#d4910b",    // hsl(38, 85%, 45%) - matches system primary
-      secondaryColor: "#7a6f63"   // hsl(25, 15%, 45%) - matches system muted-foreground
+      secondaryColor: "#7a6f63",  // hsl(25, 15%, 45%) - matches system muted-foreground
+      cardBackground: "#ffffff"   // white background for form card
     }
   ]);
 
@@ -118,7 +120,8 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     backgroundColor: "#faf9f7",  // matches system background
     textColor: "#302921",        // matches system foreground
     primaryColor: "#d4910b",     // matches system primary
-    secondaryColor: "#7a6f63"    // matches system muted-foreground
+    secondaryColor: "#7a6f63",   // matches system muted-foreground
+    cardBackground: "#ffffff"    // white background for form card
   };
 
   const [tempTheme, setTempTheme] = useState<ColorTheme>(currentTheme);
@@ -159,7 +162,8 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
       backgroundColor: "#faf9f7",  // matches system background
       textColor: "#302921",        // matches system foreground
       primaryColor: "#d4910b",     // matches system primary
-      secondaryColor: "#7a6f63"    // matches system muted-foreground
+      secondaryColor: "#7a6f63",   // matches system muted-foreground
+      cardBackground: "#ffffff"    // white background for form card
     };
     setTempTheme(defaultTheme);
     
@@ -300,6 +304,26 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                   </div>
                   <p className="text-xs text-muted-foreground">צבע טקסט משני ואלמנטים פחות חשובים</p>
                 </div>
+
+                {/* Card Background Color */}
+                <div className="space-y-2">
+                  <Label>רקע כרטיס הטופס</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={tempTheme.cardBackground}
+                      onChange={(e) => handleColorChange('cardBackground', e.target.value)}
+                      className="w-16 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      value={tempTheme.cardBackground}
+                      onChange={(e) => handleColorChange('cardBackground', e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">צבע רקע הכרטיס של טופס ההזמנה</p>
+                </div>
               </div>
 
               {/* Color Preview */}
@@ -418,7 +442,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                   <div 
                     className="rounded-lg shadow-lg border p-6"
                     style={{ 
-                      backgroundColor: tempTheme.backgroundColor,
+                      backgroundColor: tempTheme.cardBackground,
                       borderColor: tempTheme.primaryColor + '30'
                     }}
                   >
@@ -446,12 +470,12 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                     {/* Form Content */}
                     <div className="space-y-4">
                       {/* Guest Counters */}
-                      <div 
-                        className="space-y-3 p-3 rounded-lg border"
-                        style={{ 
-                          backgroundColor: tempTheme.backgroundColor + '20',
-                          borderColor: tempTheme.primaryColor + '30'
-                        }}
+                    <div 
+                      className="space-y-3 p-3 rounded-lg border"
+                      style={{ 
+                        backgroundColor: tempTheme.cardBackground + '20', 
+                        borderColor: tempTheme.primaryColor + '30'
+                      }}
                       >
                         <h3 className="font-medium text-center mb-4" style={{ color: tempTheme.textColor }}>
                           מספר משתתפים

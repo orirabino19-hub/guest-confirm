@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, Loader2 } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { useShortCodes } from "@/hooks/useShortCodes";
 
 interface CustomField {
   id: string;
@@ -117,6 +118,7 @@ const OpenRSVP = () => {
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { generateMissingCodes } = useShortCodes();
 
   // Use the hook to get the correct invitation
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(eventId || "", i18n.language);
@@ -130,11 +132,49 @@ const OpenRSVP = () => {
       }
 
       try {
+        let actualEventId = eventId;
+
+        // Check if eventId looks like a short code (numeric and short)
+        const isShortCode = eventId && /^\d+$/.test(eventId) && eventId.length < 10;
+        
+        if (isShortCode) {
+          console.log('🔄 Looking up event by short code:', eventId);
+          
+          // Look up event by short code
+          const { data: eventByCode, error: codeError } = await supabase
+            .from('events')
+            .select('id')
+            .eq('short_code', eventId)
+            .maybeSingle();
+
+          if (codeError || !eventByCode) {
+            console.log('❌ Event not found by short code, generating missing codes...');
+            await generateMissingCodes();
+            
+            // Try again after generating codes
+            const { data: retryEventByCode, error: retryError } = await supabase
+              .from('events')
+              .select('id')
+              .eq('short_code', eventId)
+              .maybeSingle();
+              
+            if (retryError || !retryEventByCode) {
+              console.error('Event not found by short code:', eventId);
+              setError(t('rsvp.errors.eventNotFound'));
+              setLoading(false);
+              return;
+            }
+            actualEventId = retryEventByCode.id;
+          } else {
+            actualEventId = eventByCode.id;
+          }
+        }
+
         // טעינת האירוע מ-Supabase לפי ID
         const { data: eventData, error: eventError } = await supabase
           .from('events')
           .select('*')
-          .eq('id', eventId)
+          .eq('id', actualEventId)
           .maybeSingle();
 
         if (eventError || !eventData) {

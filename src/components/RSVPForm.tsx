@@ -325,11 +325,23 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
           ) : (
             <>
               {invitationType === 'pdf' ? (
-                <iframe 
-                  src={invitationUrl}
-                  className="w-full h-[70vh] border-0 rounded-lg"
-                  title={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
-                />
+                <div className="w-full h-[70vh] border border-border/30 rounded-lg bg-muted/50 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                  <div className="text-6xl mb-4">📄</div>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    {i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {i18n.language === 'he' ? "לחץ כדי לצפות בהזמנה" : "Click to view invitation"}
+                  </p>
+                  <a 
+                    href={invitationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    {i18n.language === 'he' ? "פתח הזמנה" : "Open Invitation"}
+                  </a>
+                </div>
               ) : (
                 <img 
                   src={invitationUrl} 

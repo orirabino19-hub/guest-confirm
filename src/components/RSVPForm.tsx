@@ -335,27 +335,23 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
         </div>
 
-        {/* Welcome Card */}
-        <Card className="bg-gradient-card shadow-soft border-border/50">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-xl md:text-2xl font-bold text-foreground">
+        {/* Combined Welcome and RSVP Form */}
+        <Card className="bg-gradient-card shadow-elegant border-border/50">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl md:text-2xl font-bold text-foreground mb-2">
               {t('rsvp.welcome', { name: guestName })}
             </CardTitle>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-3">
               {t('rsvp.eventInvitation', { eventName })}
             </p>
-          </CardHeader>
-        </Card>
-
-        {/* RSVP Form */}
-        <Card className="bg-gradient-card shadow-elegant border-border/50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold text-center text-primary">
-              {t('rsvp.confirmTitle')}
-            </CardTitle>
-            <p className="text-center text-muted-foreground text-sm">
-              {t('rsvp.confirmDescription')}
-            </p>
+            <div className="border-t border-border/30 pt-4">
+              <CardTitle className="text-lg font-semibold text-primary">
+                {t('rsvp.confirmTitle')}
+              </CardTitle>
+              <p className="text-muted-foreground text-sm mt-1">
+                {t('rsvp.confirmDescription')}
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

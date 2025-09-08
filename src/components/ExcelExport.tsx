@@ -99,10 +99,18 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'רשימת אורחים');
 
-    // Compute summary from submissions
-    const confirmedSubs = submissions;
-    const totalConfirmedMen = confirmedSubs.reduce((sum, s) => sum + (s.men_count || 0), 0);
-    const totalConfirmedWomen = confirmedSubs.reduce((sum, s) => sum + (s.women_count || 0), 0);
+    // Compute summary from submissions (count only submissions with attendees > 0)
+    const positiveConfirmedSubs = submissions.filter(
+      (s) => s && (s.men_count + s.women_count) > 0 && (!selectedEventId || s.event_id === selectedEventId)
+    );
+
+    // Count unique guests who confirmed (prefer guest_id, fallback to trimmed full_name)
+    const keyFor = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim());
+    const confirmedGuestKeys = new Set<string>(positiveConfirmedSubs.map(keyFor).filter(Boolean));
+    const confirmedGuestsCount = confirmedGuestKeys.size;
+
+    const totalConfirmedMen = positiveConfirmedSubs.reduce((sum, s) => sum + (s.men_count || 0), 0);
+    const totalConfirmedWomen = positiveConfirmedSubs.reduce((sum, s) => sum + (s.women_count || 0), 0);
     const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
 
     const summaryData = [
@@ -112,8 +120,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'סיכום אורחים', 'ערך': '' },
       { 'פרטי האירוע': 'סה"כ מוזמנים במערכת', 'ערך': filteredGuests.length },
-      { 'פרטי האירוע': 'אישרו הגעה', 'ערך': confirmedSubs.length },
-      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': filteredGuests.length - confirmedSubs.length },
+      { 'פרטי האירוע': 'אישרו הגעה', 'ערך': confirmedGuestsCount },
+      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': Math.max(filteredGuests.length - confirmedGuestsCount, 0) },
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'מספר מוזמנים שיגיעו', 'ערך': '' },
       { 'פרטי האירוע': 'גברים', 'ערך': totalConfirmedMen },
@@ -125,8 +133,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'סיכום');
 
-    // Add RSVPs worksheet
-    const rsvpData = confirmedSubs.map((s, index) => ({
+    // Add RSVPs worksheet (only positive confirmations)
+    const rsvpData = positiveConfirmedSubs.map((s, index) => ({
       'מס רשומה': index + 1,
       'שם מלא': s.full_name || '',
       'גברים (מאושרים)': s.men_count,
@@ -182,8 +190,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     ? guests.filter(guest => guest.event_id === selectedEventId)
     : [];
 
-  const confirmedCount = submissions.length;
-  const pendingGuests = filteredGuests.length - confirmedCount;
+  const uiPositiveSubs = submissions.filter(s => (s.men_count + s.women_count) > 0);
+  const confirmedCount = new Set<string>(
+    uiPositiveSubs.map(s => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim())).filter(Boolean)
+  ).size;
+  const pendingGuests = Math.max(filteredGuests.length - confirmedCount, 0);
 
   if (!selectedEventId) {
     return (

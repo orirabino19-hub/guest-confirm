@@ -361,9 +361,6 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
             <LanguageSelector />
           </div>
           
-          {invitationType !== 'pdf' && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-          )}
         </div>
 
         {/* Combined Welcome and RSVP Form */}

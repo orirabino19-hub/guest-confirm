@@ -30,13 +30,80 @@ interface Event {
   customFields?: CustomField[];
 }
 
-const getInvitationForGuest = (phone: string, language: string) => {
-  // Special invitation for Sarah Levy demo
-  if (phone === "0527654321" && language === 'he') {
-    return "/lovable-uploads/2ed7e50b-48f4-4be4-b874-a19830a05aaf.png";
-  }
-  // Default invitation for others
-  return eventInvitation;
+const useEventInvitation = (eventId: string, language: string) => {
+  const [invitationUrl, setInvitationUrl] = useState<string>(eventInvitation);
+  const [invitationType, setInvitationType] = useState<'image' | 'pdf'>('image');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInvitation = async () => {
+      if (!eventId) {
+        setInvitationUrl(eventInvitation);
+        setInvitationType('image');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Try to fetch invitation image first, then PDF
+        const imageFileName = `${language}-image`;
+        const pdfFileName = `${language}-pdf`;
+        
+        // Check for image files with different extensions
+        const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+        let foundUrl = null;
+        let fileType: 'image' | 'pdf' = 'image';
+        
+        for (const ext of extensions) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${eventId}/${imageFileName}.${ext}`);
+            
+            // Check if file actually exists
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+              fileType = 'image';
+              break;
+            }
+          } catch (error) {
+            // Continue to next extension
+          }
+        }
+        
+        // If no image found, try PDF
+        if (!foundUrl) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${eventId}/${pdfFileName}.pdf`);
+            
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+              fileType = 'pdf';
+            }
+          } catch (error) {
+            // Use default if PDF also not found
+          }
+        }
+        
+        setInvitationUrl(foundUrl || eventInvitation);
+        setInvitationType(fileType);
+      } catch (error) {
+        console.error('Error fetching invitation:', error);
+        setInvitationUrl(eventInvitation);
+        setInvitationType('image');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInvitation();
+  }, [eventId, language]);
+
+  return { invitationUrl, invitationType, isLoading };
 };
 
 const OpenRSVP = () => {
@@ -50,6 +117,9 @@ const OpenRSVP = () => {
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+
+  // Use the hook to get the correct invitation
+  const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(eventId || "", i18n.language);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -411,18 +481,52 @@ const OpenRSVP = () => {
       <div className="max-w-lg mx-auto space-y-8">
         {/* Event Invitation Image with Language Selector */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
-          <img 
-            src={getInvitationForGuest("", i18n.language)} 
-            alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-            className="w-full h-auto max-h-[90vh] object-contain"
-          />
+          {invitationLoading ? (
+            <div className="w-full h-64 bg-muted flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : (
+            <>
+              {invitationType === 'pdf' ? (
+                <div className="w-full h-[70vh] border border-border/30 rounded-lg bg-muted/50 flex flex-col items-center justify-center text-center p-8 space-y-4">
+                  <div className="text-6xl mb-4">📄</div>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    {i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    {i18n.language === 'he' ? "לחץ כדי לצפות בהזמנה" : "Click to view invitation"}
+                  </p>
+                  <a 
+                    href={invitationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    {i18n.language === 'he' ? "פתח הזמנה" : "Open Invitation"}
+                  </a>
+                </div>
+              ) : (
+                <img 
+                  src={invitationUrl} 
+                  alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+                  className="w-full h-auto max-h-[90vh] object-contain"
+                  onError={(e) => {
+                    // Fallback to default invitation if image fails to load
+                    e.currentTarget.src = eventInvitation;
+                  }}
+                />
+              )}
+            </>
+          )}
           
           {/* Language Selector - Top Right */}
           <div className="absolute top-4 right-4 z-10">
             <LanguageSelector />
           </div>
           
-          <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          {invitationType === 'image' && !invitationLoading && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
+          )}
         </div>
 
         {/* Welcome Card */}

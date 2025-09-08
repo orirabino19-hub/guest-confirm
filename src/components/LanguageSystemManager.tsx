@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Plus, Edit, Save, X, Trash2 } from "lucide-react";
-import AuthSettings from "@/components/AuthSettings";
 
 export interface LanguageConfig {
   code: string;
@@ -306,10 +305,9 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="languages" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="languages">שפות זמינות</TabsTrigger>
             <TabsTrigger value="translations">תרגומים</TabsTrigger>
-            <TabsTrigger value="auth">פרטי התחברות</TabsTrigger>
             <TabsTrigger value="settings">הגדרות</TabsTrigger>
           </TabsList>
 
@@ -454,10 +452,6 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
                 ))}
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="auth">
-            <AuthSettings />
           </TabsContent>
 
           <TabsContent value="settings">

@@ -21,6 +21,7 @@ import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
 import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
+import AuthSettings from "@/components/AuthSettings";
 
 const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
@@ -444,6 +445,18 @@ const Admin = () => {
         
         {/* Language System Management Section */}
         <LanguageSystemManager onLanguagesChange={setAvailableLanguages} />
+        
+        {/* Authentication Settings Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              🔐 פרטי התחברות
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AuthSettings />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

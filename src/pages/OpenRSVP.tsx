@@ -414,7 +414,7 @@ const OpenRSVP = () => {
           <img 
             src={getInvitationForGuest("", i18n.language)} 
             alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-            className="w-full h-auto max-h-[90vh] object-contain bg-white"
+            className="w-full h-auto max-h-[90vh] object-contain"
           />
           
           {/* Language Selector - Top Right */}

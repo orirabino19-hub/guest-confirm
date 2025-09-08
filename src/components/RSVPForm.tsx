@@ -319,7 +319,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
             <img 
               src={invitationUrl} 
               alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-              className="w-full h-auto max-h-[50vh] object-contain bg-white"
+              className="w-full h-auto max-h-[50vh] object-contain"
               onError={(e) => {
                 // Fallback to default invitation if image fails to load
                 e.currentTarget.src = eventInvitation;

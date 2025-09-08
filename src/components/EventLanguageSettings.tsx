@@ -64,8 +64,9 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
         .eq('event_id', event.id);
       if (!error && data) {
         const locales = data.map(l => l.locale as string);
-        setStoredLanguages(locales);
-        setSelectedLanguages(locales);
+        const unique = Array.from(new Set(locales));
+        setStoredLanguages(unique);
+        setSelectedLanguages(unique);
       }
     };
     loadLanguages();
@@ -87,9 +88,18 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     if (!event) return;
 
     try {
-      const toAdd = selectedLanguages.filter(l => !storedLanguages.includes(l));
-      const toDelete = storedLanguages.filter(l => !selectedLanguages.includes(l));
+      // Always fetch current DB state to avoid race conditions
+      const { data: current, error: currErr } = await supabase
+        .from('event_languages')
+        .select('locale')
+        .eq('event_id', event.id);
+      if (currErr) throw currErr;
+      const currentLocales = Array.from(new Set((current || []).map(l => l.locale as string)));
 
+      const toAdd = selectedLanguages.filter(l => !currentLocales.includes(l));
+      const toDelete = currentLocales.filter(l => !selectedLanguages.includes(l));
+
+      // Delete languages that were unchecked
       if (toDelete.length > 0) {
         const { error: delErr } = await supabase
           .from('event_languages')
@@ -97,16 +107,25 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
           .eq('event_id', event.id)
           .in('locale', toDelete);
         if (delErr) throw delErr;
+      } else if (selectedLanguages.length === 0 && currentLocales.length > 0) {
+        // If nothing selected, remove all languages for this event
+        const { error: delAllErr } = await supabase
+          .from('event_languages')
+          .delete()
+          .eq('event_id', event.id);
+        if (delAllErr) throw delAllErr;
       }
 
+      // Insert newly added languages (idempotent)
       if (toAdd.length > 0) {
         const inserts = toAdd.map(locale => ({ event_id: event.id, locale, is_default: false }));
-        const { error: insErr } = await supabase
+        const { error: upErr } = await supabase
           .from('event_languages')
-          .insert(inserts);
-        if (insErr) throw insErr;
+          .upsert(inserts, { onConflict: 'event_id,locale' });
+        if (upErr) throw upErr;
       }
 
+      // Ensure one default language when we still have any
       if (selectedLanguages.length > 0) {
         await supabase.from('event_languages')
           .update({ is_default: false })
@@ -117,7 +136,17 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
           .eq('locale', selectedLanguages[0]);
       }
 
-      setStoredLanguages(selectedLanguages);
+      // Refetch from DB to ensure UI reflects persisted state
+      const { data: refreshed, error: refErr } = await supabase
+        .from('event_languages')
+        .select('locale, is_default')
+        .eq('event_id', event.id);
+      if (refErr) throw refErr;
+      const locales = (refreshed || []).map(l => l.locale as string);
+      const unique = Array.from(new Set(locales));
+      setStoredLanguages(unique);
+      setSelectedLanguages(unique);
+
       setIsEditDialogOpen(false);
 
       toast({

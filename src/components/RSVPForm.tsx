@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/event-invitation.jpg";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomField {
   id: string;
@@ -31,13 +32,73 @@ interface RSVPFormProps {
   eventId?: string;
 }
 
-const getInvitationForGuest = (phone: string, language: string) => {
-  // Special invitation for Sarah Levy demo
-  if (phone === "0527654321" && language === 'he') {
-    return "/lovable-uploads/2ed7e50b-48f4-4be4-b874-a19830a05aaf.png";
-  }
-  // Default invitation for others
-  return eventInvitation;
+const useEventInvitation = (eventId: string, language: string) => {
+  const [invitationUrl, setInvitationUrl] = useState<string>(eventInvitation);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchInvitation = async () => {
+      if (!eventId) {
+        setInvitationUrl(eventInvitation);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Try to fetch invitation image first, then PDF
+        const imageFileName = `${language}-image`;
+        const pdfFileName = `${language}-pdf`;
+        
+        // Check for image files with different extensions
+        const extensions = ['jpg', 'jpeg', 'png', 'webp'];
+        let foundUrl = null;
+        
+        for (const ext of extensions) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${eventId}/${imageFileName}.${ext}`);
+            
+            // Check if file actually exists
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+              break;
+            }
+          } catch (error) {
+            // Continue to next extension
+          }
+        }
+        
+        // If no image found, try PDF
+        if (!foundUrl) {
+          try {
+            const { data } = await supabase.storage
+              .from('invitations')
+              .getPublicUrl(`${eventId}/${pdfFileName}.pdf`);
+            
+            const response = await fetch(data.publicUrl, { method: 'HEAD' });
+            if (response.ok) {
+              foundUrl = data.publicUrl;
+            }
+          } catch (error) {
+            // Use default if PDF also not found
+          }
+        }
+        
+        setInvitationUrl(foundUrl || eventInvitation);
+      } catch (error) {
+        console.error('Error fetching invitation:', error);
+        setInvitationUrl(eventInvitation);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInvitation();
+  }, [eventId, language]);
+
+  return { invitationUrl, isLoading };
 };
 
 const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: RSVPFormProps) => {
@@ -49,6 +110,10 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
   const { t, i18n } = useTranslation();
   const { submitRSVP } = useRSVP();
   const { eventId: urlEventId } = useParams<{ eventId: string }>();
+  
+  // Use the hook to get the correct invitation
+  const currentEventId = eventId || urlEventId || "";
+  const { invitationUrl, isLoading: invitationLoading } = useEventInvitation(currentEventId, i18n.language);
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
@@ -246,11 +311,21 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
       <div className="max-w-2xl mx-auto space-y-4">
         {/* Event Invitation Image with Language Selector */}
         <div className="relative overflow-hidden rounded-lg shadow-elegant">
-          <img 
-            src={getInvitationForGuest(phone, i18n.language)} 
-            alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-            className="w-full h-auto max-h-[50vh] object-contain bg-white"
-          />
+          {invitationLoading ? (
+            <div className="w-full h-64 bg-muted flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+            </div>
+          ) : (
+            <img 
+              src={invitationUrl} 
+              alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+              className="w-full h-auto max-h-[50vh] object-contain bg-white"
+              onError={(e) => {
+                // Fallback to default invitation if image fails to load
+                e.currentTarget.src = eventInvitation;
+              }}
+            />
+          )}
           
           {/* Language Selector - Top Right */}
           <div className="absolute top-4 right-4 z-10">

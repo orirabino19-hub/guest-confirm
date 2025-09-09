@@ -71,20 +71,45 @@ const RSVP = () => {
           guestNameExists: !!urlGuestName
         });
         
-        if (isShortCode && phone && !urlGuestName) {
-          console.log('🔄 Attempting to resolve event code and phone:', eventId, phone);
-          const resolved = await resolveShortCodes(eventId, phone);
-          console.log('✅ Resolution result:', resolved);
-          if (resolved) {
-            actualEventId = resolved.eventId;
-            actualPhone = phone; // Keep original for guest lookup
-            console.log('🎯 Resolved to eventId:', actualEventId, 'phone:', actualPhone);
+        if (isShortCode) {
+          console.log('🔄 Short code detected, resolving to actual event ID');
+          
+          if (phone && !urlGuestName) {
+            // Case: /rsvp/1/phone - use short code resolution with phone
+            console.log('🔄 Attempting to resolve event code and phone:', eventId, phone);
+            const resolved = await resolveShortCodes(eventId, phone);
+            console.log('✅ Resolution result:', resolved);
+            if (resolved) {
+              actualEventId = resolved.eventId;
+              actualPhone = phone; // Keep original for guest lookup
+              console.log('🎯 Resolved to eventId:', actualEventId, 'phone:', actualPhone);
+            } else {
+              console.log('❌ Event code/phone resolution failed - no matching event/guest found');
+              console.log('🔍 Debugging: eventId=', eventId, 'phone=', phone);
+              setError(t('rsvp.errors.eventNotFound'));
+              setLoading(false);
+              return;
+            }
           } else {
-            console.log('❌ Event code/phone resolution failed - no matching event/guest found');
-            console.log('🔍 Debugging: eventId=', eventId, 'phone=', phone);
-            setError(t('rsvp.errors.eventNotFound'));
-            setLoading(false);
-            return;
+            // Case: /rsvp/1/name/Shlomi - lookup event by short_code directly
+            console.log('🔄 Looking up event by short_code:', eventId);
+            const { data: eventByCode, error: eventByCodeError } = await supabase
+              .from('events')
+              .select('id')
+              .eq('short_code', eventId)
+              .maybeSingle();
+            
+            console.log('Event lookup by short_code result:', { eventByCode, eventByCodeError });
+            
+            if (eventByCodeError || !eventByCode) {
+              console.log('❌ Event not found by short_code:', eventId);
+              setError(t('rsvp.errors.eventNotFound'));
+              setLoading(false);
+              return;
+            }
+            
+            actualEventId = eventByCode.id;
+            console.log('🎯 Resolved short_code to eventId:', actualEventId);
           }
         }
 

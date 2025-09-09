@@ -22,6 +22,7 @@ import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
 import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 import AuthSettings from "@/components/AuthSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
@@ -52,10 +53,49 @@ const Admin = () => {
   const { toast } = useToast();
   
   // Available languages for the system
-  const [availableLanguages, setAvailableLanguages] = useState<LanguageConfig[]>([
-    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
-    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
-  ]);
+  const [availableLanguages, setAvailableLanguages] = useState<LanguageConfig[]>([]);
+
+  // Load languages from database on mount
+  useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('system_languages')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const languages: LanguageConfig[] = data.map(lang => ({
+            code: lang.code,
+            name: lang.name,
+            nativeName: lang.native_name,
+            flag: lang.flag || '',
+            rtl: lang.rtl
+          }));
+          setAvailableLanguages(languages);
+        } else {
+          // Fallback to default languages if none in database
+          setAvailableLanguages([
+            { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
+            { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error loading languages:', error);
+        // Fallback to default languages on error
+        setAvailableLanguages([
+          { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
+          { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false }
+        ]);
+      }
+    };
+
+    if (isAuthenticated) {
+      loadLanguages();
+    }
+  }, [isAuthenticated]);
 
   // Check session expiry periodically
   useEffect(() => {

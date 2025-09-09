@@ -324,6 +324,36 @@ export type Database = {
           },
         ]
       }
+      system_languages: {
+        Row: {
+          code: string
+          created_at: string
+          flag: string | null
+          name: string
+          native_name: string
+          rtl: boolean
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          flag?: string | null
+          name: string
+          native_name: string
+          rtl?: boolean
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          flag?: string | null
+          name?: string
+          native_name?: string
+          rtl?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Globe, Plus, Edit, Save, X, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface LanguageConfig {
   code: string;
@@ -41,19 +42,46 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
     rtl: false
   });
 
-  // Available languages - this would be stored in state/database
-  const [languages, setLanguages] = useState<LanguageConfig[]>([
-    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
-    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false },
-    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', rtl: true },
-    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', rtl: false },
-    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', rtl: false }
-  ]);
+  // Languages loaded from database
+  const [languages, setLanguages] = useState<LanguageConfig[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Notify parent component when languages change
+  // Load languages from database on component mount
   useEffect(() => {
-    onLanguagesChange?.(languages);
-  }, [languages, onLanguagesChange]);
+    const loadLanguages = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('system_languages')
+          .select('*')
+          .order('code');
+
+        if (error) throw error;
+
+        const loadedLanguages: LanguageConfig[] = (data || []).map(lang => ({
+          code: lang.code,
+          name: lang.name,
+          nativeName: lang.native_name,
+          flag: lang.flag || '🌐',
+          rtl: lang.rtl
+        }));
+
+        setLanguages(loadedLanguages);
+        onLanguagesChange?.(loadedLanguages);
+      } catch (err: any) {
+        console.error('Error loading languages:', err);
+        toast({
+          title: "❌ שגיאה בטעינת שפות",
+          description: err.message,
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLanguages();
+  }, [onLanguagesChange, toast]);
 
   // Sample translations that support all languages
   const [translations, setTranslations] = useState<Translation[]>([
@@ -99,7 +127,7 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
     }
   ]);
 
-  const handleAddLanguage = (e: React.FormEvent) => {
+  const handleAddLanguage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLanguage.code || !newLanguage.name || !newLanguage.nativeName) {
       toast({
@@ -119,36 +147,57 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
       return;
     }
 
-    const language: LanguageConfig = {
-      ...newLanguage,
-      flag: newLanguage.flag || "🌐"
-    };
+    try {
+      const { error } = await supabase
+        .from('system_languages')
+        .insert({
+          code: newLanguage.code,
+          name: newLanguage.name,
+          native_name: newLanguage.nativeName,
+          flag: newLanguage.flag || "🌐",
+          rtl: newLanguage.rtl
+        });
 
-    setLanguages(prev => {
-      const updatedLanguages = [...prev, language];
-      onLanguagesChange?.(updatedLanguages);
-      return updatedLanguages;
-    });
-    
-    // Add empty translations for the new language
-    setTranslations(prev => prev.map(translation => ({
-      ...translation,
-      values: {
-        ...translation.values,
-        [newLanguage.code]: ""
-      }
-    })));
+      if (error) throw error;
 
-    setNewLanguage({ code: "", name: "", nativeName: "", flag: "", rtl: false });
-    setIsAddLanguageOpen(false);
-    
-    toast({
-      title: "✅ שפה נוספה בהצלחה",
-      description: `השפה ${newLanguage.nativeName} נוספה למערכת`
-    });
+      const language: LanguageConfig = {
+        ...newLanguage,
+        nativeName: newLanguage.nativeName,
+        flag: newLanguage.flag || "🌐"
+      };
+
+      setLanguages(prev => {
+        const updatedLanguages = [...prev, language];
+        onLanguagesChange?.(updatedLanguages);
+        return updatedLanguages;
+      });
+      
+      // Add empty translations for the new language
+      setTranslations(prev => prev.map(translation => ({
+        ...translation,
+        values: {
+          ...translation.values,
+          [newLanguage.code]: ""
+        }
+      })));
+
+      setNewLanguage({ code: "", name: "", nativeName: "", flag: "", rtl: false });
+      setIsAddLanguageOpen(false);
+      
+      toast({
+        title: "✅ שפה נוספה בהצלחה",
+        description: `השפה ${newLanguage.nativeName} נוספה למערכת`
+      });
+    } catch (err: any) {
+      toast({
+        title: "❌ שגיאה בהוספת שפה",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteLanguage = (languageCode: string) => {
+  const handleDeleteLanguage = async (languageCode: string) => {
     if (languageCode === 'he' || languageCode === 'en') {
       toast({
         title: "❌ לא ניתן למחוק",
@@ -158,21 +207,37 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
       return;
     }
 
-    setLanguages(prev => {
-      const updatedLanguages = prev.filter(lang => lang.code !== languageCode);
-      onLanguagesChange?.(updatedLanguages);
-      return updatedLanguages;
-    });
-    setTranslations(prev => prev.map(translation => {
-      const newValues = { ...translation.values };
-      delete newValues[languageCode];
-      return { ...translation, values: newValues };
-    }));
+    try {
+      const { error } = await supabase
+        .from('system_languages')
+        .delete()
+        .eq('code', languageCode);
 
-    toast({
-      title: "✅ שפה נמחקה",
-      description: "השפה וכל התרגומים שלה נמחקו מהמערכת"
-    });
+      if (error) throw error;
+
+      setLanguages(prev => {
+        const updatedLanguages = prev.filter(lang => lang.code !== languageCode);
+        onLanguagesChange?.(updatedLanguages);
+        return updatedLanguages;
+      });
+      
+      setTranslations(prev => prev.map(translation => {
+        const newValues = { ...translation.values };
+        delete newValues[languageCode];
+        return { ...translation, values: newValues };
+      }));
+
+      toast({
+        title: "✅ שפה נמחקה",
+        description: "השפה וכל התרגומים שלה נמחקו מהמערכת"
+      });
+    } catch (err: any) {
+      toast({
+        title: "❌ שגיאה במחיקת שפה",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEditStart = (key: string, translation: Translation) => {
@@ -313,8 +378,13 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
 
           <TabsContent value="languages">
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {languages.map((language) => (
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  טוען שפות...
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {languages.map((language) => (
                   <Card key={language.code} className="relative">
                     <CardContent className="pt-4">
                       <div className="flex items-center justify-between mb-2">
@@ -357,8 +427,9 @@ const LanguageSystemManager = ({ onLanguagesChange }: LanguageSystemManagerProps
                       </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </TabsContent>
 

@@ -1,14 +1,50 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { CalendarDays, Users, User, Edit, Trash2 } from "lucide-react";
 import { RSVPSubmission } from "@/hooks/useRSVP";
 
 interface RSVPSubmissionsListProps {
   submissions: RSVPSubmission[];
   loading?: boolean;
+  onDeleteSubmission?: (submissionId: string) => void;
+  onUpdateSubmission?: (submissionId: string, updates: { full_name?: string; men_count?: number; women_count?: number; }) => void;
 }
 
-const RSVPSubmissionsList = ({ submissions, loading }: RSVPSubmissionsListProps) => {
+const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdateSubmission }: RSVPSubmissionsListProps) => {
+  const [editingSubmission, setEditingSubmission] = useState<RSVPSubmission | null>(null);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    men_count: 0,
+    women_count: 0
+  });
+
+  const handleEditClick = (submission: RSVPSubmission) => {
+    setEditingSubmission(submission);
+    setEditForm({
+      full_name: submission.full_name || '',
+      men_count: submission.men_count,
+      women_count: submission.women_count
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingSubmission && onUpdateSubmission) {
+      onUpdateSubmission(editingSubmission.id, editForm);
+      setEditingSubmission(null);
+    }
+  };
+
+  const handleDeleteClick = (submissionId: string) => {
+    if (onDeleteSubmission) {
+      onDeleteSubmission(submissionId);
+    }
+  };
   if (loading) {
     return (
       <Card>
@@ -95,14 +131,95 @@ const RSVPSubmissionsList = ({ submissions, loading }: RSVPSubmissionsListProps)
                   </div>
                 )}
               </div>
-              <div className="text-xs text-muted-foreground text-left">
-                {new Date(submission.submitted_at).toLocaleDateString('he-IL', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
+              <div className="flex flex-col items-end gap-2">
+                <div className="text-xs text-muted-foreground">
+                  {new Date(submission.submitted_at).toLocaleDateString('he-IL', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </div>
+                <div className="flex gap-1">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditClick(submission)}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>עריכת אישור הגעה</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="full_name">שם מלא</Label>
+                          <Input
+                            id="full_name"
+                            value={editForm.full_name}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="men_count">מספר גברים</Label>
+                          <Input
+                            id="men_count"
+                            type="number"
+                            min="0"
+                            value={editForm.men_count}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, men_count: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="women_count">מספר נשים</Label>
+                          <Input
+                            id="women_count"
+                            type="number"
+                            min="0"
+                            value={editForm.women_count}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, women_count: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setEditingSubmission(null)}>
+                            ביטול
+                          </Button>
+                          <Button onClick={handleSaveEdit}>
+                            שמירה
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>מחיקת אישור הגעה</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          האם אתה בטוח שברצונך למחוק את אישור ההגעה של {submission.full_name || "אורח זה"}?
+                          פעולה זו לא ניתנת לביטול.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>ביטול</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDeleteClick(submission.id)}>
+                          מחק
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
             </div>
           ))}

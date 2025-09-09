@@ -27,7 +27,7 @@ const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
-  const { submissions } = useRSVP(selectedEventId || undefined);
+  const { submissions, deleteSubmission, updateSubmission } = useRSVP(selectedEventId || undefined);
   
   // Enhanced authentication with session expiry
   const [username, setUsername] = useState("");
@@ -382,6 +382,8 @@ const Admin = () => {
               <RSVPSubmissionsList 
                 submissions={selectedEventSubmissions}
                 loading={false}
+                onDeleteSubmission={deleteSubmission}
+                onUpdateSubmission={updateSubmission}
               />
             )}
           </TabsContent>

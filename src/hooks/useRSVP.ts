@@ -103,11 +103,72 @@ export const useRSVP = (eventId?: string) => {
     }
   }, [eventId]);
 
+  const deleteSubmission = async (submissionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rsvp_submissions')
+        .delete()
+        .eq('id', submissionId);
+
+      if (error) throw error;
+
+      await fetchSubmissions();
+      
+      toast({
+        title: "✅ אישור נמחק",
+        description: "אישור ההגעה נמחק בהצלחה"
+      });
+
+      return { success: true };
+    } catch (err: any) {
+      toast({
+        title: "❌ שגיאה במחיקת אישור",
+        description: err.message,
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
+  const updateSubmission = async (submissionId: string, updates: {
+    full_name?: string;
+    men_count?: number;
+    women_count?: number;
+    answers?: Json;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('rsvp_submissions')
+        .update(updates)
+        .eq('id', submissionId);
+
+      if (error) throw error;
+
+      await fetchSubmissions();
+      
+      toast({
+        title: "✅ אישור עודכן",
+        description: "אישור ההגעה עודכן בהצלחה"
+      });
+
+      return { success: true };
+    } catch (err: any) {
+      toast({
+        title: "❌ שגיאה בעדכון אישור",
+        description: err.message,
+        variant: "destructive"
+      });
+      throw err;
+    }
+  };
+
   return {
     submissions,
     loading,
     error,
     submitRSVP,
+    deleteSubmission,
+    updateSubmission,
     refetch: fetchSubmissions
   };
 };

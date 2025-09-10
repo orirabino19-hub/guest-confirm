@@ -103,19 +103,12 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     fetchInvitation();
   }, [selectedEventId, i18n.language]);
   
-  // Mock data - in real app this would come from backend
-  const [colorThemes, setColorThemes] = useState<ColorTheme[]>([
-    {
-      eventId: "1",
-      backgroundColor: "#faf9f7", // hsl(42, 15%, 98%) - matches system background
-      textColor: "#302921",       // hsl(25, 25%, 15%) - matches system foreground  
-      primaryColor: "#d4910b",    // hsl(38, 85%, 45%) - matches system primary
-      secondaryColor: "#7a6f63",  // hsl(25, 15%, 45%) - matches system muted-foreground
-      cardBackground: "#ffffff"   // white background for form card
-    }
-  ]);
+  // Color themes state
+  const [colorThemes, setColorThemes] = useState<ColorTheme[]>([]);
+  const [loadingTheme, setLoadingTheme] = useState(false);
 
-  const currentTheme = colorThemes.find(theme => theme.eventId === selectedEventId) || {
+  // Default theme values
+  const defaultTheme = {
     eventId: selectedEventId || "",
     backgroundColor: "#faf9f7",  // matches system background
     textColor: "#302921",        // matches system foreground
@@ -124,7 +117,63 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     cardBackground: "#ffffff"    // white background for form card
   };
 
+  const currentTheme = colorThemes.find(theme => theme.eventId === selectedEventId) || defaultTheme;
   const [tempTheme, setTempTheme] = useState<ColorTheme>(currentTheme);
+
+  // Load theme from database when selectedEventId changes
+  useEffect(() => {
+    const loadEventTheme = async () => {
+      if (!selectedEventId) return;
+
+      setLoadingTheme(true);
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('theme')
+          .eq('id', selectedEventId)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.theme) {
+          // Parse theme from database
+          const dbTheme = typeof data.theme === 'string' ? JSON.parse(data.theme) : data.theme;
+          const themeWithEventId = { ...dbTheme, eventId: selectedEventId };
+          
+          // Update color themes state
+          setColorThemes(prev => {
+            const existing = prev.findIndex(theme => theme.eventId === selectedEventId);
+            if (existing >= 0) {
+              const updated = [...prev];
+              updated[existing] = themeWithEventId;
+              return updated;
+            } else {
+              return [...prev, themeWithEventId];
+            }
+          });
+          
+          // Update temp theme for editing
+          setTempTheme(themeWithEventId);
+        } else {
+          // No theme in database, use default
+          setTempTheme(defaultTheme);
+        }
+      } catch (error: any) {
+        console.error('Error loading theme:', error);
+        // Use default theme on error
+        setTempTheme(defaultTheme);
+      } finally {
+        setLoadingTheme(false);
+      }
+    };
+
+    loadEventTheme();
+  }, [selectedEventId]);
+
+  // Update tempTheme when currentTheme changes
+  useEffect(() => {
+    setTempTheme(currentTheme);
+  }, [currentTheme]);
 
   const handleColorChange = (colorType: keyof ColorTheme, value: string) => {
     if (colorType === 'eventId') return;
@@ -174,14 +223,6 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   };
 
   const handleReset = () => {
-    const defaultTheme = {
-      eventId: selectedEventId || "",
-      backgroundColor: "#faf9f7",  // matches system background
-      textColor: "#302921",        // matches system foreground
-      primaryColor: "#d4910b",     // matches system primary
-      secondaryColor: "#7a6f63",   // matches system muted-foreground
-      cardBackground: "#ffffff"    // white background for form card
-    };
     setTempTheme(defaultTheme);
     
     toast({

@@ -29,7 +29,6 @@ const RSVP = () => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [existingSubmission, setExistingSubmission] = useState<any>(null);
   const { t, i18n } = useTranslation();
   const { resolveShortCodes, getGuestNameByEventCodeAndPhone } = useShortCodes();
 
@@ -181,28 +180,6 @@ const RSVP = () => {
         console.log('Event ID:', eventData.id);
         console.log('Link type: personal');
 
-        // Check if there's already an RSVP submission for this guest
-        let submissionQuery = supabase
-          .from('rsvp_submissions')
-          .select('*')
-          .eq('event_id', actualEventId);
-
-        // Try to match by different criteria
-        if (urlGuestName) {
-          submissionQuery = submissionQuery.eq('full_name', decodeURIComponent(urlGuestName));
-        } else if (actualPhone) {
-          // For phone-based matching, we'll check after setting the guest name
-        }
-
-        if (urlGuestName) {
-          const { data: submission, error: submissionError } = await submissionQuery.maybeSingle();
-          
-          if (!submissionError && submission) {
-            setExistingSubmission(submission);
-            console.log('Found existing submission:', submission);
-          }
-        }
-
         // If we have a guestName from URL, use it directly
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
@@ -236,19 +213,6 @@ const RSVP = () => {
 
           if (guestNameResult) {
             setGuestName(guestNameResult);
-            
-            // Check for existing submission by name
-            const { data: submission, error: submissionError } = await supabase
-              .from('rsvp_submissions')
-              .select('*')
-              .eq('event_id', actualEventId)
-              .eq('full_name', guestNameResult)
-              .maybeSingle();
-            
-            if (!submissionError && submission) {
-              setExistingSubmission(submission);
-              console.log('Found existing submission by name:', submission);
-            }
           } else {
             // אם לא נמצא אורח - שם ברירת מחדל
             setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
@@ -293,55 +257,6 @@ const RSVP = () => {
               className="inline-block mt-4 text-primary hover:underline"
             >
               {t('rsvp.errors.returnHome')}
-            </a>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // If guest already submitted RSVP, show confirmation instead of form
-  if (existingSubmission) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
-        <Card className="w-full max-w-md mx-4 border-green-500/50 bg-green-50/50">
-          <CardContent className="text-center py-12">
-            <LanguageSelector />
-            <div className="text-6xl mb-6 mt-4">✅</div>
-            <h2 className="text-2xl font-bold mb-4 text-green-700">
-              {i18n.language === 'he' ? 'כבר אישרת הגעה!' : 'Already Confirmed!'}
-            </h2>
-            <div className="space-y-2 text-lg">
-              <p className="text-green-600">
-                <strong>{guestName}</strong>
-              </p>
-              <p className="text-green-600">
-                {i18n.language === 'he' ? 'אירוע:' : 'Event:'} <strong>{eventName}</strong>
-              </p>
-              <div className="bg-green-100 p-4 rounded-lg mt-4">
-                <p className="text-green-700 font-medium">
-                  {i18n.language === 'he' ? 'מספר המוזמנים שאישרת:' : 'Number of guests confirmed:'}
-                </p>
-                <div className="flex justify-center gap-4 mt-2 text-green-800">
-                  <span>👨 {existingSubmission.men_count}</span>
-                  <span>👩 {existingSubmission.women_count}</span>
-                  <span className="font-bold">
-                    {i18n.language === 'he' ? 'סה"כ:' : 'Total:'} {existingSubmission.men_count + existingSubmission.women_count}
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm text-green-600 mt-4">
-                {i18n.language === 'he' 
-                  ? 'תודה! המקום שמור עבורך'
-                  : 'Thank you! Your spot is reserved'
-                }
-              </p>
-            </div>
-            <a 
-              href="/" 
-              className="inline-block mt-6 text-primary hover:underline"
-            >
-              {i18n.language === 'he' ? 'חזור לעמוד הראשי' : 'Return to home page'}
             </a>
           </CardContent>
         </Card>

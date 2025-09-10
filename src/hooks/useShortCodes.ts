@@ -108,13 +108,18 @@ export const useShortCodes = () => {
           return null;
         }
         
-        // If it's a UUID, check if phone exists in this event
-        const { data: guestByPhone, error: phoneError } = await supabase
+        // If it's a UUID, check if phone exists in this event - using phone normalization
+        const normalizedInputPhone = phone.replace(/\D/g, '');
+        const { data: allGuestsUuid, error: phoneError } = await supabase
           .from('guests')
           .select('id, phone')
-          .eq('event_id', eventByUuid.id)
-          .eq('phone', phone)
-          .maybeSingle();
+          .eq('event_id', eventByUuid.id);
+        
+        // Find guest by normalized phone matching
+        const guestByPhone = allGuestsUuid?.find(guest => {
+          const normalizedGuestPhone = (guest.phone || '').replace(/\D/g, '');
+          return normalizedGuestPhone === normalizedInputPhone;
+        });
 
         console.log('📱 [useShortCodes] Phone lookup result (UUID path):', { 
           guestByPhone, 
@@ -138,13 +143,18 @@ export const useShortCodes = () => {
       }
 
       console.log('📞 [useShortCodes] Event found, now looking for guest by phone');
-      // Look for guest by phone in this event
-      const { data: guestData, error: guestError } = await supabase
+      // Look for guest by phone in this event - using phone normalization
+      const normalizedInputPhone = phone.replace(/\D/g, '');
+      const { data: allGuests, error: guestError } = await supabase
         .from('guests')
-        .select('id, phone')
-        .eq('event_id', eventData.id)
-        .eq('phone', phone)
-        .maybeSingle();
+        .select('id, phone, full_name')
+        .eq('event_id', eventData.id);
+      
+      // Find guest by normalized phone matching
+      const guestData = allGuests?.find(guest => {
+        const normalizedGuestPhone = (guest.phone || '').replace(/\D/g, '');
+        return normalizedGuestPhone === normalizedInputPhone;
+      });
 
       console.log('📱 [useShortCodes] Guest lookup by phone result:', { 
         guestData, 

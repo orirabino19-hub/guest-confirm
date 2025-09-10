@@ -147,6 +147,9 @@ const RSVP = () => {
 
         setEventName(eventData.title);
         setCurrentEventId(eventData.id);
+        
+        // Update page title
+        document.title = `הזמנה ל${eventData.title}`;
 
         // טעינת השדות המותאמים אישית - רק עבור לינקים אישיים
         const { data: customFieldsData, error: fieldsError } = await supabase

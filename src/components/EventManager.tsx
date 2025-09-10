@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,17 +86,41 @@ const EventManager = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  // Available languages
-  const [availableLanguages] = useState<LanguageConfig[]>([
-    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
-    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false },
-    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', rtl: true },
-    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', rtl: false },
-    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', rtl: false },
-    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', rtl: false },
-    { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', rtl: false },
-    { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
-  ]);
+  // Available languages - loaded from database
+  const [availableLanguages, setAvailableLanguages] = useState<LanguageConfig[]>([]);
+
+  // Load languages from database
+  useEffect(() => {
+    const loadLanguages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('system_languages')
+          .select('*')
+          .order('code');
+
+        if (error) throw error;
+
+        const loadedLanguages: LanguageConfig[] = (data || []).map(lang => ({
+          code: lang.code,
+          name: lang.name,
+          nativeName: lang.native_name,
+          flag: lang.flag || '🌐',
+          rtl: lang.rtl
+        }));
+
+        setAvailableLanguages(loadedLanguages);
+      } catch (err: any) {
+        console.error('Error loading languages:', err);
+        toast({
+          title: "❌ שגיאה בטעינת שפות",
+          description: err.message,
+          variant: "destructive"
+        });
+      }
+    };
+
+    loadLanguages();
+  }, [toast]);
 
   const handleEditEvent = (event: Event) => {
     setEditingEvent(event);

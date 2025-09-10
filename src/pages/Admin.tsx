@@ -20,6 +20,7 @@ import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
+import { useCustomFields } from "@/hooks/useCustomFields";
 import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 import AuthSettings from "@/components/AuthSettings";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,7 @@ const Admin = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
   const { submissions, deleteSubmission, updateSubmission } = useRSVP(selectedEventId || undefined);
+  const { fields: customFields, updateFields, loading: customFieldsLoading } = useCustomFields(selectedEventId, 'open');
   
   // Enhanced authentication with session expiry
   const [username, setUsername] = useState("");
@@ -250,12 +252,24 @@ const Admin = () => {
     }
   };
 
-  const handleCustomFieldsUpdate = (fields: any[]) => {
-    // This will be handled by the custom fields hook
-    toast({
-      title: "✅ שדות מותאמים אישית עודכנו",
-      description: "השדות נשמרו בהצלחה עבור הקישור הפתוח"
-    });
+  const handleCustomFieldsUpdate = async (fields: any[]) => {
+    try {
+      if (!selectedEventId) return;
+      
+      // Convert the CustomField format to CustomFieldConfig format for the database
+      const fieldsForDB = fields.map((field, index) => ({
+        key: field.id,
+        label: field.label,
+        field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+        required: field.required,
+        options: field.options,
+        order_index: index
+      }));
+      
+      await updateFields(fieldsForDB);
+    } catch (error) {
+      // Error handled in hook
+    }
   };
 
   const exportToExcel = () => {
@@ -468,7 +482,16 @@ const Admin = () => {
           <TabsContent value="custom-fields" className="space-y-4">
             <OpenRSVPCustomFields
               selectedEventId={selectedEventId}
-              customFields={[]}
+              customFields={customFields.map(field => ({
+                id: field.key,
+                type: field.field_type === 'number' ? 
+                  (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+                  : field.field_type as any,
+                label: field.label,
+                labelEn: field.label, // For now use same label, can be enhanced later
+                required: field.required,
+                options: field.options
+              }))}
               onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>

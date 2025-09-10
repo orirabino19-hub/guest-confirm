@@ -24,6 +24,11 @@ export interface CustomField {
   labelEn: string;
   options?: string[];
   required: boolean;
+  displayLocations?: {
+    regularInvitation?: boolean; // דף הזמנה רגיל
+    openLink?: boolean;          // קישור פתוח
+    personalLink?: boolean;      // קישור עם שם
+  };
 }
 
 export interface Event {

@@ -20,13 +20,18 @@ interface OpenRSVPCustomFieldsProps {
 const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpdate }: OpenRSVPCustomFieldsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
-  const [newField, setNewField] = useState<Partial<CustomField>>({
-    type: 'text',
-    label: '',
-    labelEn: '',
-    options: [],
-    required: false
-  });
+    const [newField, setNewField] = useState<Partial<CustomField>>({
+      type: 'text',
+      label: '',
+      labelEn: '',
+      options: [],
+      required: false,
+      displayLocations: {
+        regularInvitation: true,
+        openLink: false,
+        personalLink: false
+      }
+    });
   const { toast } = useToast();
 
   const fieldTypes = [
@@ -112,7 +117,12 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       label: '',
       labelEn: '',
       options: [],
-      required: false
+      required: false,
+      displayLocations: {
+        regularInvitation: true,
+        openLink: false,
+        personalLink: false
+      }
     });
     setEditingField(null);
   };
@@ -133,7 +143,12 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       label: newField.label!,
       labelEn: newField.labelEn!,
       options: newField.type === 'select' ? newField.options : undefined,
-      required: newField.required || false
+      required: newField.required || false,
+      displayLocations: newField.displayLocations || {
+        regularInvitation: true,
+        openLink: false,
+        personalLink: false
+      }
     };
 
     let updatedFields: CustomField[];
@@ -164,7 +179,12 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       label: field.label,
       labelEn: field.labelEn,
       options: field.options || [],
-      required: field.required
+      required: field.required,
+      displayLocations: field.displayLocations || {
+        regularInvitation: true,
+        openLink: false,
+        personalLink: false
+      }
     });
     setIsDialogOpen(true);
   };
@@ -449,6 +469,64 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                         onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: !!checked }))}
                       />
                       <Label htmlFor="required">שדה חובה</Label>
+                    </div>
+
+                    {/* Display Locations */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">היכן השדה יוצג?</Label>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="regular-invitation"
+                            checked={newField.displayLocations?.regularInvitation}
+                            onCheckedChange={(checked) => 
+                              setNewField(prev => ({
+                                ...prev,
+                                displayLocations: {
+                                  ...prev.displayLocations,
+                                  regularInvitation: !!checked
+                                }
+                              }))
+                            }
+                          />
+                          <Label htmlFor="regular-invitation" className="text-sm">דף הזמנה רגיל</Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="open-link"
+                            checked={newField.displayLocations?.openLink}
+                            onCheckedChange={(checked) => 
+                              setNewField(prev => ({
+                                ...prev,
+                                displayLocations: {
+                                  ...prev.displayLocations,
+                                  openLink: !!checked
+                                }
+                              }))
+                            }
+                          />
+                          <Label htmlFor="open-link" className="text-sm">קישור פתוח</Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="personal-link"
+                            checked={newField.displayLocations?.personalLink}
+                            onCheckedChange={(checked) => 
+                              setNewField(prev => ({
+                                ...prev,
+                                displayLocations: {
+                                  ...prev.displayLocations,
+                                  personalLink: !!checked
+                                }
+                              }))
+                            }
+                          />
+                          <Label htmlFor="personal-link" className="text-sm">קישור עם שם</Label>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex gap-2 pt-4">

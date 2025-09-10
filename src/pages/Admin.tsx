@@ -30,7 +30,87 @@ const Admin = () => {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
   const { submissions, deleteSubmission, updateSubmission } = useRSVP(selectedEventId || undefined);
-  const { fields: customFields, updateFields, loading: customFieldsLoading } = useCustomFields(selectedEventId, 'open');
+  
+  // Load custom fields from both link types and merge them for display
+  const [allCustomFields, setAllCustomFields] = useState<any[]>([]);
+  
+  useEffect(() => {
+    const loadAllCustomFields = async () => {
+      if (!selectedEventId) {
+        setAllCustomFields([]);
+        return;
+      }
+
+      try {
+        const { data: openFields } = await supabase
+          .from('custom_fields_config')
+          .select('*')
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'open')
+          .eq('is_active', true)
+          .order('order_index');
+
+        const { data: personalFields } = await supabase
+          .from('custom_fields_config')
+          .select('*')
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'personal')
+          .eq('is_active', true)
+          .order('order_index');
+
+        // Merge fields and reconstruct display locations
+        const fieldsMap = new Map();
+        
+        // Add open fields
+        openFields?.forEach(field => {
+          const existing = fieldsMap.get(field.key) || {
+            id: field.key,
+            type: field.field_type === 'number' ? 
+              (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+              : field.field_type,
+            label: field.label,
+            labelEn: field.label,
+            required: field.required,
+            options: field.options,
+            displayLocations: {
+              regularInvitation: false,
+              openLink: false,
+              personalLink: false
+            }
+          };
+          existing.displayLocations.openLink = true;
+          fieldsMap.set(field.key, existing);
+        });
+
+        // Add personal fields
+        personalFields?.forEach(field => {
+          const existing = fieldsMap.get(field.key) || {
+            id: field.key,
+            type: field.field_type === 'number' ? 
+              (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+              : field.field_type,
+            label: field.label,
+            labelEn: field.label,
+            required: field.required,
+            options: field.options,
+            displayLocations: {
+              regularInvitation: false,
+              openLink: false,
+              personalLink: false
+            }
+          };
+          existing.displayLocations.personalLink = true;
+          fieldsMap.set(field.key, existing);
+        });
+
+        setAllCustomFields(Array.from(fieldsMap.values()));
+      } catch (error) {
+        console.error('Error loading custom fields:', error);
+      }
+    };
+
+    loadAllCustomFields();
+  }, [selectedEventId]);
   
   // Enhanced authentication with session expiry
   const [username, setUsername] = useState("");
@@ -256,19 +336,109 @@ const Admin = () => {
     try {
       if (!selectedEventId) return;
       
-      // Convert the CustomField format to CustomFieldConfig format for the database
-      const fieldsForDB = fields.map((field, index) => ({
-        key: field.id,
-        label: field.label,
-        field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
-        required: field.required,
-        options: field.options,
-        order_index: index
-      }));
-      
-      await updateFields(fieldsForDB);
-    } catch (error) {
-      // Error handled in hook
+      // Create separate arrays for different link types based on displayLocations
+      const openLinkFields = fields
+        .filter(field => field.displayLocations?.openLink)
+        .map((field, index) => ({
+          key: field.id,
+          label: field.label,
+          field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+          required: field.required,
+          options: field.options,
+          order_index: index
+        }));
+
+      const personalLinkFields = fields
+        .filter(field => field.displayLocations?.personalLink)
+        .map((field, index) => ({
+          key: field.id,
+          label: field.label,
+          field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+          required: field.required,
+          options: field.options,
+          order_index: index
+        }));
+
+      // Save fields for open links
+      if (openLinkFields.length > 0) {
+        // First deactivate existing open link fields
+        await supabase
+          .from('custom_fields_config')
+          .update({ is_active: false })
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'open');
+
+        // Insert new open link fields
+        const { error: openError } = await supabase
+          .from('custom_fields_config')
+          .upsert(
+            openLinkFields.map(field => ({
+              ...field,
+              event_id: selectedEventId,
+              link_type: 'open' as const,
+              is_active: true
+            })),
+            { onConflict: 'event_id, link_type, key' }
+          );
+
+        if (openError) throw openError;
+      } else {
+        // Deactivate all open link fields if none selected
+        await supabase
+          .from('custom_fields_config')
+          .update({ is_active: false })
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'open');
+      }
+
+      // Save fields for personal links
+      if (personalLinkFields.length > 0) {
+        // First deactivate existing personal link fields
+        await supabase
+          .from('custom_fields_config')
+          .update({ is_active: false })
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'personal');
+
+        // Insert new personal link fields
+        const { error: personalError } = await supabase
+          .from('custom_fields_config')
+          .upsert(
+            personalLinkFields.map(field => ({
+              ...field,
+              event_id: selectedEventId,
+              link_type: 'personal' as const,
+              is_active: true
+            })),
+            { onConflict: 'event_id, link_type, key' }
+          );
+
+        if (personalError) throw personalError;
+      } else {
+        // Deactivate all personal link fields if none selected
+        await supabase
+          .from('custom_fields_config')
+          .update({ is_active: false })
+          .eq('event_id', selectedEventId)
+          .eq('link_type', 'personal');
+      }
+
+      // Refresh the custom fields
+      // We'll need to merge fields from both link types for display
+      await Promise.all([
+        new Promise(resolve => setTimeout(resolve, 100)) // Small delay to ensure DB updates are complete
+      ]);
+
+      toast({
+        title: "✅ שדות מותאמים אישית עודכנו",
+        description: "השדות נשמרו בהצלחה"
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ שגיאה בשמירת שדות",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
@@ -482,16 +652,7 @@ const Admin = () => {
           <TabsContent value="custom-fields" className="space-y-4">
             <OpenRSVPCustomFields
               selectedEventId={selectedEventId}
-              customFields={customFields.map(field => ({
-                id: field.key,
-                type: field.field_type === 'number' ? 
-                  (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
-                  : field.field_type as any,
-                label: field.label,
-                labelEn: field.label, // For now use same label, can be enhanced later
-                required: field.required,
-                options: field.options
-              }))}
+              customFields={allCustomFields}
               onCustomFieldsUpdate={handleCustomFieldsUpdate}
             />
           </TabsContent>

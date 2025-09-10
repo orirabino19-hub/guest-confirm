@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,12 @@ interface EventManagerProps {
     event_date?: string;
     languages?: string[];
   }) => void;
+  onEventUpdate: (eventId: string, event: {
+    title: string;
+    description?: string;
+    event_date?: string;
+    location?: string;
+  }) => void;
   onEventDelete: (eventId: string) => void;
 }
 
@@ -61,21 +67,25 @@ const EventManager = ({
   events, 
   selectedEventId, 
   onEventSelect, 
-  onEventCreate, 
+  onEventCreate,
+  onEventUpdate,
   onEventDelete 
 }: EventManagerProps) => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
     event_date: "",
+    location: "",
     invitationImage: "",
     languages: ["he"] // Default to Hebrew
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
-  // Available languages - this could be fetched from a global state or API
+  // Available languages
   const [availableLanguages] = useState<LanguageConfig[]>([
     { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
     { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false },
@@ -86,6 +96,47 @@ const EventManager = ({
     { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', rtl: false },
     { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
   ]);
+
+  const handleEditEvent = (event: Event) => {
+    setEditingEvent(event);
+    setNewEvent({
+      title: event.title,
+      description: event.description || "",
+      event_date: event.event_date?.split('T')[0] || "",
+      location: event.location || "",
+      invitationImage: "",
+      languages: event.languages || ["he"]
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent || !newEvent.title || !newEvent.event_date) {
+      toast({
+        title: "❌ שגיאה",
+        description: "יש למלא את כל השדות הנדרשים",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    onEventUpdate(editingEvent.id, {
+      title: newEvent.title,
+      description: newEvent.description,
+      event_date: newEvent.event_date,
+      location: newEvent.location
+    });
+    
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+    setEditingEvent(null);
+    setIsEditOpen(false);
+    
+    toast({
+      title: "✅ אירוע עודכן בהצלחה",
+      description: `האירוע "${newEvent.title}" עודכן`
+    });
+  };
 
   const handleCreateEvent = (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +156,7 @@ const EventManager = ({
       languages: newEvent.languages
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", invitationImage: "", languages: ["he"] });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
@@ -145,6 +196,7 @@ const EventManager = ({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>🎉 ניהול אירועים</CardTitle>
+          
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button>הוסף אירוע חדש</Button>
@@ -213,39 +265,7 @@ const EventManager = ({
                      <p className="text-xs text-red-500 mt-1">יש לבחור לפחות שפה אחת</p>
                    )}
                  </div>
-                 <div>
-                   <Label htmlFor="invitation-image">תמונת הזמנה</Label>
-                   <Input
-                     id="invitation-image"
-                     type="file"
-                     accept="image/*"
-                     onChange={handleFileChange}
-                     className="cursor-pointer"
-                   />
-                   {selectedFile && (
-                     <div className="mt-2 p-2 bg-muted rounded-lg">
-                       <div className="flex items-center gap-2">
-                         <span className="text-sm text-green-600">✓</span>
-                         <span className="text-sm font-medium">{selectedFile.name}</span>
-                         <Button
-                           type="button"
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => setSelectedFile(null)}
-                           className="text-red-500 hover:text-red-700"
-                         >
-                           ×
-                         </Button>
-                       </div>
-                       <p className="text-xs text-muted-foreground mt-1">
-                         גודל: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                       </p>
-                     </div>
-                   )}
-                   <p className="text-xs text-muted-foreground mt-1">
-                     עד 5MB, פורמטים נתמכים: JPG, PNG, GIF
-                   </p>
-                 </div>
+                 
                 <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1">
                     צור אירוע
@@ -253,11 +273,78 @@ const EventManager = ({
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => {
+                     onClick={() => {
                      setIsCreateOpen(false);
                      setSelectedFile(null);
-                     setNewEvent({ title: "", description: "", event_date: "", invitationImage: "", languages: ["he"] });
+                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
                     }}
+                  >
+                    ביטול
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Edit Event Dialog */}
+          <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <DialogContent className="max-w-md" dir="rtl">
+              <DialogHeader>
+                <DialogTitle>ערוך אירוע</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleUpdateEvent} className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-title">שם האירוע *</Label>
+                  <Input
+                    id="edit-title"
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="לדוגמא: חתונת יוסי ושרה"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-description">תיאור האירוע</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={newEvent.description}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="פרטים נוספים על האירוע..."
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-event-date">תאריך האירוע *</Label>
+                  <Input
+                    id="edit-event-date"
+                    type="date"
+                    value={newEvent.event_date}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, event_date: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-location">מיקום האירוע</Label>
+                  <Input
+                    id="edit-location"
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="כתובת מדויקת או שם המקום"
+                  />
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="submit" className="flex-1">
+                    עדכן אירוע
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsEditOpen(false);
+                      setEditingEvent(null);
+                      setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+                    }}
+                    className="flex-1"
                   >
                     ביטול
                   </Button>
@@ -311,18 +398,32 @@ const EventManager = ({
                        📅 {event.event_date ? new Date(event.event_date).toLocaleDateString('he-IL') : 'לא נקבע תאריך'}
                      </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`האם אתה בטוח שברצונך למחוק את האירוע "${event.title}"?`)) {
-                        onEventDelete(event.id);
-                      }
-                    }}
-                  >
-                    מחק
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditEvent(event);
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      ערוך
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`האם אתה בטוח שברצונך למחוק את האירוע "${event.title}"?`)) {
+                          onEventDelete(event.id);
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      מחק
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))

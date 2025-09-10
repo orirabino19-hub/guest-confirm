@@ -538,6 +538,7 @@ const Admin = () => {
           selectedEventId={selectedEventId}
           onEventSelect={setSelectedEventId}
           onEventCreate={handleEventCreate}
+          onEventUpdate={handleEventUpdate}
           onEventDelete={handleEventDelete}
         />
 

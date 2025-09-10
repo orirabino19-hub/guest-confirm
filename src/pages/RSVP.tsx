@@ -207,47 +207,49 @@ const RSVP = () => {
         if (urlGuestName) {
           setGuestName(decodeURIComponent(urlGuestName));
         } else if (actualPhone) {
-          // Direct database lookup for guest by normalized phone
-          const normalizedPhone = actualPhone.replace(/\D/g, '');
-          console.log('🔍 Looking for guest with normalized phone:', normalizedPhone);
+          // Try to get guest name using short codes first
+          let guestNameResult = null;
           
-          const { data: allGuests, error: guestError } = await supabase
-            .from('guests')
-            .select('id, phone, full_name')
-            .eq('event_id', actualEventId);
+          if (eventId !== actualEventId) {
+            // We resolved short codes, try to get name by event code and phone
+            guestNameResult = await getGuestNameByEventCodeAndPhone(eventId, phone!);
+          }
           
-          console.log('📊 All guests for event:', allGuests);
-          
-          // Find guest by normalized phone matching
-          const matchedGuest = allGuests?.find(guest => {
-            const normalizedGuestPhone = (guest.phone || '').replace(/\D/g, '');
-            console.log(`🔍 Comparing: "${normalizedGuestPhone}" === "${normalizedPhone}"`);
-            return normalizedGuestPhone === normalizedPhone;
-          });
+          if (!guestNameResult) {
+            // Fallback to old phone-based lookup
+            try {
+              const { data: guestNameFromRPC, error: guestError } = await supabase
+                .rpc('get_guest_name_by_phone', {
+                  _event_id: actualEventId,
+                  _phone: actualPhone
+                });
 
-          console.log('✅ Matched guest:', matchedGuest);
+              console.log('Guest name result:', { guestNameFromRPC, guestError });
 
-          if (matchedGuest && matchedGuest.full_name) {
-            setGuestName(matchedGuest.full_name);
+              if (guestNameFromRPC) {
+                guestNameResult = guestNameFromRPC;
+              }
+            } catch (err) {
+              console.error('Error calling get_guest_name_by_phone:', err);
+            }
+          }
+
+          if (guestNameResult) {
+            setGuestName(guestNameResult);
             
             // Check for existing submission by name
             const { data: submission, error: submissionError } = await supabase
               .from('rsvp_submissions')
               .select('*')
               .eq('event_id', actualEventId)
-              .eq('full_name', matchedGuest.full_name)
-              .order('submitted_at', { ascending: false })
-              .limit(1)
+              .eq('full_name', guestNameResult)
               .maybeSingle();
-            
-            console.log('🎯 Existing submission check:', { submission, submissionError });
             
             if (!submissionError && submission) {
               setExistingSubmission(submission);
               console.log('Found existing submission by name:', submission);
             }
           } else {
-            console.log('❌ No guest found with phone:', actualPhone);
             // אם לא נמצא אורח - שם ברירת מחדל
             setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
           }

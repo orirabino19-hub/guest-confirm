@@ -134,26 +134,43 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedEventId) return;
 
     const updatedTheme = { ...tempTheme, eventId: selectedEventId };
     
-    setColorThemes(prev => {
-      const existing = prev.findIndex(theme => theme.eventId === selectedEventId);
-      if (existing >= 0) {
-        const updated = [...prev];
-        updated[existing] = updatedTheme;
-        return updated;
-      } else {
-        return [...prev, updatedTheme];
-      }
-    });
+    try {
+      // Save to database
+      const { error } = await supabase
+        .from('events')
+        .update({ theme: updatedTheme })
+        .eq('id', selectedEventId);
 
-    toast({
-      title: "✅ ערכת צבעים נשמרה",
-      description: `הצבעים עבור ${eventName} עודכנו בהצלחה`
-    });
+      if (error) throw error;
+
+      // Update local state
+      setColorThemes(prev => {
+        const existing = prev.findIndex(theme => theme.eventId === selectedEventId);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = updatedTheme;
+          return updated;
+        } else {
+          return [...prev, updatedTheme];
+        }
+      });
+
+      toast({
+        title: "✅ ערכת צבעים נשמרה",
+        description: `הצבעים עבור ${eventName} עודכנו בהצלחה במסד הנתונים`
+      });
+    } catch (error: any) {
+      toast({
+        title: "❌ שגיאה בשמירת צבעים",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleReset = () => {

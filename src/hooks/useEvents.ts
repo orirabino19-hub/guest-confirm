@@ -64,9 +64,37 @@ export const useEvents = () => {
       // Separate languages from event data
       const { languages, ...eventFields } = eventData;
       
+      // Generate a unique slug based on the title
+      const baseSlug = eventData.title
+        .toLowerCase()
+        .replace(/[^\u0590-\u05FFa-z0-9\s]/g, '') // Keep Hebrew, English, numbers, spaces
+        .trim()
+        .replace(/\s+/g, '-')
+        .substring(0, 50); // Limit length
+      
+      let slug = baseSlug;
+      let slugExists = true;
+      let counter = 1;
+      
+      // Check if slug already exists and increment if necessary
+      while (slugExists) {
+        const { data: existingEvent } = await supabase
+          .from('events')
+          .select('id')
+          .eq('slug', slug)
+          .single();
+        
+        if (!existingEvent) {
+          slugExists = false;
+        } else {
+          slug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+      }
+      
       const { data, error } = await supabase
         .from('events')
-        .insert([eventFields])
+        .insert([{ ...eventFields, slug }])
         .select()
         .single();
 

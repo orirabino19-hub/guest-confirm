@@ -500,6 +500,8 @@ const Admin = () => {
   
   console.log('Selected Event ID:', selectedEventId);
   console.log('All submissions:', submissions);
+  console.log('Selected Event ID type:', typeof selectedEventId);
+  console.log('Sample submission event_id type:', submissions.length > 0 ? typeof submissions[0].event_id : 'none');
   console.log('Filtered submissions for event:', selectedEventSubmissions);
   
   const confirmedCount = selectedEventSubmissions.length;

@@ -172,27 +172,94 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     }));
   };
 
-  const handleSaveTexts = () => {
-    if (!event) return;
+  const handleSaveTexts = async () => {
+    if (!event || !editingKey) return;
     
-    onEventUpdate(event.id, { languages: selectedLanguages });
-    setEditingKey(null);
-    
-    toast({
-      title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
-      description: i18n.language === 'he' ? "טקסטים מותאמים אישית נשמרו" : "Custom texts have been saved",
-    });
+    try {
+      const langs = ['he', 'en'];
+      // Fetch existing translations for these locales
+      const { data: rows, error } = await supabase
+        .from('event_languages')
+        .select('locale, translations')
+        .eq('event_id', event.id)
+        .in('locale', langs);
+      if (error) throw error;
+
+      const rowsMap = new Map<string, any>((rows || []).map(r => [r.locale as string, r]));
+      const updates = langs.map((locale) => {
+        const existing = (rowsMap.get(locale)?.translations as Record<string, string>) || {};
+        const value = textOverrides[editingKey!]?.[locale];
+        const newTranslations = { ...existing };
+
+        if (value === undefined || value === '') {
+          delete newTranslations[editingKey!];
+        } else {
+          newTranslations[editingKey!] = value;
+        }
+
+        return { event_id: event.id, locale, translations: newTranslations, is_default: false };
+      });
+
+      const { error: upErr } = await supabase
+        .from('event_languages')
+        .upsert(updates, { onConflict: 'event_id,locale' });
+      if (upErr) throw upErr;
+
+      setEditingKey(null);
+      
+      toast({
+        title: i18n.language === 'he' ? "נשמר בהצלחה" : "Saved Successfully",
+        description: i18n.language === 'he' ? "טקסטים מותאמים אישית נשמרו" : "Custom texts have been saved",
+      });
+    } catch (err: any) {
+      toast({
+        title: i18n.language === 'he' ? 'שגיאה בשמירת טקסטים' : 'Error saving texts',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleResetText = (textKey: string) => {
-    const newOverrides = { ...textOverrides };
-    delete newOverrides[textKey];
-    setTextOverrides(newOverrides);
-    
-    toast({
-      title: i18n.language === 'he' ? "אופס" : "Reset",
-      description: i18n.language === 'he' ? "הטקסט חזר לברירת המחדל" : "Text reset to default",
-    });
+  const handleResetText = async (textKey: string) => {
+    if (!event) return;
+
+    try {
+      const langs = ['he', 'en'];
+      const { data: rows, error } = await supabase
+        .from('event_languages')
+        .select('locale, translations')
+        .eq('event_id', event.id)
+        .in('locale', langs);
+      if (error) throw error;
+
+      const rowsMap = new Map<string, any>((rows || []).map(r => [r.locale as string, r]));
+      const updates = langs.map((locale) => {
+        const existing = (rowsMap.get(locale)?.translations as Record<string, string>) || {};
+        const newTranslations = { ...existing };
+        delete newTranslations[textKey];
+        return { event_id: event.id, locale, translations: newTranslations, is_default: false };
+      });
+
+      const { error: upErr } = await supabase
+        .from('event_languages')
+        .upsert(updates, { onConflict: 'event_id,locale' });
+      if (upErr) throw upErr;
+
+      const newOverrides = { ...textOverrides };
+      delete newOverrides[textKey];
+      setTextOverrides(newOverrides);
+      
+      toast({
+        title: i18n.language === 'he' ? "אופס" : "Reset",
+        description: i18n.language === 'he' ? "הטקסט חזר לברירת המחדל" : "Text reset to default",
+      });
+    } catch (err: any) {
+      toast({
+        title: i18n.language === 'he' ? 'שגיאה באיפוס טקסט' : 'Error resetting text',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   const getDisplayText = (textKey: string, language: string, defaultText: string) => {

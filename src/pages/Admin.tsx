@@ -42,6 +42,8 @@ const Admin = () => {
       }
 
       try {
+        console.log('🔍 Loading custom fields for event:', selectedEventId);
+        
         const { data: openFields } = await supabase
           .from('custom_fields_config')
           .select('*')
@@ -57,6 +59,9 @@ const Admin = () => {
           .eq('link_type', 'personal')
           .eq('is_active', true)
           .order('order_index');
+
+        console.log('🔍 Loaded open fields:', openFields);
+        console.log('🔍 Loaded personal fields:', personalFields);
 
         // Merge fields and reconstruct display locations
         const fieldsMap = new Map();
@@ -104,6 +109,7 @@ const Admin = () => {
         });
 
         setAllCustomFields(Array.from(fieldsMap.values()));
+        console.log('🔍 Final merged custom fields:', Array.from(fieldsMap.values()));
       } catch (error) {
         console.error('Error loading custom fields:', error);
       }
@@ -336,6 +342,8 @@ const Admin = () => {
     try {
       if (!selectedEventId) return;
       
+      console.log('🔍 Custom Fields Update - Input fields:', fields);
+      
       // Create separate arrays for different link types based on displayLocations
       const openLinkFields = fields
         .filter(field => field.displayLocations?.openLink)
@@ -358,6 +366,9 @@ const Admin = () => {
           options: field.options,
           order_index: index
         }));
+
+      console.log('🔍 Open link fields to save:', openLinkFields);
+      console.log('🔍 Personal link fields to save:', personalLinkFields);
 
       // Save fields for open links
       if (openLinkFields.length > 0) {

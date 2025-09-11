@@ -436,9 +436,84 @@ const Admin = () => {
 
       // Refresh the custom fields
       // We'll need to merge fields from both link types for display
-      await Promise.all([
-        new Promise(resolve => setTimeout(resolve, 100)) // Small delay to ensure DB updates are complete
-      ]);
+      const loadAllCustomFields = async () => {
+        if (!selectedEventId) return;
+
+        try {
+          console.log('🔍 Loading custom fields for event:', selectedEventId);
+          
+          const { data: openFields } = await supabase
+            .from('custom_fields_config')
+            .select('*')
+            .eq('event_id', selectedEventId)
+            .eq('link_type', 'open')
+            .eq('is_active', true)
+            .order('order_index');
+
+          const { data: personalFields } = await supabase
+            .from('custom_fields_config')
+            .select('*')
+            .eq('event_id', selectedEventId)
+            .eq('link_type', 'personal')
+            .eq('is_active', true)
+            .order('order_index');
+
+          console.log('🔍 Loaded open fields:', openFields);
+          console.log('🔍 Loaded personal fields:', personalFields);
+
+          // Merge fields and reconstruct display locations
+          const fieldsMap = new Map();
+          
+          // Add open fields
+          openFields?.forEach(field => {
+            const existing = fieldsMap.get(field.key) || {
+              id: field.key,
+              type: field.field_type === 'number' ? 
+                (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+                : field.field_type,
+              label: field.label,
+              labelEn: field.label,
+              required: field.required,
+              options: field.options,
+              displayLocations: {
+                regularInvitation: false,
+                openLink: false,
+                personalLink: false
+              }
+            };
+            existing.displayLocations.openLink = true;
+            fieldsMap.set(field.key, existing);
+          });
+
+          // Add personal fields
+          personalFields?.forEach(field => {
+            const existing = fieldsMap.get(field.key) || {
+              id: field.key,
+              type: field.field_type === 'number' ? 
+                (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+                : field.field_type,
+              label: field.label,
+              labelEn: field.label,
+              required: field.required,
+              options: field.options,
+              displayLocations: {
+                regularInvitation: false,
+                openLink: false,
+                personalLink: false
+              }
+            };
+            existing.displayLocations.personalLink = true;
+            fieldsMap.set(field.key, existing);
+          });
+
+          setAllCustomFields(Array.from(fieldsMap.values()));
+          console.log('🔍 Final merged custom fields:', Array.from(fieldsMap.values()));
+        } catch (error) {
+          console.error('Error loading custom fields:', error);
+        }
+      };
+
+      await loadAllCustomFields();
 
       toast({
         title: "✅ שדות מותאמים אישית עודכנו",

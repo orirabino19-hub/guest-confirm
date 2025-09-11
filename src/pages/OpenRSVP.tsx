@@ -650,27 +650,23 @@ const OpenRSVP = () => {
           )}
         </div>
 
-        {/* Welcome Card */}
-        <Card className="bg-gradient-card shadow-soft border-border/50">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground">
-              {t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn })}
-            </CardTitle>
-            <p className="text-muted-foreground text-lg">
-              {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
-            </p>
-          </CardHeader>
-        </Card>
-
         {/* RSVP Form */}
         <Card className="bg-gradient-card shadow-elegant border-border/50">
           <CardHeader>
-            <CardTitle className="text-xl font-semibold text-center text-primary">
-              🎉 {t('rsvp.confirmTitle')}
+            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
+              {t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn })}
             </CardTitle>
-            <p className="text-center text-muted-foreground">
-              {t('rsvp.confirmDescription')}
+            <p className="text-muted-foreground text-lg text-center mb-4">
+              {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
             </p>
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-primary">
+                🎉 {t('rsvp.confirmTitle')}
+              </h2>
+              <p className="text-muted-foreground">
+                {t('rsvp.confirmDescription')}
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">

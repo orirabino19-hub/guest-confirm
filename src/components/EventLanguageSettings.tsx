@@ -56,20 +56,33 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
   // to store languages per event
   
   useEffect(() => {
-    const loadLanguages = async () => {
+    const loadLanguagesAndTexts = async () => {
       if (!event?.id) return;
       const { data, error } = await supabase
         .from('event_languages')
-        .select('locale, is_default')
+        .select('locale, is_default, translations')
         .eq('event_id', event.id);
       if (!error && data) {
         const locales = data.map(l => l.locale as string);
         const unique = Array.from(new Set(locales));
         setStoredLanguages(unique);
         setSelectedLanguages(unique);
+        
+        // Load text overrides from the translations field
+        const overrides: TextOverrides = {};
+        data.forEach(lang => {
+          if (lang.translations && typeof lang.translations === 'object') {
+            const translations = lang.translations as Record<string, string>;
+            Object.entries(translations).forEach(([key, value]) => {
+              if (!overrides[key]) overrides[key] = {};
+              overrides[key][lang.locale] = value;
+            });
+          }
+        });
+        setTextOverrides(overrides);
       }
     };
-    loadLanguages();
+    loadLanguagesAndTexts();
   }, [event?.id]);
 
   // Available languages - this matches EventManager

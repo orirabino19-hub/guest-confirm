@@ -199,8 +199,8 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         .eq('type', 'open')
         .maybeSingle();
 
-      // Use standard 'open' slug for all open links
-      const uniqueSlug = 'open';
+      // Create unique slug for this event's open link
+      const uniqueSlug = `open-${eventCode || selectedEventId}`;
       
       const currentDomain = window.location.origin;
       if (existing) {

@@ -14,6 +14,7 @@ import { Plus, Minus, Loader2 } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
+import { useRSVP } from "@/hooks/useRSVP";
 
 interface CustomField {
   id: string;
@@ -117,9 +118,11 @@ const OpenRSVP = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
   const [resolvedEventId, setResolvedEventId] = useState<string>("");
+  const [eventTheme, setEventTheme] = useState<any>(null);
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
+  const { submitRSVP } = useRSVP();
 
   // Use the hook to get the correct invitation - only after we have resolved the eventId
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(resolvedEventId, i18n.language);
@@ -188,6 +191,19 @@ const OpenRSVP = () => {
           return;
         }
 
+        // Parse theme from database if exists
+        if (eventData.theme) {
+          const theme = typeof eventData.theme === 'string' ? JSON.parse(eventData.theme) : eventData.theme;
+          setEventTheme(theme);
+          
+          // Apply theme colors to CSS variables
+          if (theme.backgroundColor) document.documentElement.style.setProperty('--background', `${hexToHsl(theme.backgroundColor)}`);
+          if (theme.textColor) document.documentElement.style.setProperty('--foreground', `${hexToHsl(theme.textColor)}`);
+          if (theme.primaryColor) document.documentElement.style.setProperty('--primary', `${hexToHsl(theme.primaryColor)}`);
+          if (theme.secondaryColor) document.documentElement.style.setProperty('--muted-foreground', `${hexToHsl(theme.secondaryColor)}`);
+          if (theme.cardBackground) document.documentElement.style.setProperty('--card', `${hexToHsl(theme.cardBackground)}`);
+        }
+
         // טעינת השדות המותאמים אישית - רק עבור לינקים פתוחים
         const { data: customFieldsData, error: fieldsError } = await supabase
           .from('custom_fields_config')
@@ -244,6 +260,37 @@ const OpenRSVP = () => {
     fetchEventData();
   }, [eventId, t]);
 
+  // Helper function to convert hex to HSL
+  const hexToHsl = (hex: string): string => {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Convert hex to RGB
+    const r = parseInt(hex.substr(0, 2), 16) / 255;
+    const g = parseInt(hex.substr(2, 2), 16) / 255;
+    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+    let s = 0;
+    const l = (max + min) / 2;
+    
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -291,22 +338,32 @@ const OpenRSVP = () => {
     setSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Calculate total counts from both default counters and custom field counters
+      let totalMenCount = menCount;
+      let totalWomenCount = womenCount;
       
-      const guestName = formData.guestName || 'Unknown Guest';
-      toast({
-        title: t('rsvp.success.title'),
-        description: t('rsvp.success.description', { name: guestName }),
+      // Add counts from custom field counters
+      event?.customFields?.forEach(field => {
+        if (field.type === 'menCounter') {
+          totalMenCount += Number(formData[field.id] || 0);
+        } else if (field.type === 'womenCounter') {
+          totalWomenCount += Number(formData[field.id] || 0);
+        }
       });
+
+      // Prepare submission data
+      const submissionData = {
+        event_id: resolvedEventId,
+        full_name: formData.guestName || 'Open RSVP Guest',
+        men_count: totalMenCount,
+        women_count: totalWomenCount,
+        answers: formData
+      };
+
+      // Submit to database using useRSVP hook
+      await submitRSVP(submissionData);
       
-      console.log("Open RSVP Submitted:", {
-        totalGuests,
-        menCount,
-        womenCount,
-        customFields: formData,
-        timestamp: new Date().toISOString()
-      });
+      console.log("Open RSVP Submitted successfully:", submissionData);
       
       // Reset form
       setMenCount(0);

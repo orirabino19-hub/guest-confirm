@@ -71,16 +71,34 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const eventSubmissions = submissions.filter(s => s.event_id === selectedEventId);
     console.log('🔍 Event submissions:', eventSubmissions.length);
 
+    // Aggregate confirmed counts per guest (by guest_id if available, otherwise by full_name)
+    const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim());
+    const confirmedMap = new Map<string, { men: number; women: number; total: number }>();
+    for (const s of eventSubmissions) {
+      const k = keyForSubmission(s);
+      if (!k) continue;
+      const men = Number(s.men_count) || 0;
+      const women = Number(s.women_count) || 0;
+      const prev = confirmedMap.get(k) || { men: 0, women: 0, total: 0 };
+      const next = { men: prev.men + men, women: prev.women + women, total: prev.total + men + women };
+      confirmedMap.set(k, next);
+    }
+
     // Prepare data for export (Guests sheet)
     const exportData = await Promise.all(filteredGuests.map(async (guest, index) => {
-      const hasSubmission = eventSubmissions.some(s => (s.full_name || '').trim() === (guest.full_name || '').trim());
+      const guestKeyById = String(guest.id);
+      const guestKeyByName = (guest.full_name || '').trim();
+      const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
       
       return {
         'מס רשומה': index + 1,
         'שם מלא': guest.full_name,
         'טלפון': guest.phone,
-        'סטטוס': hasSubmission ? 'אישר' : 'ממתין',
+        'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
+        'גברים (מאושרים)': confirmed.men,
+        'נשים (מאושרות)': confirmed.women,
+        'סה"כ מאושרים': confirmed.total,
         'גברים (מוזמנים)': guest.men_count || 0,
         'נשים (מוזמנים)': guest.women_count || 0,
         'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
@@ -94,14 +112,17 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     // Set column widths
     const columnWidths = [
-      { wch: 8 },  // מס רשומה
-      { wch: 25 }, // שם מלא
-      { wch: 15 }, // טלפון
-      { wch: 12 }, // סטטוס
-      { wch: 14 }, // גברים (מוזמנים)
-      { wch: 14 }, // נשים (מוזמנים)
-      { wch: 16 }, // סה"כ מוזמנים
-      { wch: 50 }  // קישור אישי
+      { wch: 8 },   // מס רשומה
+      { wch: 25 },  // שם מלא
+      { wch: 15 },  // טלפון
+      { wch: 12 },  // סטטוס
+      { wch: 18 },  // גברים (מאושרים)
+      { wch: 18 },  // נשים (מאושרות)
+      { wch: 20 },  // סה"כ מאושרים
+      { wch: 16 },  // גברים (מוזמנים)
+      { wch: 16 },  // נשים (מוזמנים)
+      { wch: 18 },  // סה"כ מוזמנים
+      { wch: 50 }   // קישור אישי
     ];
     worksheet['!cols'] = columnWidths;
 
@@ -119,8 +140,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const confirmedGuestKeys = new Set<string>(allEventSubmissions.map(keyFor).filter(Boolean));
     const confirmedGuestsCount = confirmedGuestKeys.size;
 
-    const totalConfirmedMen = allEventSubmissions.reduce((sum, s) => sum + (s.men_count || 0), 0);
-    const totalConfirmedWomen = allEventSubmissions.reduce((sum, s) => sum + (s.women_count || 0), 0);
+    const totalConfirmedMen = allEventSubmissions.reduce((sum, s) => sum + Number(s.men_count || 0), 0);
+    const totalConfirmedWomen = allEventSubmissions.reduce((sum, s) => sum + Number(s.women_count || 0), 0);
     const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
 
     const summaryData = [

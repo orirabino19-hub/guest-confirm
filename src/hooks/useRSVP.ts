@@ -8,7 +8,9 @@ export interface RSVPSubmission {
   event_id: string;
   link_id?: string;
   guest_id?: string;
-  full_name?: string;
+  full_name?: string; // Keep for backward compatibility
+  first_name?: string;
+  last_name?: string;
   men_count: number;
   women_count: number;
   answers: Json;
@@ -57,7 +59,9 @@ export const useRSVP = (eventId?: string) => {
     event_id: string;
     link_id?: string;
     guest_id?: string;
-    full_name?: string;
+    full_name?: string; // Keep for backward compatibility
+    first_name?: string;
+    last_name?: string;
     men_count: number;
     women_count: number;
     answers: Json;
@@ -130,7 +134,9 @@ export const useRSVP = (eventId?: string) => {
   };
 
   const updateSubmission = async (submissionId: string, updates: {
-    full_name?: string;
+    full_name?: string; // Keep for backward compatibility
+    first_name?: string;
+    last_name?: string;
     men_count?: number;
     women_count?: number;
     answers?: Json;

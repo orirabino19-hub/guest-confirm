@@ -182,11 +182,14 @@ export const useShortCodes = () => {
 
       const { data: guestData } = await supabase
         .from('guests')
-        .select('full_name')
+        .select('first_name, last_name, full_name')
         .eq('id', mapping.guestId)
         .maybeSingle();
 
-      return guestData?.full_name || null;
+      const fullName = guestData?.first_name || guestData?.last_name 
+        ? `${guestData.first_name || ''} ${guestData.last_name || ''}`.trim()
+        : guestData?.full_name || null;
+      return fullName;
 
     } catch (err: any) {
       console.error('Error getting guest name by event code and phone:', err);

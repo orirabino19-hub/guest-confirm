@@ -85,7 +85,12 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
                 <div className="flex-1 text-right">
                    <div className="flex items-center gap-2 mb-1 justify-end">
                      <Badge variant="secondary">אורח</Badge>
-                     <h3 className="font-medium">{guest.full_name}</h3>
+                     <h3 className="font-medium">
+                       {guest.first_name || guest.last_name 
+                         ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
+                         : guest.full_name || 'אורח'
+                       }
+                     </h3>
                    </div>
                    <p className="text-sm text-muted-foreground">📞 {guest.phone}</p>
                    {(guest.men_count > 0 || guest.women_count > 0) && (

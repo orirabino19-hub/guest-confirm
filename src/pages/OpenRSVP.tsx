@@ -355,6 +355,8 @@ const OpenRSVP = () => {
       const submissionData = {
         event_id: resolvedEventId,
         full_name: formData.guestName || 'Open RSVP Guest',
+        first_name: (formData.guestName || 'Open RSVP Guest').split(' ')[0] || '',
+        last_name: (formData.guestName || 'Open RSVP Guest').split(' ').slice(1).join(' ') || '',
         men_count: totalMenCount,
         women_count: totalWomenCount,
         answers: formData

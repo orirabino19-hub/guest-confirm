@@ -14,13 +14,19 @@ interface RSVPSubmissionsListProps {
   submissions: RSVPSubmission[];
   loading?: boolean;
   onDeleteSubmission?: (submissionId: string) => void;
-  onUpdateSubmission?: (submissionId: string, updates: { full_name?: string; men_count?: number; women_count?: number; }) => void;
+  onUpdateSubmission?: (submissionId: string, updates: { 
+    first_name?: string; 
+    last_name?: string;
+    men_count?: number; 
+    women_count?: number; 
+  }) => void;
 }
 
 const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdateSubmission }: RSVPSubmissionsListProps) => {
   const [editingSubmission, setEditingSubmission] = useState<RSVPSubmission | null>(null);
   const [editForm, setEditForm] = useState({
-    full_name: '',
+    first_name: '',
+    last_name: '',
     men_count: 0,
     women_count: 0
   });
@@ -58,10 +64,18 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
     return customFieldsMap[fieldKey] || fieldKey;
   };
 
+  const getDisplayName = (submission: RSVPSubmission): string => {
+    if (submission.first_name || submission.last_name) {
+      return `${submission.first_name || ''} ${submission.last_name || ''}`.trim();
+    }
+    return submission.full_name || "אורח";
+  };
+
   const handleEditClick = (submission: RSVPSubmission) => {
     setEditingSubmission(submission);
     setEditForm({
-      full_name: submission.full_name || '',
+      first_name: submission.first_name || (submission.full_name ? submission.full_name.split(' ')[0] : ''),
+      last_name: submission.last_name || (submission.full_name ? submission.full_name.split(' ').slice(1).join(' ') : ''),
       men_count: submission.men_count,
       women_count: submission.women_count
     });
@@ -79,6 +93,7 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
       onDeleteSubmission(submissionId);
     }
   };
+
   if (loading) {
     return (
       <Card>
@@ -133,7 +148,7 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-medium">{submission.full_name || "אורח"}</span>
+                  <span className="font-medium">{getDisplayName(submission)}</span>
                   <Badge variant="outline" className="text-xs">
                     {submission.status}
                   </Badge>
@@ -192,11 +207,19 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                       </DialogHeader>
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="full_name">שם מלא</Label>
+                          <Label htmlFor="first_name">שם פרטי</Label>
                           <Input
-                            id="full_name"
-                            value={editForm.full_name}
-                            onChange={(e) => setEditForm(prev => ({ ...prev, full_name: e.target.value }))}
+                            id="first_name"
+                            value={editForm.first_name}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, first_name: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="last_name">שם משפחה</Label>
+                          <Input
+                            id="last_name"
+                            value={editForm.last_name}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, last_name: e.target.value }))}
                           />
                         </div>
                         <div>
@@ -241,7 +264,7 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                       <AlertDialogHeader>
                         <AlertDialogTitle>מחיקת אישור הגעה</AlertDialogTitle>
                         <AlertDialogDescription>
-                          האם אתה בטוח שברצונך למחוק את אישור ההגעה של {submission.full_name || "אורח זה"}?
+                          האם אתה בטוח שברצונך למחוק את אישור ההגעה של {getDisplayName(submission)}?
                           פעולה זו לא ניתנת לביטול.
                         </AlertDialogDescription>
                       </AlertDialogHeader>

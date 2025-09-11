@@ -184,7 +184,8 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
       const submissionData = {
         event_id: currentEventId,
-        full_name: guestName,
+        first_name: guestName.split(' ')[0] || '',
+        last_name: guestName.split(' ').slice(1).join(' ') || '',
         men_count: menCount,
         women_count: womenCount,
         answers: formData

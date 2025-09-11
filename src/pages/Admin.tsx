@@ -290,7 +290,8 @@ const Admin = () => {
       for (const guestData of importedGuests) {
         await createGuest({
           event_id: selectedEventId,
-          full_name: guestData.fullName || guestData.full_name,
+          first_name: (guestData.fullName || guestData.full_name || '').split(' ')[0] || '',
+          last_name: (guestData.fullName || guestData.full_name || '').split(' ').slice(1).join(' ') || '',
           phone: guestData.phone,
           men_count: guestData.menCount || 0,
           women_count: guestData.womenCount || 0
@@ -308,13 +309,15 @@ const Admin = () => {
 
   const handleGuestAdd = async (guestData: {
     eventId: string;
-    fullName: string;
-    phone: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
   }) => {
     try {
       await createGuest({
         event_id: guestData.eventId,
-        full_name: guestData.fullName,
+        first_name: guestData.firstName,
+        last_name: guestData.lastName,
         phone: guestData.phone
       });
     } catch (error) {

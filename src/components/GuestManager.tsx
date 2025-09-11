@@ -16,8 +16,8 @@ interface GuestManagerProps {
   guests: Guest[];
   onGuestAdd: (guest: {
     eventId: string;
-    fullName: string;
-    phone: string;
+    firstName: string;
+    lastName: string;
   }) => void;
   onGuestDelete: (guestId: string) => void;
 }
@@ -25,7 +25,8 @@ interface GuestManagerProps {
 const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, onGuestDelete }: GuestManagerProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newGuest, setNewGuest] = useState({
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: ''
   });
   const { toast } = useToast();
@@ -57,10 +58,10 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
       return;
     }
 
-    if (!newGuest.fullName.trim() || !newGuest.phone.trim()) {
+    if (!newGuest.firstName.trim() || !newGuest.phone.trim()) {
       toast({
         title: "⚠️ שגיאה",
-        description: "יש למלא את כל השדות",
+        description: "יש למלא לפחות שם פרטי ומספר טלפון",
         variant: "destructive"
       });
       return;
@@ -93,18 +94,20 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
 
     const guestData = {
       eventId: selectedEventId,
-      fullName: newGuest.fullName.trim(),
+      firstName: newGuest.firstName.trim(),
+      lastName: newGuest.lastName.trim(),
       phone: normalizedPhone
     };
 
     onGuestAdd(guestData);
 
+    const displayName = `${newGuest.firstName.trim()} ${newGuest.lastName.trim()}`.trim();
     toast({
       title: "✅ אורח נוסף בהצלחה",
-      description: `נוסף אורח: ${newGuest.fullName}`
+      description: `נוסף אורח: ${displayName}`
     });
 
-    setNewGuest({ fullName: '', phone: '' });
+    setNewGuest({ firstName: '', lastName: '', phone: '' });
     setIsDialogOpen(false);
   };
 
@@ -184,16 +187,25 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
             <DialogHeader>
               <DialogTitle>הוספת אורח חדש</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="guest-name">שם מלא</Label>
-                <Input
-                  id="guest-name"
-                  value={newGuest.fullName}
-                  onChange={(e) => setNewGuest(prev => ({ ...prev, fullName: e.target.value }))}
-                  placeholder="הכנס שם מלא..."
-                />
-              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="guest-first-name">שם פרטי</Label>
+                  <Input
+                    id="guest-first-name"
+                    value={newGuest.firstName}
+                    onChange={(e) => setNewGuest(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="הכנס שם פרטי..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest-last-name">שם משפחה</Label>
+                  <Input
+                    id="guest-last-name"
+                    value={newGuest.lastName}
+                    onChange={(e) => setNewGuest(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="הכנס שם משפחה..."
+                  />
+                </div>
               <div className="space-y-2">
                 <Label htmlFor="guest-phone">מספר טלפון</Label>
                 <Input
@@ -230,7 +242,12 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <User className="h-4 w-4" />
-                      <span className="font-medium">{guest.full_name}</span>
+                      <span className="font-medium">
+                        {guest.first_name || guest.last_name 
+                          ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
+                          : guest.full_name || 'אורח'
+                        }
+                      </span>
                       <Badge variant="secondary">אורח</Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -255,7 +272,12 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDeleteGuest(guest.id, guest.full_name || 'אורח לא ידוע')}
+                      onClick={() => {
+                        const guestName = guest.first_name || guest.last_name 
+                          ? `${guest.first_name || ''} ${guest.last_name || ''}`.trim()
+                          : guest.full_name || 'אורח לא ידוע';
+                        handleDeleteGuest(guest.id, guestName);
+                      }}
                       className="text-red-500 hover:text-red-700"
                       title="מחק אורח"
                     >

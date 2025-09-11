@@ -106,17 +106,23 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     // Add submissions from open RSVP and other links that don't have guest_id
     const openRsvpSubmissions = eventSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id));
-    const openRsvpExportData = openRsvpSubmissions.map((submission, index) => ({
-      'מס רשומה': guestExportData.length + index + 1,
-      'שם מלא': submission.full_name || 'לא צוין',
-      'טלפון': '',
-      'סוג': 'קישור פתוח/לפי שם',
-      'סטטוס': 'אישר',
-      'גברים (מאושרים)': submission.men_count || 0,
-      'נשים (מאושרות)': submission.women_count || 0,
-      'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0),
-      'קישור אישי': 'קישור פתוח'
-    }));
+    const openRsvpExportData = openRsvpSubmissions.map((submission, index) => {
+      const displayName = submission.first_name || submission.last_name 
+        ? `${submission.first_name || ''} ${submission.last_name || ''}`.trim()
+        : submission.full_name || 'לא צוין';
+      
+      return {
+        'מס רשומה': guestExportData.length + index + 1,
+        'שם מלא': displayName,
+        'טלפון': '',
+        'סוג': 'קישור פתוח/לפי שם',
+        'סטטוס': 'אישר',
+        'גברים (מאושרים)': submission.men_count || 0,
+        'נשים (מאושרות)': submission.women_count || 0,
+        'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0),
+        'קישור אישי': 'קישור פתוח'
+      };
+    });
 
     const exportData = [...guestExportData, ...openRsvpExportData];
 

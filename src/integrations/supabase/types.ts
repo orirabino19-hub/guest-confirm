@@ -149,10 +149,12 @@ export type Database = {
           created_at: string
           email: string | null
           event_id: string
+          first_name: string | null
           full_name: string | null
           group_name: string | null
           id: string
           language: string | null
+          last_name: string | null
           men_count: number
           notes: string | null
           phone: string | null
@@ -164,10 +166,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           event_id: string
+          first_name?: string | null
           full_name?: string | null
           group_name?: string | null
           id?: string
           language?: string | null
+          last_name?: string | null
           men_count?: number
           notes?: string | null
           phone?: string | null
@@ -179,10 +183,12 @@ export type Database = {
           created_at?: string
           email?: string | null
           event_id?: string
+          first_name?: string | null
           full_name?: string | null
           group_name?: string | null
           id?: string
           language?: string | null
+          last_name?: string | null
           men_count?: number
           notes?: string | null
           phone?: string | null
@@ -264,9 +270,11 @@ export type Database = {
         Row: {
           answers: Json
           event_id: string
+          first_name: string | null
           full_name: string | null
           guest_id: string | null
           id: string
+          last_name: string | null
           link_id: string | null
           men_count: number
           status: string
@@ -277,9 +285,11 @@ export type Database = {
         Insert: {
           answers?: Json
           event_id: string
+          first_name?: string | null
           full_name?: string | null
           guest_id?: string | null
           id?: string
+          last_name?: string | null
           link_id?: string | null
           men_count?: number
           status?: string
@@ -290,9 +300,11 @@ export type Database = {
         Update: {
           answers?: Json
           event_id?: string
+          first_name?: string | null
           full_name?: string | null
           guest_id?: string | null
           id?: string
+          last_name?: string | null
           link_id?: string | null
           men_count?: number
           status?: string

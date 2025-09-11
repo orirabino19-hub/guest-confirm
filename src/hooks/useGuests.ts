@@ -5,7 +5,9 @@ import { useToast } from '@/hooks/use-toast';
 export interface Guest {
   id: string;
   event_id: string;
-  full_name?: string;
+  full_name?: string; // Keep for backward compatibility
+  first_name?: string;
+  last_name?: string;
   phone?: string;
   email?: string;
   group_name?: string;
@@ -51,7 +53,9 @@ export const useGuests = (eventId?: string) => {
 
   const createGuest = async (guestData: {
     event_id: string;
-    full_name?: string;
+    first_name?: string;
+    last_name?: string;
+    full_name?: string; // Keep for backward compatibility
     phone?: string;
     email?: string;
     men_count?: number;
@@ -72,9 +76,10 @@ export const useGuests = (eventId?: string) => {
 
       await fetchGuests();
       
+      const guestName = guestData.full_name || `${guestData.first_name || ''} ${guestData.last_name || ''}`.trim();
       toast({
         title: "✅ אורח נוסף בהצלחה",
-        description: `נוסף אורח: ${guestData.full_name}`
+        description: `נוסף אורח: ${guestName}`
       });
 
       return;

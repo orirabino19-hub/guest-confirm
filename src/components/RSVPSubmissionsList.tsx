@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { CalendarDays, Users, User, Edit, Trash2 } from "lucide-react";
 import { RSVPSubmission } from "@/hooks/useRSVP";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RSVPSubmissionsListProps {
   submissions: RSVPSubmission[];
@@ -23,6 +24,39 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
     men_count: 0,
     women_count: 0
   });
+  const [customFieldsMap, setCustomFieldsMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchCustomFields = async () => {
+      if (submissions.length === 0) return;
+      
+      // Get unique event IDs from submissions
+      const eventIds = [...new Set(submissions.map(s => s.event_id))];
+      
+      try {
+        const { data: customFields } = await supabase
+          .from('custom_fields_config')
+          .select('key, label, event_id')
+          .in('event_id', eventIds);
+
+        if (customFields) {
+          const fieldsMap: Record<string, string> = {};
+          customFields.forEach(field => {
+            fieldsMap[field.key] = field.label;
+          });
+          setCustomFieldsMap(fieldsMap);
+        }
+      } catch (error) {
+        console.error('Error fetching custom fields:', error);
+      }
+    };
+
+    fetchCustomFields();
+  }, [submissions]);
+
+  const getFieldLabel = (fieldKey: string): string => {
+    return customFieldsMap[fieldKey] || fieldKey;
+  };
 
   const handleEditClick = (submission: RSVPSubmission) => {
     setEditingSubmission(submission);
@@ -123,7 +157,7 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                     <div className="text-sm">
                       {Object.entries(submission.answers as any || {}).map(([key, value]) => (
                         <div key={key} className="flex gap-2">
-                          <span className="font-medium">{key}:</span>
+                          <span className="font-medium">{getFieldLabel(key)}:</span>
                           <span>{String(value)}</span>
                         </div>
                       ))}

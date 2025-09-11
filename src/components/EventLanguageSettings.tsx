@@ -39,6 +39,8 @@ const EDITABLE_KEYS = [
 interface TextOverrides {
   [key: string]: {
     [language: string]: string;
+  } & {
+    hidden?: boolean;
   };
 }
 
@@ -72,10 +74,23 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
         const overrides: TextOverrides = {};
         data.forEach(lang => {
           if (lang.translations && typeof lang.translations === 'object') {
-            const translations = lang.translations as Record<string, string>;
+            const translations = lang.translations as Record<string, any>;
             Object.entries(translations).forEach(([key, value]) => {
               if (!overrides[key]) overrides[key] = {};
-              overrides[key][lang.locale] = value;
+              if (typeof value === 'object' && value !== null) {
+                // New format: {text: {he: "...", en: "..."}, hidden: boolean}
+                if (value.text) {
+                  Object.entries(value.text).forEach(([locale, text]) => {
+                    overrides[key][locale] = text as string;
+                  });
+                }
+                if (value.hidden !== undefined) {
+                  overrides[key].hidden = value.hidden;
+                }
+              } else {
+                // Old format: direct string value
+                overrides[key][lang.locale] = value as string;
+              }
             });
           }
         });
@@ -185,6 +200,19 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     }));
   };
 
+  const handleHiddenChange = (textKey: string, hidden: boolean) => {
+    setTextOverrides(prev => {
+      const existing = prev[textKey] || {} as { [key: string]: string };
+      return {
+        ...prev,
+        [textKey]: {
+          ...(existing as any),
+          hidden
+        }
+      } as TextOverrides;
+    });
+  };
+
   const handleSaveTexts = async () => {
     if (!event || !editingKey) return;
     
@@ -200,14 +228,33 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
 
       const rowsMap = new Map<string, any>((rows || []).map(r => [r.locale as string, r]));
       const updates = langs.map((locale) => {
-        const existing = (rowsMap.get(locale)?.translations as Record<string, string>) || {};
+        const existing = (rowsMap.get(locale)?.translations as Record<string, any>) || {};
         const value = textOverrides[editingKey!]?.[locale];
+        const hidden = textOverrides[editingKey!]?.hidden || false;
         const newTranslations = { ...existing };
 
+        // Create new format: {text: {locale: value}, hidden: boolean}
+        const textData = {
+          text: {},
+          hidden
+        };
+
+        // Get existing text data for other locales
+        if (existing[editingKey!]?.text) {
+          textData.text = { ...existing[editingKey!].text };
+        }
+
         if (value === undefined || value === '') {
-          delete newTranslations[editingKey!];
+          delete textData.text[locale];
         } else {
-          newTranslations[editingKey!] = value;
+          textData.text[locale] = value;
+        }
+
+        // Only save if we have text or hidden flag
+        if (Object.keys(textData.text).length > 0 || hidden) {
+          newTranslations[editingKey!] = textData;
+        } else {
+          delete newTranslations[editingKey!];
         }
 
         return { event_id: event.id, locale, translations: newTranslations, is_default: false };
@@ -389,14 +436,19 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
               {EDITABLE_KEYS.map((item) => (
                 <div key={item.key} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Label className="font-medium">{item.label}</Label>
-                      {isOverridden(item.key) && (
-                        <Badge variant="secondary" className="text-xs">
-                          {i18n.language === 'he' ? 'מותאם אישית' : 'Customized'}
-                        </Badge>
-                      )}
-                    </div>
+                     <div className="flex items-center gap-2">
+                       <Label className="font-medium">{item.label}</Label>
+                       {isOverridden(item.key) && (
+                         <Badge variant="secondary" className="text-xs">
+                           {i18n.language === 'he' ? 'מותאם אישית' : 'Customized'}
+                         </Badge>
+                       )}
+                       {textOverrides[item.key]?.hidden && (
+                         <Badge variant="outline" className="text-xs">
+                           {i18n.language === 'he' ? 'מוסתר' : 'Hidden'}
+                         </Badge>
+                       )}
+                     </div>
                     <div className="flex gap-2">
                       {editingKey === item.key ? (
                         <>
@@ -439,6 +491,18 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
                         </>
                       )}
                     </div>
+                  </div>
+
+                  {/* Hidden checkbox */}
+                  <div className="flex items-center space-x-2 space-x-reverse mb-4">
+                    <Checkbox
+                      id={`hidden-${item.key}`}
+                      checked={textOverrides[item.key]?.hidden || false}
+                      onCheckedChange={(checked) => handleHiddenChange(item.key, !!checked)}
+                    />
+                    <Label htmlFor={`hidden-${item.key}`} className="text-sm">
+                      {i18n.language === 'he' ? 'הסתר בדף האירוע' : 'Hide on event page'}
+                    </Label>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

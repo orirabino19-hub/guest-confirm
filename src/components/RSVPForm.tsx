@@ -30,6 +30,7 @@ interface RSVPFormProps {
   eventName: string;
   customFields?: CustomField[];
   eventId?: string;
+  getCustomText?: (key: string, language: string, defaultText: string) => string;
 }
 
 const useEventInvitation = (eventId: string, language: string) => {
@@ -108,7 +109,7 @@ const useEventInvitation = (eventId: string, language: string) => {
   return { invitationUrl, invitationType, isLoading };
 };
 
-const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: RSVPFormProps) => {
+const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, getCustomText }: RSVPFormProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
@@ -421,26 +422,26 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
               className="text-xl md:text-2xl font-bold mb-2"
               style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
             >
-              {t('rsvp.welcome', { name: guestName })}
+              {getCustomText ? getCustomText('rsvp.welcome', i18n.language, t('rsvp.welcome', { name: guestName })) : t('rsvp.welcome', { name: guestName })}
             </CardTitle>
             <p 
               className="mb-3" 
               style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
             >
-              {t('rsvp.eventInvitation', { eventName })}
+              {getCustomText ? getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName })) : t('rsvp.eventInvitation', { eventName })}
             </p>
             <div className="border-t border-border/30 pt-4">
               <CardTitle 
                 className="text-lg font-semibold"
                 style={{ color: eventTheme?.primaryColor || 'hsl(var(--primary))' }}
               >
-                {t('rsvp.confirmTitle')}
+                {getCustomText ? getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle')) : t('rsvp.confirmTitle')}
               </CardTitle>
               <p 
                 className="text-sm mt-1"
                 style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
               >
-                {t('rsvp.confirmDescription')}
+                {getCustomText ? getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription')) : t('rsvp.confirmDescription')}
               </p>
             </div>
           </CardHeader>
@@ -573,7 +574,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
                     {t('rsvp.submitting')}
                   </div>
                 ) : (
-                  t('rsvp.submitButton')
+                  getCustomText ? getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton')) : t('rsvp.submitButton')
                 )}
               </Button>
 

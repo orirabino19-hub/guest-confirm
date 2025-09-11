@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LanguageSelector from "@/components/LanguageSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
+import { useCustomTexts } from "@/hooks/useCustomTexts";
 import { updateMetaTags, generateRSVPMetaTags } from "@/utils/metaTags";
 
 console.log('🔥 RSVP.tsx file loaded');
@@ -32,6 +33,7 @@ const RSVP = () => {
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
   const { resolveShortCodes, getGuestNameByEventCodeAndPhone } = useShortCodes();
+  const { getCustomText } = useCustomTexts(currentEventId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -296,6 +298,7 @@ const RSVP = () => {
       eventName={eventName}
       customFields={customFields}
       eventId={currentEventId}
+      getCustomText={getCustomText}
     />
   );
 };

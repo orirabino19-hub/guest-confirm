@@ -15,6 +15,7 @@ import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
 import { useRSVP } from "@/hooks/useRSVP";
+import { useCustomTexts } from "@/hooks/useCustomTexts";
 import { updateMetaTags, generateOpenRSVPMetaTags } from "@/utils/metaTags";
 
 interface CustomField {
@@ -126,6 +127,7 @@ const OpenRSVP = () => {
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
   const { submitRSVP } = useRSVP();
+  const { getCustomText } = useCustomTexts(resolvedEventId);
 
   // Use the hook to get the correct invitation - only after we have resolved the eventId
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(resolvedEventId, i18n.language);
@@ -662,17 +664,17 @@ const OpenRSVP = () => {
         <Card className="bg-gradient-card shadow-elegant border-border/50">
           <CardHeader>
             <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
-              {t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn })}
+              {getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn }))}
             </CardTitle>
             <p className="text-muted-foreground text-lg text-center mb-4">
               {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
             </p>
             <div className="text-center">
               <h2 className="text-xl font-semibold text-primary">
-                🎉 {t('rsvp.confirmTitle')}
+                🎉 {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
               </h2>
               <p className="text-muted-foreground">
-                {t('rsvp.confirmDescription')}
+                {getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription'))}
               </p>
             </div>
           </CardHeader>
@@ -823,7 +825,7 @@ const OpenRSVP = () => {
                     {t('rsvp.submitting')}
                   </div>
                 ) : (
-                  t('rsvp.submitButton')
+                  getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
                 )}
               </Button>
 

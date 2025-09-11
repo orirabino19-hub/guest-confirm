@@ -120,8 +120,8 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       required: false,
       displayLocations: {
         regularInvitation: true,
-        openLink: false,
-        personalLink: false
+        openLink: true,  // ברירת מחדל - שדה יופיע בלינק פתוח
+        personalLink: true  // ברירת מחדל - שדה יופיע בלינק אישי
       }
     });
     setEditingField(null);
@@ -146,8 +146,8 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       required: newField.required || false,
       displayLocations: newField.displayLocations || {
         regularInvitation: true,
-        openLink: false,
-        personalLink: false
+        openLink: true,  // ברירת מחדל - שדה יופיע בלינק פתוח
+        personalLink: true  // ברירת מחדל - שדה יופיע בלינק אישי
       }
     };
 
@@ -182,8 +182,8 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       required: field.required,
       displayLocations: field.displayLocations || {
         regularInvitation: true,
-        openLink: false,
-        personalLink: false
+        openLink: true,
+        personalLink: true
       }
     });
     setIsDialogOpen(true);

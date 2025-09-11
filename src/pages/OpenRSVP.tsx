@@ -127,7 +127,7 @@ const OpenRSVP = () => {
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
   const { submitRSVP } = useRSVP();
-  const { getCustomText } = useCustomTexts(resolvedEventId);
+  const { getCustomText, isTextHidden } = useCustomTexts(resolvedEventId);
 
   // Use the hook to get the correct invitation - only after we have resolved the eventId
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(resolvedEventId, i18n.language);
@@ -663,19 +663,25 @@ const OpenRSVP = () => {
         {/* RSVP Form */}
         <Card className="bg-gradient-card shadow-elegant border-border/50">
           <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
-              {getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn }))}
-            </CardTitle>
+            {!isTextHidden('rsvp.eventInvitation') && (
+              <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
+                {getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn }))}
+              </CardTitle>
+            )}
             <p className="text-muted-foreground text-lg text-center mb-4">
               {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
             </p>
             <div className="text-center">
-              <h2 className="text-xl font-semibold text-primary">
-                🎉 {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
-              </h2>
-              <p className="text-muted-foreground">
-                {getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription'))}
-              </p>
+              {!isTextHidden('rsvp.confirmTitle') && (
+                <h2 className="text-xl font-semibold text-primary">
+                  🎉 {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
+                </h2>
+              )}
+              {!isTextHidden('rsvp.confirmDescription') && (
+                <p className="text-muted-foreground">
+                  {getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription'))}
+                </p>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -825,7 +831,7 @@ const OpenRSVP = () => {
                     {t('rsvp.submitting')}
                   </div>
                 ) : (
-                  getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                  !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
                 )}
               </Button>
 

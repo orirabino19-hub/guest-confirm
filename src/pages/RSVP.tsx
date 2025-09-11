@@ -33,7 +33,7 @@ const RSVP = () => {
   const [error, setError] = useState<string>("");
   const { t, i18n } = useTranslation();
   const { resolveShortCodes, getGuestNameByEventCodeAndPhone } = useShortCodes();
-  const { getCustomText } = useCustomTexts(currentEventId);
+  const { getCustomText, isTextHidden } = useCustomTexts(currentEventId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -299,6 +299,7 @@ const RSVP = () => {
       customFields={customFields}
       eventId={currentEventId}
       getCustomText={getCustomText}
+      isTextHidden={isTextHidden}
     />
   );
 };

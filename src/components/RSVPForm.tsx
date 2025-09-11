@@ -31,6 +31,7 @@ interface RSVPFormProps {
   customFields?: CustomField[];
   eventId?: string;
   getCustomText?: (key: string, language: string, defaultText: string) => string;
+  isTextHidden?: (key: string) => boolean;
 }
 
 const useEventInvitation = (eventId: string, language: string) => {
@@ -109,7 +110,7 @@ const useEventInvitation = (eventId: string, language: string) => {
   return { invitationUrl, invitationType, isLoading };
 };
 
-const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, getCustomText }: RSVPFormProps) => {
+const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, getCustomText, isTextHidden }: RSVPFormProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
@@ -418,31 +419,39 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
           }}
         >
           <CardHeader className="text-center pb-4">
-            <CardTitle 
-              className="text-xl md:text-2xl font-bold mb-2"
-              style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
-            >
-              {getCustomText ? getCustomText('rsvp.welcome', i18n.language, t('rsvp.welcome', { name: guestName })) : t('rsvp.welcome', { name: guestName })}
-            </CardTitle>
-            <p 
-              className="mb-3" 
-              style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
-            >
-              {getCustomText ? getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName })) : t('rsvp.eventInvitation', { eventName })}
-            </p>
-            <div className="border-t border-border/30 pt-4">
+            {!isTextHidden?.('rsvp.welcome') && (
               <CardTitle 
-                className="text-lg font-semibold"
-                style={{ color: eventTheme?.primaryColor || 'hsl(var(--primary))' }}
+                className="text-xl md:text-2xl font-bold mb-2"
+                style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
               >
-                {getCustomText ? getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle')) : t('rsvp.confirmTitle')}
+                {getCustomText ? getCustomText('rsvp.welcome', i18n.language, t('rsvp.welcome', { name: guestName })) : t('rsvp.welcome', { name: guestName })}
               </CardTitle>
+            )}
+            {!isTextHidden?.('rsvp.eventInvitation') && (
               <p 
-                className="text-sm mt-1"
+                className="mb-3" 
                 style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
               >
-                {getCustomText ? getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription')) : t('rsvp.confirmDescription')}
+                {getCustomText ? getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName })) : t('rsvp.eventInvitation', { eventName })}
               </p>
+            )}
+            <div className="border-t border-border/30 pt-4">
+              {!isTextHidden?.('rsvp.confirmTitle') && (
+                <CardTitle 
+                  className="text-lg font-semibold"
+                  style={{ color: eventTheme?.primaryColor || 'hsl(var(--primary))' }}
+                >
+                  {getCustomText ? getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle')) : t('rsvp.confirmTitle')}
+                </CardTitle>
+              )}
+              {!isTextHidden?.('rsvp.confirmDescription') && (
+                <p 
+                  className="text-sm mt-1"
+                  style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+                >
+                  {getCustomText ? getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription')) : t('rsvp.confirmDescription')}
+                </p>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -574,7 +583,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                     {t('rsvp.submitting')}
                   </div>
                 ) : (
-                  getCustomText ? getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton')) : t('rsvp.submitButton')
+                  !isTextHidden?.('rsvp.submitButton') && (getCustomText ? getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton')) : t('rsvp.submitButton'))
                 )}
               </Button>
 

@@ -668,9 +668,11 @@ const OpenRSVP = () => {
                 {getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn }))}
               </CardTitle>
             )}
-            <p className="text-muted-foreground text-lg text-center mb-4">
-              {i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event"}
-            </p>
+            {!isTextHidden("rsvp.fillDetailsInstruction") && (
+              <p className="text-muted-foreground text-lg text-center mb-4">
+                {getCustomText("rsvp.fillDetailsInstruction", i18n.language, i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event")}
+              </p>
+            )}
             <div className="text-center">
               {!isTextHidden('rsvp.confirmTitle') && (
                 <h2 className="text-xl font-semibold text-primary">

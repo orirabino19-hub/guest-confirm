@@ -32,6 +32,7 @@ const EDITABLE_KEYS = [
   { key: 'rsvp.eventInvitation', label: 'Event Invitation', defaultEn: 'We are honored to invite you to {{eventName}}', defaultHe: 'אנחנו מתכבדים להזמינכם ל{{eventName}}' },
   { key: 'rsvp.confirmTitle', label: 'Confirm Title', defaultEn: 'RSVP Confirmation', defaultHe: 'אישור הגעה' },
   { key: 'rsvp.confirmDescription', label: 'Confirm Description', defaultEn: 'Please confirm the number of guests', defaultHe: 'אנא אמתו את מספר המוזמנים' },
+  { key: 'rsvp.fillDetailsInstruction', label: 'Fill Details Instruction', defaultEn: 'Please fill in your details to participate in the event', defaultHe: 'אנא מלא את פרטיך להשתתפות באירוע' },
   { key: 'rsvp.submitButton', label: 'Submit Button', defaultEn: '✅ Confirm Attendance', defaultHe: '✅ אשר הגעה' },
   { key: 'rsvp.eventTime', label: 'Event Time', defaultEn: '🕐 The event will take place on the scheduled date and time', defaultHe: '🕐 האירוע יתקיים בתאריך ובשעה שנקבעו' }
 ];

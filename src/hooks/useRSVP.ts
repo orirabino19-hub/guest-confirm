@@ -28,6 +28,7 @@ export const useRSVP = (eventId?: string) => {
       setLoading(true);
       let query = supabase.from('rsvp_submissions').select('*');
       
+      // אם יש eventId, מסנן רק לפי eventId. אחרת טוען הכל.
       if (eventId) {
         query = query.eq('event_id', eventId);
       }
@@ -98,9 +99,7 @@ export const useRSVP = (eventId?: string) => {
   };
 
   useEffect(() => {
-    if (eventId) {
-      fetchSubmissions();
-    }
+    fetchSubmissions();
   }, [eventId]);
 
   const deleteSubmission = async (submissionId: string) => {

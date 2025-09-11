@@ -29,7 +29,7 @@ const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
-  const { submissions, deleteSubmission, updateSubmission } = useRSVP(selectedEventId || undefined);
+  const { submissions, deleteSubmission, updateSubmission } = useRSVP(); // טוען את כל הsubmissions
   
   // Load custom fields from both link types and merge them for display
   const [allCustomFields, setAllCustomFields] = useState<any[]>([]);
@@ -495,7 +495,8 @@ const Admin = () => {
   // Calculate stats for selected event
   const selectedEventGuests = selectedEventId ? 
     guests.filter(g => g.event_id === selectedEventId) : [];
-  const selectedEventSubmissions = submissions || [];
+  const selectedEventSubmissions = selectedEventId ? 
+    submissions.filter(s => s.event_id === selectedEventId) : [];
   
   console.log('Selected Event ID:', selectedEventId);
   console.log('All submissions:', submissions);

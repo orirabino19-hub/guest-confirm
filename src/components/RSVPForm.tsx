@@ -113,6 +113,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eventTheme, setEventTheme] = useState<any>(null);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const { submitRSVP } = useRSVP();
@@ -121,6 +122,32 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
   // Use the hook to get the correct invitation
   const currentEventId = eventId || urlEventId || "";
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(currentEventId, i18n.language);
+
+  // Load event theme colors
+  useEffect(() => {
+    const loadEventTheme = async () => {
+      if (!currentEventId) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('theme')
+          .eq('id', currentEventId)
+          .single();
+
+        if (error) throw error;
+
+        if (data?.theme) {
+          const theme = typeof data.theme === 'string' ? JSON.parse(data.theme) : data.theme;
+          setEventTheme(theme);
+        }
+      } catch (error: any) {
+        console.error('Error loading event theme:', error);
+      }
+    };
+
+    loadEventTheme();
+  }, [currentEventId]);
 
   const handleInputChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
@@ -313,8 +340,25 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
     return value !== undefined && value !== '' && value !== 0;
   });
 
+  // Apply custom theme styles
+  const themeStyles = eventTheme ? {
+    '--custom-bg': eventTheme.backgroundColor,
+    '--custom-text': eventTheme.textColor,
+    '--custom-primary': eventTheme.primaryColor,
+    '--custom-secondary': eventTheme.secondaryColor,
+    '--custom-card-bg': eventTheme.cardBackground,
+  } as React.CSSProperties : {};
+
   return (
-    <div className="min-h-screen bg-background py-4 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+    <div 
+      className="min-h-screen py-4 px-4" 
+      dir={i18n.language === 'he' ? 'rtl' : 'ltr'}
+      style={{
+        backgroundColor: eventTheme?.backgroundColor || 'hsl(var(--background))',
+        color: eventTheme?.textColor || 'hsl(var(--foreground))',
+        ...themeStyles
+      }}
+    >
       <div className="max-w-lg mx-auto space-y-4">
         {/* Event Invitation Image with Language Selector */}
         <div className="relative overflow-hidden rounded-lg">
@@ -365,20 +409,36 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
 
         {/* Combined Welcome and RSVP Form */}
         <Card 
-          className="shadow-elegant border-border/50 bg-card-background"
+          className="shadow-elegant border-border/50"
+          style={{
+            backgroundColor: eventTheme?.cardBackground || 'hsl(var(--card-background))',
+            borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}50` : undefined
+          }}
         >
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl md:text-2xl font-bold text-foreground mb-2">
+            <CardTitle 
+              className="text-xl md:text-2xl font-bold mb-2"
+              style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
+            >
               {t('rsvp.welcome', { name: guestName })}
             </CardTitle>
-            <p className="text-muted-foreground mb-3">
+            <p 
+              className="mb-3" 
+              style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+            >
               {t('rsvp.eventInvitation', { eventName })}
             </p>
             <div className="border-t border-border/30 pt-4">
-              <CardTitle className="text-lg font-semibold text-primary">
+              <CardTitle 
+                className="text-lg font-semibold"
+                style={{ color: eventTheme?.primaryColor || 'hsl(var(--primary))' }}
+              >
                 {t('rsvp.confirmTitle')}
               </CardTitle>
-              <p className="text-muted-foreground text-sm mt-1">
+              <p 
+                className="text-sm mt-1"
+                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+              >
                 {t('rsvp.confirmDescription')}
               </p>
             </div>
@@ -386,8 +446,17 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* CRITICAL: Default Guest Counters - Always show for personal RSVP links */}
-              <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border/30">
-                <h3 className="font-medium text-center text-foreground mb-4">
+              <div 
+                className="space-y-3 p-3 rounded-lg border"
+                style={{
+                  backgroundColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}10` : 'hsl(var(--muted) / 0.3)',
+                  borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}30` : 'hsl(var(--border) / 0.3)'
+                }}
+              >
+                <h3 
+                  className="font-medium text-center mb-4"
+                  style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
+                >
                   {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
                 </h3>
                 
@@ -490,7 +559,12 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
               <Button 
                 type="submit" 
                 disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required)) || totalGuests === 0}
-                className="w-full text-lg py-4 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                className="w-full text-lg py-4 hover:opacity-90 transition-all duration-300 shadow-elegant"
+                style={{
+                  backgroundColor: eventTheme?.primaryColor || 'hsl(var(--primary))',
+                  color: eventTheme?.cardBackground || 'hsl(var(--primary-foreground))',
+                  background: eventTheme?.primaryColor ? eventTheme.primaryColor : undefined
+                }}
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
@@ -512,13 +586,25 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
         </Card>
 
         {/* Info Card */}
-        <Card className="bg-muted/50 border-border/30">
+        <Card 
+          className="border-border/30"
+          style={{
+            backgroundColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}15` : 'hsl(var(--muted) / 0.5)',
+            borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}30` : undefined
+          }}
+        >
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
+              <p 
+                className="text-sm"
+                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+              >
                 {t('rsvp.eventTime')}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p 
+                className="text-sm"
+                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+              >
                 {t('rsvp.contactInfo', { phone })}
               </p>
             </div>

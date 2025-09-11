@@ -200,7 +200,10 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     }));
   };
 
-  const handleHiddenChange = (textKey: string, hidden: boolean) => {
+  const handleHiddenChange = async (textKey: string, hidden: boolean) => {
+    if (!event) return;
+    
+    // Update local state immediately
     setTextOverrides(prev => {
       const existing = prev[textKey] || {} as { [key: string]: string };
       return {
@@ -211,6 +214,57 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
         }
       } as TextOverrides;
     });
+
+    // Save to database immediately
+    try {
+      const langs = ['he', 'en'];
+      const { data: rows, error } = await supabase
+        .from('event_languages')
+        .select('locale, translations')
+        .eq('event_id', event.id)
+        .in('locale', langs);
+      if (error) throw error;
+
+      const rowsMap = new Map<string, any>((rows || []).map(r => [r.locale as string, r]));
+      const updates = langs.map((locale) => {
+        const existing = (rowsMap.get(locale)?.translations as Record<string, any>) || {};
+        const newTranslations = { ...existing };
+
+        // Get existing text data or create new structure
+        const existingTextData = existing[textKey];
+        const textData = {
+          text: (existingTextData?.text || {}),
+          hidden
+        };
+
+        // Only save if we have text or hidden flag
+        if (Object.keys(textData.text).length > 0 || hidden) {
+          newTranslations[textKey] = textData;
+        } else {
+          delete newTranslations[textKey];
+        }
+
+        return { event_id: event.id, locale, translations: newTranslations, is_default: false };
+      });
+
+      const { error: upErr } = await supabase
+        .from('event_languages')
+        .upsert(updates, { onConflict: 'event_id,locale' });
+      if (upErr) throw upErr;
+
+      toast({
+        title: i18n.language === 'he' ? "נשמר" : "Saved",
+        description: hidden 
+          ? (i18n.language === 'he' ? "הטקסט מוסתר מהדף" : "Text hidden from page")
+          : (i18n.language === 'he' ? "הטקסט מוצג בדף" : "Text shown on page"),
+      });
+    } catch (err: any) {
+      toast({
+        title: i18n.language === 'he' ? 'שגיאה בשמירה' : 'Error saving',
+        description: err.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSaveTexts = async () => {

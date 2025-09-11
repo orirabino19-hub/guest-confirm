@@ -191,20 +191,18 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         }
       }
 
-      // Check if an open link already exists for this event
+      // Check if an open link already exists
       const { data: existing } = await supabase
         .from('links')
         .select('id, created_at, slug, type')
         .eq('event_id', selectedEventId)
         .eq('type', 'open')
+        .eq('slug', 'open')
         .maybeSingle();
 
-      // Create unique slug for this event
-      const uniqueSlug = `open-${eventCode || selectedEventId}`;
-      
       const currentDomain = window.location.origin;
       if (existing) {
-        const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${existing.slug}`;
+        const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/open`;
         const newLink: CustomLink = {
           id: existing.id,
           type: 'open',
@@ -224,14 +222,14 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         .insert({
           event_id: selectedEventId,
           type: 'open',
-          slug: uniqueSlug,
+          slug: 'open',
         })
         .select('id, created_at, slug, type')
         .maybeSingle();
 
       if (error) throw error;
 
-      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${inserted?.slug || uniqueSlug}`;
+      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/open`;
       const newLink: CustomLink = {
         id: inserted?.id || Date.now().toString(),
         type: 'open',

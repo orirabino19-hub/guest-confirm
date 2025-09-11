@@ -51,6 +51,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       return;
     }
 
+    console.log('🔍 ExcelExport Debug:');
+    console.log('selectedEventId:', selectedEventId);
+    console.log('submissions length:', submissions.length);
+    console.log('submissions sample:', submissions.slice(0, 2));
+
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
 
     if (filteredGuests.length === 0) {
@@ -62,9 +67,13 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       return;
     }
 
+    // סנן submissions רק לאירוע הנוכחי
+    const eventSubmissions = submissions.filter(s => s.event_id === selectedEventId);
+    console.log('🔍 Event submissions:', eventSubmissions.length);
+
     // Prepare data for export (Guests sheet)
     const exportData = await Promise.all(filteredGuests.map(async (guest, index) => {
-      const hasSubmission = submissions.some(s => (s.full_name || '').trim() === (guest.full_name || '').trim());
+      const hasSubmission = eventSubmissions.some(s => (s.full_name || '').trim() === (guest.full_name || '').trim());
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
       
       return {
@@ -99,10 +108,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'רשימת אורחים');
 
-    // Compute summary from submissions (include all submissions)
-    const allEventSubmissions = submissions.filter(
-      (s) => s && (!selectedEventId || s.event_id === selectedEventId)
-    );
+    // Compute summary from submissions (include all submissions for this event)
+    const allEventSubmissions = eventSubmissions;
+
+    console.log('🔍 Submissions for this event:', allEventSubmissions.length);
+    console.log('🔍 Sample event submission:', allEventSubmissions[0]);
 
     // Count unique guests who confirmed (prefer guest_id, fallback to trimmed full_name)
     const keyFor = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim());
@@ -190,7 +200,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     ? guests.filter(guest => guest.event_id === selectedEventId)
     : [];
 
-  const uiAllEventSubs = submissions.filter(s => (!selectedEventId || s.event_id === selectedEventId));
+  const uiAllEventSubs = selectedEventId ? 
+    submissions.filter(s => s.event_id === selectedEventId) : [];
   const confirmedCount = new Set<string>(
     uiAllEventSubs.map(s => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim())).filter(Boolean)
   ).size;

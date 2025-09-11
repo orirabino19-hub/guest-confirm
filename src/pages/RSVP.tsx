@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import LanguageSelector from "@/components/LanguageSelector";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
+import { updateMetaTags, generateRSVPMetaTags } from "@/utils/metaTags";
 
 console.log('🔥 RSVP.tsx file loaded');
 
@@ -151,6 +152,10 @@ const RSVP = () => {
         // Update page title
         document.title = `הזמנה ל${eventData.title}`;
 
+        // Update meta tags for social sharing - will be updated again when guest name is available
+        const initialMetaTags = generateRSVPMetaTags(eventData.title, "");
+        updateMetaTags(initialMetaTags);
+
         // טעינת השדות המותאמים אישית - רק עבור לינקים אישיים
         const { data: customFieldsData, error: fieldsError } = await supabase
           .from('custom_fields_config')
@@ -182,7 +187,14 @@ const RSVP = () => {
 
         // If we have a guestName from URL, use it directly
         if (urlGuestName) {
-          setGuestName(decodeURIComponent(urlGuestName));
+          const decodedGuestName = decodeURIComponent(urlGuestName);
+          setGuestName(decodedGuestName);
+          
+          // Update meta tags when we have guest name from URL
+          if (eventName) {
+            const metaTags = generateRSVPMetaTags(eventName, decodedGuestName);
+            updateMetaTags(metaTags);
+          }
         } else if (actualPhone) {
           // Try to get guest name using short codes first
           let guestNameResult = null;
@@ -213,9 +225,22 @@ const RSVP = () => {
 
           if (guestNameResult) {
             setGuestName(guestNameResult);
+            
+            // Update meta tags with guest name
+            if (eventName) {
+              const metaTags = generateRSVPMetaTags(eventName, guestNameResult);
+              updateMetaTags(metaTags);
+            }
           } else {
             // אם לא נמצא אורח - שם ברירת מחדל
-            setGuestName(i18n.language === 'he' ? "אורח יקר" : "Dear Guest");
+            const defaultName = i18n.language === 'he' ? "אורח יקר" : "Dear Guest";
+            setGuestName(defaultName);
+            
+            // Update meta tags with default guest name
+            if (eventName) {
+              const metaTags = generateRSVPMetaTags(eventName, defaultName);
+              updateMetaTags(metaTags);
+            }
           }
         }
       } catch (err) {

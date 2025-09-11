@@ -15,6 +15,7 @@ import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
 import { useRSVP } from "@/hooks/useRSVP";
+import { updateMetaTags, generateOpenRSVPMetaTags } from "@/utils/metaTags";
 
 interface CustomField {
   id: string;
@@ -238,6 +239,13 @@ const OpenRSVP = () => {
         };
 
         setEvent(eventObj);
+        
+        // Update meta tags for social sharing
+        const metaTags = generateOpenRSVPMetaTags(eventData.title, eventData.description);
+        updateMetaTags(metaTags);
+        
+        // Update page title
+        document.title = `הזמנה ל${eventData.title}`;
         
         // Initialize form data with default values
         const initialFormData: Record<string, any> = {};

@@ -112,6 +112,8 @@ const OpenRSVP = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -301,12 +303,20 @@ const OpenRSVP = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if there are any guest name fields and validate them if required
-    const guestNameField = event?.customFields?.find(field => field.id === 'guestName');
-    if (guestNameField && guestNameField.required && !formData.guestName?.trim()) {
+    // Validate required name fields 
+    if (!firstName.trim()) {
       toast({
         title: t('rsvp.error.title'),
-        description: i18n.language === 'he' ? "יש להזין שם האורח" : "Please enter guest name",
+        description: i18n.language === 'he' ? "יש להזין שם פרטי" : "Please enter first name",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!lastName.trim()) {
+      toast({
+        title: t('rsvp.error.title'),
+        description: i18n.language === 'he' ? "יש להזין שם משפחה" : "Please enter last name",
         variant: "destructive"
       });
       return;
@@ -354,9 +364,9 @@ const OpenRSVP = () => {
       // Prepare submission data
       const submissionData = {
         event_id: resolvedEventId,
-        full_name: formData.guestName || 'Open RSVP Guest',
-        first_name: (formData.guestName || 'Open RSVP Guest').split(' ')[0] || '',
-        last_name: (formData.guestName || 'Open RSVP Guest').split(' ').slice(1).join(' ') || '',
+        full_name: `${firstName.trim()} ${lastName.trim()}`,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         men_count: totalMenCount,
         women_count: totalWomenCount,
         answers: formData
@@ -368,6 +378,8 @@ const OpenRSVP = () => {
       console.log("Open RSVP Submitted successfully:", submissionData);
       
       // Reset form
+      setFirstName("");
+      setLastName("");
       setMenCount(0);
       setWomenCount(0);
       const initialFormData: Record<string, any> = {};
@@ -402,6 +414,11 @@ const OpenRSVP = () => {
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
+    // Check name fields
+    if (!firstName.trim() || !lastName.trim()) {
+      return false;
+    }
+    
     const requiredFields = event?.customFields?.filter(field => field.required) || [];
     for (const field of requiredFields) {
       if (!formData[field.id] || (typeof formData[field.id] === 'string' && !formData[field.id].trim())) {
@@ -656,6 +673,41 @@ const OpenRSVP = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Personal Details Section */}
+              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                <h3 className="font-medium text-center text-foreground mb-4">
+                  {i18n.language === 'he' ? "פרטים אישיים" : "Personal Details"}
+                </h3>
+                
+                {/* First Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">
+                    {i18n.language === 'he' ? "שם פרטי" : "First Name"}
+                    <span className="text-destructive mr-1">*</span>
+                  </Label>
+                  <Input
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder={i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name"}
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">
+                    {i18n.language === 'he' ? "שם משפחה" : "Last Name"}
+                    <span className="text-destructive mr-1">*</span>
+                  </Label>
+                  <Input
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder={i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name"}
+                  />
+                </div>
+              </div>
+
               {/* Default Guest Counters */}
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
                 <h3 className="font-medium text-center text-foreground mb-4">

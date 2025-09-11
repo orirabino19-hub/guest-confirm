@@ -674,7 +674,7 @@ const OpenRSVP = () => {
             <div className="text-center">
               {!isTextHidden('rsvp.confirmTitle') && (
                 <h2 className="text-xl font-semibold text-primary">
-                  🎉 {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
+                  {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
                 </h2>
               )}
               {!isTextHidden('rsvp.confirmDescription') && (
@@ -688,10 +688,6 @@ const OpenRSVP = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal Details Section */}
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-                <h3 className="font-medium text-center text-foreground mb-4">
-                  {i18n.language === 'he' ? "פרטים אישיים" : "Personal Details"}
-                </h3>
-                
                 {/* First Name */}
                 <div className="space-y-2">
                   <Label htmlFor="firstName">

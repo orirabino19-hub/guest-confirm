@@ -538,9 +538,9 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                         className="border-t pt-4"
                         style={{ borderColor: tempTheme.primaryColor + '30' }}
                       >
-                        <h2 className="text-lg font-semibold" style={{ color: tempTheme.primaryColor }}>
-                          🎉 אישור הגעה
-                        </h2>
+                         <h2 className="text-lg font-semibold" style={{ color: tempTheme.primaryColor }}>
+                           אישור הגעה
+                         </h2>
                         <p className="text-sm mt-1" style={{ color: tempTheme.secondaryColor }}>
                           אנא אשרו את הגעתכם לאירוע
                         </p>

@@ -59,7 +59,7 @@ export const en = {
   rsvp: {
     welcome: "Hello {{name}}! 👋",
     eventInvitation: "We are honored to invite you to {{eventName}}",
-    confirmTitle: "🎉 RSVP Confirmation",
+    confirmTitle: "RSVP Confirmation",
     confirmDescription: "Please confirm the number of guests",
     menCount: "👨 Number of Men",
     womenCount: "👩 Number of Women",

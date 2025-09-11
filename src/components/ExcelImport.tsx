@@ -125,7 +125,8 @@ const ExcelImport = ({ selectedEventId, onGuestsImported }: ExcelImportProps) =>
         
         processedGuests.push({
           event_id: selectedEventId,
-          full_name: fullName,
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
           phone: normalizedPhone,
           men_count: 0,
           women_count: 0,

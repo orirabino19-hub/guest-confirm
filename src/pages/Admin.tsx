@@ -311,7 +311,7 @@ const Admin = () => {
     eventId: string;
     firstName: string;
     lastName: string;
-    phone?: string;
+    phone: string;
   }) => {
     try {
       await createGuest({

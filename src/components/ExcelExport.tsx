@@ -71,8 +71,16 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const eventSubmissions = submissions.filter(s => s.event_id === selectedEventId);
     console.log('🔍 Event submissions:', eventSubmissions.length);
 
-    // Aggregate confirmed counts per guest (by guest_id if available, otherwise by full_name)
-    const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim());
+    // Helper function to get display name
+    const getDisplayName = (item: any): string => {
+      if (item.first_name || item.last_name) {
+        return `${item.first_name || ''} ${item.last_name || ''}`.trim();
+      }
+      return item.full_name || '';
+    };
+
+    // Aggregate confirmed counts per guest (by guest_id if available, otherwise by display name)
+    const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim());
     const confirmedMap = new Map<string, { men: number; women: number; total: number }>();
     for (const s of eventSubmissions) {
       const k = keyForSubmission(s);
@@ -87,13 +95,13 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     // Prepare data for export (Guests sheet) - include both pre-registered guests and open RSVP submissions
     const guestExportData = await Promise.all(filteredGuests.map(async (guest, index) => {
       const guestKeyById = String(guest.id);
-      const guestKeyByName = (guest.full_name || '').trim();
+      const guestKeyByName = getDisplayName(guest).trim();
       const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
       
       return {
         'מס רשומה': index + 1,
-        'שם מלא': guest.full_name,
+        'שם מלא': getDisplayName(guest),
         'טלפון': guest.phone,
         'סוג': 'אורח מוכר',
         'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
@@ -153,8 +161,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     console.log('🔍 Submissions for this event:', allEventSubmissions.length);
     console.log('🔍 Sample event submission:', allEventSubmissions[0]);
 
-    // Count unique guests who confirmed (prefer guest_id, fallback to trimmed full_name)
-    const keyFor = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim());
+    // Count unique guests who confirmed (prefer guest_id, fallback to display name)
+    const keyFor = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim());
     const confirmedGuestKeys = new Set<string>(allEventSubmissions.map(keyFor).filter(Boolean));
     const confirmedGuestsCount = confirmedGuestKeys.size;
 
@@ -203,7 +211,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       
       return {
         'מס רשומה': index + 1,
-        'שם מלא': s.full_name || '',
+        'שם מלא': getDisplayName(s),
         'סוג קישור': source,
         'גברים (מאושרים)': s.men_count,
         'נשים (מאושרות)': s.women_count,
@@ -242,9 +250,17 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
     
+    // Helper function to get display name
+    const getDisplayName = (guest: any): string => {
+      if (guest.first_name || guest.last_name) {
+        return `${guest.first_name || ''} ${guest.last_name || ''}`.trim();
+      }
+      return guest.full_name || '';
+    };
+    
     const linksPromises = filteredGuests.map(async (guest) => {
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
-      return `${guest.full_name}: ${shortLink}`;
+      return `${getDisplayName(guest)}: ${shortLink}`;
     });
     
     const links = await Promise.all(linksPromises);
@@ -260,10 +276,18 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     ? guests.filter(guest => guest.event_id === selectedEventId)
     : [];
 
+  // Helper function to get display name for stats
+  const getDisplayName = (item: any): string => {
+    if (item.first_name || item.last_name) {
+      return `${item.first_name || ''} ${item.last_name || ''}`.trim();
+    }
+    return item.full_name || '';
+  };
+
   const uiAllEventSubs = selectedEventId ? 
     submissions.filter(s => s.event_id === selectedEventId) : [];
   const confirmedCount = new Set<string>(
-    uiAllEventSubs.map(s => (s.guest_id ? String(s.guest_id) : (s.full_name || '').trim())).filter(Boolean)
+    uiAllEventSubs.map(s => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim())).filter(Boolean)
   ).size;
   const pendingGuests = Math.max(filteredGuests.length - confirmedCount, 0);
 

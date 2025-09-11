@@ -18,6 +18,7 @@ interface GuestManagerProps {
     eventId: string;
     firstName: string;
     lastName: string;
+    phone: string;
   }) => void;
   onGuestDelete: (guestId: string) => void;
 }

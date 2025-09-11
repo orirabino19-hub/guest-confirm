@@ -99,9 +99,6 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'גברים (מאושרים)': confirmed.men,
         'נשים (מאושרות)': confirmed.women,
         'סה"כ מאושרים': confirmed.total,
-        'גברים (מוזמנים)': guest.men_count || 0,
-        'נשים (מוזמנים)': guest.women_count || 0,
-        'סה"כ מוזמנים': (guest.men_count || 0) + (guest.women_count || 0),
         'קישור אישי': shortLink
       };
     }));
@@ -119,9 +116,6 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { wch: 18 },  // גברים (מאושרים)
       { wch: 18 },  // נשים (מאושרות)
       { wch: 20 },  // סה"כ מאושרים
-      { wch: 16 },  // גברים (מוזמנים)
-      { wch: 16 },  // נשים (מוזמנים)
-      { wch: 18 },  // סה"כ מוזמנים
       { wch: 50 }   // קישור אישי
     ];
     worksheet['!cols'] = columnWidths;
@@ -301,7 +295,6 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
             <div className="space-y-1 pr-4">
             <div>• רשימת אורחים מלאה עם קישורים אישיים + סטטוס אישור</div>
             <div>• סיכום סטטיסטיקות כולל מאושרים בפועל</div>
-            <div>• פירוט מספר מוזמנים לפי מגדר</div>
             <div>• גיליון "אישורי הגעה" עם כל האישים המאושרים</div>
             </div>
           </div>

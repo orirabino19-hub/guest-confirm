@@ -193,10 +193,8 @@ const RSVP = () => {
           setGuestName(decodedGuestName);
           
           // Update meta tags when we have guest name from URL
-          if (eventName) {
-            const metaTags = generateRSVPMetaTags(eventName, decodedGuestName);
-            updateMetaTags(metaTags);
-          }
+          const metaTags = generateRSVPMetaTags(eventData.title, decodedGuestName);
+          updateMetaTags(metaTags);
         } else if (actualPhone) {
           // Try to get guest name using short codes first
           let guestNameResult = null;
@@ -229,20 +227,16 @@ const RSVP = () => {
             setGuestName(guestNameResult);
             
             // Update meta tags with guest name
-            if (eventName) {
-              const metaTags = generateRSVPMetaTags(eventName, guestNameResult);
-              updateMetaTags(metaTags);
-            }
+            const metaTags = generateRSVPMetaTags(eventData.title, guestNameResult);
+            updateMetaTags(metaTags);
           } else {
             // אם לא נמצא אורח - שם ברירת מחדל
             const defaultName = i18n.language === 'he' ? "אורח יקר" : "Dear Guest";
             setGuestName(defaultName);
             
             // Update meta tags with default guest name
-            if (eventName) {
-              const metaTags = generateRSVPMetaTags(eventName, defaultName);
-              updateMetaTags(metaTags);
-            }
+            const metaTags = generateRSVPMetaTags(eventData.title, defaultName);
+            updateMetaTags(metaTags);
           }
         }
       } catch (err) {

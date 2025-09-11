@@ -17,6 +17,7 @@ interface ColorTheme {
   primaryColor: string;
   secondaryColor: string;
   cardBackground: string;
+  inputBackground: string;
 }
 
 interface ColorManagerProps {
@@ -114,7 +115,8 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     textColor: "#302921",        // matches system foreground
     primaryColor: "#d4910b",     // matches system primary
     secondaryColor: "#7a6f63",   // matches system muted-foreground
-    cardBackground: "#ffffff"    // white background for form card
+    cardBackground: "#ffffff",    // white background for form card
+    inputBackground: "#ffffff"   // white background for input fields
   };
 
   const currentTheme = colorThemes.find(theme => theme.eventId === selectedEventId) || defaultTheme;
@@ -382,6 +384,26 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                   </div>
                   <p className="text-xs text-muted-foreground">צבע רקע הכרטיס של טופס ההזמנה</p>
                 </div>
+
+                {/* Input Background Color */}
+                <div className="space-y-2">
+                  <Label>צבע רקע שדות input</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={tempTheme.inputBackground}
+                      onChange={(e) => handleColorChange('inputBackground', e.target.value)}
+                      className="w-16 h-10 p-1 cursor-pointer"
+                    />
+                    <Input
+                      value={tempTheme.inputBackground}
+                      onChange={(e) => handleColorChange('inputBackground', e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">צבע רקע שדות הקלט בטופס</p>
+                </div>
               </div>
 
               {/* Color Preview */}
@@ -559,7 +581,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                               className="flex-1 text-center text-lg py-2 border rounded"
                               style={{ 
                                 borderColor: tempTheme.primaryColor + '60',
-                                backgroundColor: tempTheme.backgroundColor,
+                                backgroundColor: tempTheme.inputBackground,
                                 color: tempTheme.textColor
                               }}
                             >
@@ -598,7 +620,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
                               className="flex-1 text-center text-lg py-2 border rounded"
                               style={{ 
                                 borderColor: tempTheme.primaryColor + '60',
-                                backgroundColor: tempTheme.backgroundColor,
+                                backgroundColor: tempTheme.inputBackground,
                                 color: tempTheme.textColor
                               }}
                             >

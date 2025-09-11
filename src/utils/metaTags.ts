@@ -59,7 +59,7 @@ export const updateMetaTags = (data: MetaTagsData) => {
 /**
  * Generate meta tags for RSVP page
  */
-export const generateRSVPMetaTags = (eventName: string, guestName: string): MetaTagsData => {
+export const generateRSVPMetaTags = (eventName: string, guestName: string, invitationImage?: string): MetaTagsData => {
   const title = `הזמנה ל${eventName}`;
   const description = guestName 
     ? `היי ${guestName}! הוזמנת לאירוע "${eventName}". אשר את הגעתך כאן!`
@@ -71,14 +71,14 @@ export const generateRSVPMetaTags = (eventName: string, guestName: string): Meta
     eventName,
     guestName,
     url: window.location.href,
-    image: '/event-invitation.jpg' // Use the invitation image
+    image: invitationImage || '/event-invitation.jpg' // Use uploaded invitation or fallback
   };
 };
 
 /**
  * Generate meta tags for Open RSVP page
  */
-export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: string): MetaTagsData => {
+export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: string, invitationImage?: string): MetaTagsData => {
   const title = `הזמנה ל${eventName}`;
   const description = eventDescription 
     ? `${eventDescription} - הרשמה פתוחה לכולם!`
@@ -89,7 +89,7 @@ export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: s
     description,
     eventName,
     url: window.location.href,
-    image: '/event-invitation.jpg' // Use the invitation image
+    image: invitationImage || '/event-invitation.jpg' // Use uploaded invitation or fallback
   };
 };
 

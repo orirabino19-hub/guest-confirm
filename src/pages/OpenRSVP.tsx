@@ -132,6 +132,14 @@ const OpenRSVP = () => {
   // Use the hook to get the correct invitation - only after we have resolved the eventId
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(resolvedEventId, i18n.language);
 
+  // Update meta tags when invitation is loaded
+  useEffect(() => {
+    if (event && !invitationLoading && invitationUrl) {
+      const metaTags = generateOpenRSVPMetaTags(event.name, undefined, invitationUrl);
+      updateMetaTags(metaTags);
+    }
+  }, [event, invitationUrl, invitationLoading]);
+
   useEffect(() => {
     const fetchEventData = async () => {
       if (!eventId) {
@@ -242,12 +250,12 @@ const OpenRSVP = () => {
 
         setEvent(eventObj);
         
-        // Update meta tags for social sharing
-        const metaTags = generateOpenRSVPMetaTags(eventData.title, eventData.description);
-        updateMetaTags(metaTags);
-        
         // Update page title
         document.title = `הזמנה ל${eventData.title}`;
+        
+        // Initial meta tags update (will be updated again when invitation loads)
+        const initialMetaTags = generateOpenRSVPMetaTags(eventData.title, eventData.description);
+        updateMetaTags(initialMetaTags);
         
         // Initialize form data with default values
         const initialFormData: Record<string, any> = {};

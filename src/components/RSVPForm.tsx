@@ -32,6 +32,7 @@ interface RSVPFormProps {
   eventId?: string;
   getCustomText?: (key: string, language: string, defaultText: string) => string;
   isTextHidden?: (key: string) => boolean;
+  onInvitationLoad?: (invitationUrl: string) => void;
 }
 
 const useEventInvitation = (eventId: string, language: string) => {
@@ -110,7 +111,7 @@ const useEventInvitation = (eventId: string, language: string) => {
   return { invitationUrl, invitationType, isLoading };
 };
 
-const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, getCustomText, isTextHidden }: RSVPFormProps) => {
+const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, getCustomText, isTextHidden, onInvitationLoad }: RSVPFormProps) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
@@ -124,6 +125,13 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
   // Use the hook to get the correct invitation
   const currentEventId = eventId || urlEventId || "";
   const { invitationUrl, invitationType, isLoading: invitationLoading } = useEventInvitation(currentEventId, i18n.language);
+
+  // Notify parent about invitation load for meta tags
+  useEffect(() => {
+    if (!invitationLoading && invitationUrl && onInvitationLoad) {
+      onInvitationLoad(invitationUrl);
+    }
+  }, [invitationUrl, invitationLoading, onInvitationLoad]);
 
   // Load event theme colors
   useEffect(() => {

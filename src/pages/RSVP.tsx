@@ -294,6 +294,11 @@ const RSVP = () => {
       eventId={currentEventId}
       getCustomText={getCustomText}
       isTextHidden={isTextHidden}
+      onInvitationLoad={(invitationUrl) => {
+        // Update meta tags with the uploaded invitation image
+        const metaTags = generateRSVPMetaTags(eventName, guestName, invitationUrl);
+        updateMetaTags(metaTags);
+      }}
     />
   );
 };

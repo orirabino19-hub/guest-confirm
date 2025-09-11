@@ -79,6 +79,17 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       return item.full_name || '';
     };
 
+    // Helper to get first/last name separately (fallback to split full_name)
+    const splitName = (item: any): { first: string; last: string } => {
+      const first = item.first_name || '';
+      const last = item.last_name || '';
+      if (first || last) return { first, last };
+      const full = (item.full_name || '').trim();
+      if (!full) return { first: '', last: '' };
+      const parts = full.split(/\s+/);
+      return { first: parts[0] || '', last: parts.slice(1).join(' ') || '' };
+    };
+
     // Aggregate confirmed counts per guest (by guest_id if available, otherwise by display name)
     const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim());
     const confirmedMap = new Map<string, { men: number; women: number; total: number }>();
@@ -98,10 +109,12 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       const guestKeyByName = getDisplayName(guest).trim();
       const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
+      const nameParts = splitName(guest);
       
       return {
         'מס רשומה': index + 1,
-        'שם מלא': getDisplayName(guest),
+        'שם פרטי': nameParts.first,
+        'שם משפחה': nameParts.last,
         'טלפון': guest.phone,
         'סוג': 'אורח מוכר',
         'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
@@ -115,13 +128,12 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     // Add submissions from open RSVP and other links that don't have guest_id
     const openRsvpSubmissions = eventSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id));
     const openRsvpExportData = openRsvpSubmissions.map((submission, index) => {
-      const displayName = submission.first_name || submission.last_name 
-        ? `${submission.first_name || ''} ${submission.last_name || ''}`.trim()
-        : submission.full_name || 'לא צוין';
+      const nameParts = splitName(submission);
       
       return {
         'מס רשומה': guestExportData.length + index + 1,
-        'שם מלא': displayName,
+        'שם פרטי': nameParts.first,
+        'שם משפחה': nameParts.last,
         'טלפון': '',
         'סוג': 'קישור פתוח/לפי שם',
         'סטטוס': 'אישר',
@@ -141,7 +153,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     // Set column widths - updated for new 'סוג' column
     const columnWidths = [
       { wch: 8 },   // מס רשומה
-      { wch: 25 },  // שם מלא
+      { wch: 16 },  // שם פרטי
+      { wch: 18 },  // שם משפחה
       { wch: 15 },  // טלפון
       { wch: 20 },  // סוג
       { wch: 12 },  // סטטוס
@@ -209,9 +222,12 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         source = 'קישור לפי שם';
       }
       
+      const nameParts = splitName(s);
+      
       return {
         'מס רשומה': index + 1,
-        'שם מלא': getDisplayName(s),
+        'שם פרטי': nameParts.first,
+        'שם משפחה': nameParts.last,
         'סוג קישור': source,
         'גברים (מאושרים)': s.men_count,
         'נשים (מאושרות)': s.women_count,
@@ -222,13 +238,14 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     const rsvpSheet = XLSX.utils.json_to_sheet(rsvpData);
     rsvpSheet['!cols'] = [
-      { wch: 8 },
-      { wch: 25 },
-      { wch: 18 },
-      { wch: 18 },
-      { wch: 18 },
-      { wch: 16 },
-      { wch: 22 }
+      { wch: 8 },   // מס רשומה
+      { wch: 16 },  // שם פרטי
+      { wch: 18 },  // שם משפחה
+      { wch: 18 },  // סוג קישור
+      { wch: 18 },  // גברים (מאושרים)
+      { wch: 18 },  // נשים (מאושרות)
+      { wch: 16 },  // סה"כ מאושרים
+      { wch: 22 }   // תאריך אישור
     ];
     XLSX.utils.book_append_sheet(workbook, rsvpSheet, 'אישורי הגעה');
 

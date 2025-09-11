@@ -585,32 +585,6 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId }: R
             </form>
           </CardContent>
         </Card>
-
-        {/* Info Card */}
-        <Card 
-          className="border-border/30"
-          style={{
-            backgroundColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}15` : 'hsl(var(--muted) / 0.5)',
-            borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}30` : undefined
-          }}
-        >
-          <CardContent className="pt-6">
-            <div className="text-center space-y-2">
-              <p 
-                className="text-sm"
-                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
-              >
-                {t('rsvp.eventTime')}
-              </p>
-              <p 
-                className="text-sm"
-                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
-              >
-                {t('rsvp.contactInfo', { phone })}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

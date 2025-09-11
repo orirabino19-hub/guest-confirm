@@ -834,20 +834,6 @@ const OpenRSVP = () => {
             </form>
           </CardContent>
         </Card>
-
-        {/* Info Card */}
-        <Card className="bg-muted/50 border-border/30">
-          <CardContent className="pt-6">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                {t('rsvp.eventTime')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {i18n.language === 'he' ? "לשאלות נוספות ניתן ליצור קשר" : "For additional questions, please contact us"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

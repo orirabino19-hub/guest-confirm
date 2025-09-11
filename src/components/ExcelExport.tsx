@@ -84,8 +84,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       confirmedMap.set(k, next);
     }
 
-    // Prepare data for export (Guests sheet)
-    const exportData = await Promise.all(filteredGuests.map(async (guest, index) => {
+    // Prepare data for export (Guests sheet) - include both pre-registered guests and open RSVP submissions
+    const guestExportData = await Promise.all(filteredGuests.map(async (guest, index) => {
       const guestKeyById = String(guest.id);
       const guestKeyByName = (guest.full_name || '').trim();
       const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
@@ -95,6 +95,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'מס רשומה': index + 1,
         'שם מלא': guest.full_name,
         'טלפון': guest.phone,
+        'סוג': 'אורח מוכר',
         'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
         'גברים (מאושרים)': confirmed.men,
         'נשים (מאושרות)': confirmed.women,
@@ -103,15 +104,32 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       };
     }));
 
+    // Add submissions from open RSVP and other links that don't have guest_id
+    const openRsvpSubmissions = eventSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id));
+    const openRsvpExportData = openRsvpSubmissions.map((submission, index) => ({
+      'מס רשומה': guestExportData.length + index + 1,
+      'שם מלא': submission.full_name || 'לא צוין',
+      'טלפון': '',
+      'סוג': 'קישור פתוח/לפי שם',
+      'סטטוס': 'אישר',
+      'גברים (מאושרים)': submission.men_count || 0,
+      'נשים (מאושרות)': submission.women_count || 0,
+      'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0),
+      'קישור אישי': 'קישור פתוח'
+    }));
+
+    const exportData = [...guestExportData, ...openRsvpExportData];
+
     // Create workbook and worksheet
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(exportData);
 
-    // Set column widths
+    // Set column widths - updated for new 'סוג' column
     const columnWidths = [
       { wch: 8 },   // מס רשומה
       { wch: 25 },  // שם מלא
       { wch: 15 },  // טלפון
+      { wch: 20 },  // סוג
       { wch: 12 },  // סטטוס
       { wch: 18 },  // גברים (מאושרים)
       { wch: 18 },  // נשים (מאושרות)
@@ -138,15 +156,22 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const totalConfirmedWomen = allEventSubmissions.reduce((sum, s) => sum + Number(s.women_count || 0), 0);
     const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
 
+    // Count ALL confirmed guests including those from open RSVPs
+    const allSubmissions = allEventSubmissions;
+    const totalPreRegisteredGuests = filteredGuests.length;
+    const openRsvpGuestsCount = allSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id)).length;
+    const totalConfirmedGuestsFromAll = totalPreRegisteredGuests + openRsvpGuestsCount;
+
     const summaryData = [
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'שם האירוע', 'ערך': eventName || 'לא צוין' },
       { 'פרטי האירוע': 'תאריך הייצוא', 'ערך': new Date().toLocaleDateString('he-IL') },
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'סיכום אורחים', 'ערך': '' },
-      { 'פרטי האירוע': 'סה"כ מוזמנים במערכת', 'ערך': filteredGuests.length },
-      { 'פרטי האירוע': 'אישרו הגעה', 'ערך': confirmedGuestsCount },
-      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': Math.max(filteredGuests.length - confirmedGuestsCount, 0) },
+      { 'פרטי האירוע': 'סה"כ מוזמנים רשומים במערכת', 'ערך': totalPreRegisteredGuests },
+      { 'פרטי האירוע': 'אישרו הגעה מרשימה', 'ערך': confirmedGuestsCount },
+      { 'פרטי האירוע': 'אישרו הגעה בקישור פתוח/לפי שם', 'ערך': openRsvpGuestsCount },
+      { 'פרטי האירוע': 'ממתינים לתשובה', 'ערך': Math.max(totalPreRegisteredGuests - confirmedGuestsCount, 0) },
       { 'פרטי האירוע': '', 'ערך': '' },
       { 'פרטי האירוע': 'מספר מוזמנים שיגיעו', 'ערך': '' },
       { 'פרטי האירוע': 'גברים', 'ערך': totalConfirmedMen },
@@ -158,20 +183,34 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'סיכום');
 
-    // Add RSVPs worksheet (include all submissions)
-    const rsvpData = allEventSubmissions.map((s, index) => ({
-      'מס רשומה': index + 1,
-      'שם מלא': s.full_name || '',
-      'גברים (מאושרים)': s.men_count,
-      'נשים (מאושרות)': s.women_count,
-      'סה"כ מאושרים': (s.men_count + s.women_count),
-      'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
-    }));
+    // Add RSVPs worksheet (include all submissions with source information)
+    const rsvpData = allEventSubmissions.map((s, index) => {
+      // Determine submission source
+      let source = 'לא ידוע';
+      if (s.guest_id && filteredGuests.find(g => g.id === s.guest_id)) {
+        source = 'קישור אישי';
+      } else if (!s.guest_id) {
+        source = 'קישור פתוח';
+      } else {
+        source = 'קישור לפי שם';
+      }
+      
+      return {
+        'מס רשומה': index + 1,
+        'שם מלא': s.full_name || '',
+        'סוג קישור': source,
+        'גברים (מאושרים)': s.men_count,
+        'נשים (מאושרות)': s.women_count,
+        'סה"כ מאושרים': (s.men_count + s.women_count),
+        'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
+      };
+    });
 
     const rsvpSheet = XLSX.utils.json_to_sheet(rsvpData);
     rsvpSheet['!cols'] = [
       { wch: 8 },
       { wch: 25 },
+      { wch: 18 },
       { wch: 18 },
       { wch: 18 },
       { wch: 16 },
@@ -294,8 +333,9 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
             <div className="font-medium">הקובץ יכלול:</div>
             <div className="space-y-1 pr-4">
             <div>• רשימת אורחים מלאה עם קישורים אישיים + סטטוס אישור</div>
-            <div>• סיכום סטטיסטיקות כולל מאושרים בפועל</div>
-            <div>• גיליון "אישורי הגעה" עם כל האישים המאושרים</div>
+            <div>• אורחים שהגיעו מקישורים פתוחים ולפי שם</div>
+            <div>• סיכום סטטיסטיקות כולל מאושרים בפועל מכל הסוגים</div>
+            <div>• גיליון "אישורי הגעה" עם כל האישורים והמקור שלהם</div>
             </div>
           </div>
         )}

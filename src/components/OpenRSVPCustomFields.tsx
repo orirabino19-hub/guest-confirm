@@ -40,7 +40,11 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'select', label: 'בחירה מרשימה', labelEn: 'Select List' },
     { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' },
     { value: 'menCounter', label: 'מונה גברים', labelEn: 'Men Counter' },
-    { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' }
+    { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' },
+    { value: 'fullName', label: 'שם מלא', labelEn: 'Full Name' },
+    { value: 'guestName', label: 'שם אורח', labelEn: 'Guest Name' },
+    { value: 'phone', label: 'טלפון', labelEn: 'Phone Number' },
+    { value: 'email', label: 'אימייל', labelEn: 'Email Address' }
   ];
 
 
@@ -128,7 +132,25 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
   };
 
   const handleSaveField = () => {
-    if (!newField.label?.trim() || !newField.labelEn?.trim()) {
+    // Handle predefined field types with automatic labels
+    const predefinedFields = {
+      fullName: { label: 'שם מלא', labelEn: 'Full Name', required: true },
+      guestName: { label: 'שם האורח', labelEn: 'Guest Name', required: true },
+      phone: { label: 'מספר טלפון', labelEn: 'Phone Number', required: false },
+      email: { label: 'כתובת אימייל', labelEn: 'Email Address', required: false }
+    };
+
+    let fieldLabel = newField.label;
+    let fieldLabelEn = newField.labelEn;
+    let fieldRequired = newField.required;
+
+    // If it's a predefined field type, use the predefined labels
+    if (newField.type && predefinedFields[newField.type as keyof typeof predefinedFields]) {
+      const predefined = predefinedFields[newField.type as keyof typeof predefinedFields];
+      fieldLabel = predefined.label;
+      fieldLabelEn = predefined.labelEn;
+      fieldRequired = predefined.required;
+    } else if (!newField.label?.trim() || !newField.labelEn?.trim()) {
       toast({
         title: "שגיאה",
         description: "יש למלא את השדה בעברית ובאנגלית",
@@ -138,12 +160,12 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     }
 
     const fieldData: CustomField = {
-      id: editingField?.id || Date.now().toString(),
+      id: editingField?.id || (predefinedFields[newField.type as keyof typeof predefinedFields] ? newField.type : Date.now().toString()),
       type: newField.type as CustomField['type'],
-      label: newField.label!,
-      labelEn: newField.labelEn!,
+      label: fieldLabel!,
+      labelEn: fieldLabelEn!,
       options: newField.type === 'select' ? newField.options : undefined,
-      required: newField.required || false,
+      required: fieldRequired || false,
       displayLocations: newField.displayLocations || {
         regularInvitation: true,
         openLink: true,  // ברירת מחדל - שדה יופיע בלינק פתוח
@@ -333,49 +355,6 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">שדות מותאמים אישית</h3>
             <div className="flex gap-2">
-              {/* Quick Add Buttons for basic fields */}
-              <div className="flex gap-1 flex-wrap">
-                {!customFields.some(f => f.id === 'fullName') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => addQuickField('fullName')}
-                    className="text-xs"
-                  >
-                    שם מלא
-                  </Button>
-                )}
-                {!customFields.some(f => f.id === 'guestName') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => addQuickField('guestName')}
-                    className="text-xs"
-                  >
-                    שם אורח
-                  </Button>
-                )}
-                {!customFields.some(f => f.id === 'phone') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => addQuickField('phone')}
-                    className="text-xs"
-                  >
-                    טלפון
-                  </Button>
-                )}
-                {!customFields.some(f => f.id === 'email') && (
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => addQuickField('email')}
-                    className="text-xs"
-                  >
-                    אימייל
-                  </Button>
-                )}
-              </div>
               
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -601,7 +580,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         {customFields.length === 0 && (
           <div className="text-center py-6 text-muted-foreground space-y-2">
             <p>לא הוגדרו שדות עדיין</p>
-            <p className="text-xs">לחץ על "שם מלא" כדי להתחיל</p>
+            <p className="text-xs">לחץ על "הוסף שדה מותאם" כדי להתחיל</p>
           </div>
         )}
       </CardContent>

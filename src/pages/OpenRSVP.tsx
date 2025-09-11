@@ -706,6 +706,13 @@ const OpenRSVP = () => {
                     placeholder={i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name"}
                   />
                 </div>
+
+                {/* Custom Fields */}
+                {event?.customFields && event.customFields.length > 0 && (
+                  <>
+                    {event.customFields.map(renderCustomField)}
+                  </>
+                )}
               </div>
 
               {/* Default Guest Counters */}
@@ -789,22 +796,6 @@ const OpenRSVP = () => {
                 </div>
               </div>
 
-              {/* Custom Fields Section */}
-              {event.customFields && event.customFields.length > 0 && (
-                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-                  <h3 className="font-medium text-center text-foreground mb-4">
-                    {i18n.language === 'he' ? "פרטים נוספים" : "Additional Information"}
-                  </h3>
-                  {event.customFields.map(renderCustomField)}
-                </div>
-              )}
-
-              {/* Show message if no fields configured */}
-              {(!event.customFields || event.customFields.length === 0) && (
-                <div className="text-center py-4 text-muted-foreground bg-muted/30 rounded-lg border border-border/30">
-                  <p>{i18n.language === 'he' ? "לא הוגדרו שדות עבור אירוע זה" : "No fields configured for this event"}</p>
-                </div>
-              )}
 
               {/* Total Display */}
               {totalGuests > 0 && (

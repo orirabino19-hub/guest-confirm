@@ -204,6 +204,7 @@ const OpenRSVP = () => {
           if (theme.primaryColor) document.documentElement.style.setProperty('--primary', `${hexToHsl(theme.primaryColor)}`);
           if (theme.secondaryColor) document.documentElement.style.setProperty('--muted-foreground', `${hexToHsl(theme.secondaryColor)}`);
           if (theme.cardBackground) document.documentElement.style.setProperty('--card', `${hexToHsl(theme.cardBackground)}`);
+          if (theme.inputBackground) document.documentElement.style.setProperty('--input', `${hexToHsl(theme.inputBackground)}`);
         }
 
         // טעינת השדות המותאמים אישית - רק עבור לינקים פתוחים

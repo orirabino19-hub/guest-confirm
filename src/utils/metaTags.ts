@@ -19,7 +19,7 @@ export const updateMetaTags = (data: MetaTagsData) => {
   const {
     title,
     description,
-    image = '/src/assets/og-event-invitation.jpg',
+    image = '/og-event-invitation.jpg',
     url = window.location.href,
     locale = 'he_IL'
   } = data;
@@ -71,7 +71,7 @@ export const generateRSVPMetaTags = (eventName: string, guestName: string): Meta
     eventName,
     guestName,
     url: window.location.href,
-    image: '/src/assets/og-event-invitation.jpg' // Use the new generated image
+    image: '/og-event-invitation.jpg' // Use the new generated image
   };
 };
 
@@ -89,7 +89,7 @@ export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: s
     description,
     eventName,
     url: window.location.href,
-    image: '/src/assets/og-event-invitation.jpg' // Use the new generated image
+    image: '/og-event-invitation.jpg' // Use the new generated image
   };
 };
 

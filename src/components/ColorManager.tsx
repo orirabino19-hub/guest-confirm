@@ -120,12 +120,15 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
   };
 
   const currentTheme = colorThemes.find(theme => theme.eventId === selectedEventId) || defaultTheme;
-  const [tempTheme, setTempTheme] = useState<ColorTheme>(currentTheme);
+  const [tempTheme, setTempTheme] = useState<ColorTheme>(defaultTheme);
 
   // Load theme from database when selectedEventId changes
   useEffect(() => {
     const loadEventTheme = async () => {
-      if (!selectedEventId) return;
+      if (!selectedEventId) {
+        setTempTheme(defaultTheme);
+        return;
+      }
 
       setLoadingTheme(true);
       try {
@@ -157,25 +160,22 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
           // Update temp theme for editing
           setTempTheme(themeWithEventId);
         } else {
-          // No theme in database, use default
-          setTempTheme(defaultTheme);
+          // No theme in database, use default with correct eventId
+          const defaultWithEventId = { ...defaultTheme, eventId: selectedEventId };
+          setTempTheme(defaultWithEventId);
         }
       } catch (error: any) {
         console.error('Error loading theme:', error);
-        // Use default theme on error
-        setTempTheme(defaultTheme);
+        // Use default theme on error with correct eventId
+        const defaultWithEventId = { ...defaultTheme, eventId: selectedEventId };
+        setTempTheme(defaultWithEventId);
       } finally {
         setLoadingTheme(false);
       }
     };
 
     loadEventTheme();
-  }, [selectedEventId]);
-
-  // Update tempTheme when currentTheme changes
-  useEffect(() => {
-    setTempTheme(currentTheme);
-  }, [currentTheme]);
+  }, [selectedEventId, defaultTheme]);
 
   const handleColorChange = (colorType: keyof ColorTheme, value: string) => {
     if (colorType === 'eventId') return;

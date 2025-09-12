@@ -136,7 +136,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
           .from('events')
           .select('theme')
           .eq('id', selectedEventId)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -175,7 +175,7 @@ const ColorManager = ({ selectedEventId, eventName }: ColorManagerProps) => {
     };
 
     loadEventTheme();
-  }, [selectedEventId, defaultTheme]);
+  }, [selectedEventId]);
 
   const handleColorChange = (colorType: keyof ColorTheme, value: string) => {
     if (colorType === 'eventId') return;

@@ -233,6 +233,7 @@ export const ClientAuthManager = ({ selectedEvent, onEventUpdate }: ClientAuthMa
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-2">
           <Button
+            type="button"
             onClick={generateCredentials}
             variant="outline"
             size="sm"
@@ -241,6 +242,7 @@ export const ClientAuthManager = ({ selectedEvent, onEventUpdate }: ClientAuthMa
           </Button>
           
           <Button
+            type="button"
             onClick={saveCredentials}
             disabled={isLoading || !username.trim() || !password.trim()}
             size="sm"
@@ -249,6 +251,7 @@ export const ClientAuthManager = ({ selectedEvent, onEventUpdate }: ClientAuthMa
           </Button>
           
           <Button
+            type="button"
             onClick={copyLoginDetails}
             variant="outline"
             size="sm"

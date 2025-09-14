@@ -216,30 +216,30 @@ export default function ClientDashboard() {
                     עדיין לא התקבלו אישורי הגעה
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {submissions.map((submission) => (
-                      <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium">
-                            {submission.full_name || `${submission.first_name || ''} ${submission.last_name || ''}`.trim() || 'ללא שם'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {submission.men_count + submission.women_count} אורחים
-                            {submission.men_count > 0 && ` (${submission.men_count} גברים)`}
-                            {submission.women_count > 0 && ` (${submission.women_count} נשים)`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(submission.submitted_at).toLocaleDateString('he-IL')} {new Date(submission.submitted_at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                    <div className="space-y-3">
+                      {submissions.map((submission) => (
+                        <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-2 space-x-reverse">
+                            <Badge variant={submission.guest_id ? 'default' : 'secondary'}>
+                              {submission.guest_id ? 'מרשימה' : 'פתוח'}
+                            </Badge>
+                          </div>
+                          <div className="flex-1 text-right mr-4">
+                            <p className="font-medium">
+                              {submission.full_name || `${submission.first_name || ''} ${submission.last_name || ''}`.trim() || 'ללא שם'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {submission.men_count + submission.women_count} אורחים
+                              {submission.men_count > 0 && ` (${submission.men_count} גברים)`}
+                              {submission.women_count > 0 && ` (${submission.women_count} נשים)`}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(submission.submitted_at).toLocaleDateString('he-IL')} {new Date(submission.submitted_at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2 space-x-reverse">
-                          <Badge variant={submission.guest_id ? 'default' : 'secondary'}>
-                            {submission.guest_id ? 'מרשימה' : 'קישור פתוח'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
                 )}
               </CardContent>
             </Card>

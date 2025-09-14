@@ -594,7 +594,10 @@ const Admin = () => {
   console.log('Filtered submissions for event:', selectedEventSubmissions);
   
   const confirmedCount = selectedEventSubmissions.length;
-  const pendingCount = selectedEventGuests.length - confirmedCount;
+  const registeredGuests = selectedEventGuests.length;
+  const openLinkSubmissions = selectedEventSubmissions.filter(s => !s.guest_id).length;
+  const guestLinkSubmissions = selectedEventSubmissions.filter(s => s.guest_id).length;
+  const pendingCount = Math.max(0, registeredGuests - guestLinkSubmissions);
   const totalConfirmedGuests = selectedEventSubmissions
     .reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
 
@@ -636,12 +639,20 @@ const Admin = () => {
 
         {/* Stats Cards */}
         {selectedEventId && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{confirmedCount}</div>
-                  <p className="text-sm text-muted-foreground">אישרו הגעה</p>
+                  <div className="text-2xl font-bold text-primary">{guestLinkSubmissions}</div>
+                  <p className="text-sm text-muted-foreground">אישרו מרשימה</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-500">{openLinkSubmissions}</div>
+                  <p className="text-sm text-muted-foreground">אישרו בקישור פתוח</p>
                 </div>
               </CardContent>
             </Card>

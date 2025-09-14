@@ -50,7 +50,24 @@ export const useClientAuth = () => {
     try {
       console.log('🔍 Attempting login with:', { username, password });
       
-      // Verify credentials against the events table
+      // First, let's check what events exist with this username
+      const { data: allWithUsername, error: usernameError } = await supabase
+        .from('events')
+        .select('id, title, client_username, client_password, client_access_enabled')
+        .eq('client_username', username);
+      
+      console.log('🔍 Events with matching username:', allWithUsername);
+      
+      // Now check with both username and password
+      const { data: withPassword, error: passwordError } = await supabase
+        .from('events')
+        .select('id, title, client_username, client_password, client_access_enabled')
+        .eq('client_username', username)
+        .eq('client_password', password);
+      
+      console.log('🔍 Events with matching username and password:', withPassword);
+      
+      // Finally, check with all conditions
       const { data, error } = await supabase
         .from('events')
         .select('id, title, client_access_enabled')
@@ -59,7 +76,7 @@ export const useClientAuth = () => {
         .eq('client_access_enabled', true)
         .single();
 
-      console.log('🔍 Database response:', { data, error });
+      console.log('🔍 Final database response:', { data, error });
 
       if (error || !data) {
         console.log('🔍 Login failed - no matching event found');

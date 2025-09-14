@@ -48,16 +48,21 @@ export const useClientAuth = () => {
 
   const login = async (username: string, password: string) => {
     try {
+      console.log('🔍 Attempting login with:', { username, password });
+      
       // Verify credentials against the events table
       const { data, error } = await supabase
         .from('events')
-        .select('id, title')
+        .select('id, title, client_access_enabled')
         .eq('client_username', username)
         .eq('client_password', password)
         .eq('client_access_enabled', true)
         .single();
 
+      console.log('🔍 Database response:', { data, error });
+
       if (error || !data) {
+        console.log('🔍 Login failed - no matching event found');
         throw new Error('שם משתמש או סיסמא שגויים');
       }
 

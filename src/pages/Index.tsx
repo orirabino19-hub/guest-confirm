@@ -40,6 +40,31 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Client Access */}
+        <Card className="bg-gradient-card shadow-soft">
+          <CardHeader>
+            <CardTitle className="text-xl text-center">👤 גישת לקוח</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center space-y-4">
+              <div className="space-y-2">
+                <div className="text-2xl">📈</div>
+                <h3 className="font-semibold">צפייה בסטטיסטיקות</h3>
+                <p className="text-sm text-muted-foreground">
+                  התחבר בעזרת פרטי ההתחברות שקיבלת כדי לצפות בסטטיסטיקות האירוע שלך
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate('/client-login')}
+                variant="outline"
+                className="w-full"
+              >
+                התחבר כלקוח
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

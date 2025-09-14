@@ -17,6 +17,7 @@ import LinkManager from "@/components/LinkManager";
 import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
 import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
+import { ClientAuthManager } from "@/components/ClientAuthManager";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
@@ -677,10 +678,11 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
+            <TabsTrigger value="client-auth" className="text-xs md:text-sm px-2 py-2 whitespace-normal">גישת לקוח</TabsTrigger>
             <TabsTrigger value="language" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שפה וטקסטים</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
@@ -727,6 +729,16 @@ const Admin = () => {
             <LinkManager
               selectedEventId={selectedEventId}
               selectedEventSlug={selectedEventSlug}
+            />
+          </TabsContent>
+
+          <TabsContent value="client-auth" className="space-y-4">
+            <ClientAuthManager
+              selectedEvent={selectedEvent}
+              onEventUpdate={() => {
+                // Refresh events data
+                window.location.reload();
+              }}
             />
           </TabsContent>
 

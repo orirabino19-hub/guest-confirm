@@ -107,6 +107,9 @@ export type Database = {
       }
       events: {
         Row: {
+          client_access_enabled: boolean | null
+          client_password: string | null
+          client_username: string | null
           created_at: string
           description: string | null
           event_date: string | null
@@ -119,6 +122,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          client_access_enabled?: boolean | null
+          client_password?: string | null
+          client_username?: string | null
           created_at?: string
           description?: string | null
           event_date?: string | null
@@ -131,6 +137,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          client_access_enabled?: boolean | null
+          client_password?: string | null
+          client_username?: string | null
           created_at?: string
           description?: string | null
           event_date?: string | null

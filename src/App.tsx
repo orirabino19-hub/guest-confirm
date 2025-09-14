@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import RSVP from "./pages/RSVP";
 import OpenRSVP from "./pages/OpenRSVP";
 import Admin from "./pages/Admin";
+import ClientLogin from "./pages/ClientLogin";
+import ClientDashboard from "./pages/ClientDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +31,8 @@ const App = () => {
             <Route path="/rsvp/:eventId/name/:guestName" element={<RSVP />} />
             <Route path="/rsvp/:eventId/open" element={<OpenRSVP />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/client-login" element={<ClientLogin />} />
+            <Route path="/client-dashboard/:eventId" element={<ClientDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

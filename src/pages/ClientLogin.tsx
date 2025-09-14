@@ -76,7 +76,7 @@ export default function ClientLogin() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="הזן שם משתמש"
-                dir="ltr"
+                style={{ direction: 'rtl' }}
                 disabled={isLoading}
               />
             </div>
@@ -90,7 +90,7 @@ export default function ClientLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="הזן סיסמא"
-                  dir="ltr"
+                  style={{ direction: 'rtl' }}
                   disabled={isLoading}
                 />
                 <Button

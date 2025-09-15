@@ -206,7 +206,7 @@ export default function ClientDashboard() {
           <TabsContent value="submissions">
             <Card>
               <CardHeader>
-                <CardTitle>אישורי הגעה ({submissions.length})</CardTitle>
+                <CardTitle style={{ direction: 'rtl' }}>אישורי הגעה ({submissions.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {submissionsLoading ? (
@@ -248,7 +248,7 @@ export default function ClientDashboard() {
           <TabsContent value="guests">
             <Card>
               <CardHeader>
-                <CardTitle>רשימת אורחים ({selectedEventGuests.length})</CardTitle>
+                <CardTitle style={{ direction: 'rtl' }}>רשימת אורחים ({selectedEventGuests.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {selectedEventGuests.length === 0 ? (

@@ -101,6 +101,8 @@ export default function ClientDashboard() {
   const guestLinkSubmissions = submissions.filter(s => s.guest_id).length;
   const pendingCount = Math.max(0, registeredGuests - guestLinkSubmissions);
   const totalConfirmedGuests = submissions.reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
+  const totalMen = submissions.reduce((sum, s) => sum + s.men_count, 0);
+  const totalWomen = submissions.reduce((sum, s) => sum + s.women_count, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -161,7 +163,7 @@ export default function ClientDashboard() {
         </Card>
 
         {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -191,6 +193,22 @@ export default function ClientDashboard() {
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-500">{totalConfirmedGuests}</div>
                 <p className="text-sm text-muted-foreground">סה"כ מוזמנים</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-indigo-500">{totalMen}</div>
+                <p className="text-sm text-muted-foreground">גברים</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-pink-500">{totalWomen}</div>
+                <p className="text-sm text-muted-foreground">נשים</p>
               </div>
             </CardContent>
           </Card>

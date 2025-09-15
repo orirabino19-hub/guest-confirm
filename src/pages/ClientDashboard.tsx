@@ -320,7 +320,7 @@ export default function ClientDashboard() {
           <img 
             src={fleishmanPelesLogo} 
             alt="Fleishman Peles Logo" 
-            className="h-12 opacity-70 hover:opacity-100 transition-opacity"
+            className="h-16 opacity-70 hover:opacity-100 transition-opacity"
           />
         </div>
       </div>

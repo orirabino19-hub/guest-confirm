@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogOut, Users, Calendar, MapPin, Phone, Mail } from "lucide-react";
+import fleishmanPelesLogo from "@/assets/fleishman-peles-logo.png";
 
 interface RSVPSubmission {
   id: string;
@@ -313,6 +314,15 @@ export default function ClientDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Logo at bottom */}
+        <div className="mt-12 flex justify-center pb-8">
+          <img 
+            src={fleishmanPelesLogo} 
+            alt="Fleishman Peles Logo" 
+            className="h-12 opacity-70 hover:opacity-100 transition-opacity"
+          />
+        </div>
       </div>
     </div>
   );

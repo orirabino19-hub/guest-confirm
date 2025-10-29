@@ -20,6 +20,22 @@ interface LanguageSelectorProps {
   eventId?: string;
 }
 
+// Default flags for common languages
+const DEFAULT_FLAGS: Record<string, string> = {
+  'he': '🇮🇱',
+  'en': '🇺🇸',
+  'de': '🇩🇪',
+  'fr': '🇫🇷',
+  'es': '🇪🇸',
+  'it': '🇮🇹',
+  'pt': '🇵🇹',
+  'ru': '🇷🇺',
+  'ar': '🇸🇦',
+  'zh': '🇨🇳',
+  'ja': '🇯🇵',
+  'ko': '🇰🇷',
+};
+
 const LanguageSelector = ({ eventId }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
   const [languages, setLanguages] = useState<Language[]>([
@@ -54,7 +70,7 @@ const LanguageSelector = ({ eventId }: LanguageSelectorProps) => {
           const loadedLanguages = systemLangs.map(lang => ({
             code: lang.code,
             name: lang.native_name,
-            flag: lang.flag || '🌐'
+            flag: lang.flag || DEFAULT_FLAGS[lang.code] || '🌐'
           }));
           setLanguages(loadedLanguages);
           

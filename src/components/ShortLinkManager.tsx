@@ -123,8 +123,7 @@ const ShortLinkManager = ({ selectedEventId }: ShortLinkManagerProps) => {
           ניהול קיצורי לינקים
         </CardTitle>
         <p className="text-sm text-muted-foreground mt-2">
-          כאן תוכל לראות ולנהל את כל קיצורי הלינקים שיצרת במערכת.
-          ליצירת קיצור חדש, עבור לטאב "קישורים" והזן שם מותאם אישית בשדה "קיצור לינק".
+          ניהול קיצורי לינקים מותאמים אישית לאירועים שלך. ליצירת קיצור חדש, עבור לטאב "קישורים".
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -148,49 +147,60 @@ const ShortLinkManager = ({ selectedEventId }: ShortLinkManagerProps) => {
             </div>
             
             {shortLinks.map((link) => (
-              <div key={link.id} className="flex items-center gap-3 p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
+              <div key={link.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Badge variant={link.type === 'personal' ? 'default' : 'secondary'}>
                       {link.type === 'personal' ? 'אישי' : 'פתוח'}
                     </Badge>
-                    <span className="text-sm font-medium truncate">{link.eventName}</span>
+                    <span className="text-sm font-medium">{link.eventName}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                      /{link.slug}
-                    </code>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openLink(link.fullUrl)}
+                      title="פתח בחלון חדש"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => copyLink(link.fullUrl, link.slug)}
+                      title="העתק קישור"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteShortLink(link.id)}
+                      className="text-destructive hover:text-destructive"
+                      title="מחק קיצור"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1 truncate">
-                    {link.fullUrl}
-                  </p>
                 </div>
-                <div className="flex gap-1 flex-shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => openLink(link.fullUrl)}
-                    title="פתח בחלון חדש"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => copyLink(link.fullUrl, link.slug)}
-                    title="העתק קישור"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteShortLink(link.id)}
-                    className="text-destructive hover:text-destructive"
-                    title="מחק קיצור"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">לינק מקוצר</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-xs bg-muted px-2 py-1.5 rounded font-mono flex-1 truncate">
+                        {link.fullUrl}
+                      </code>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">קיצור</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="text-xs bg-primary/10 text-primary px-2 py-1.5 rounded font-mono font-semibold">
+                        /{link.slug}
+                      </code>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

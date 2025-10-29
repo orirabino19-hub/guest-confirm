@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Settings } from 'lucide-react';
 import { CustomField } from './EventManager';
+import { supabase } from '@/integrations/supabase/client';
+
+interface LanguageConfig {
+  code: string;
+  name: string;
+  nativeName: string;
+  flag: string;
+}
 
 interface OpenRSVPCustomFieldsProps {
   selectedEventId: string | null;
@@ -20,19 +28,81 @@ interface OpenRSVPCustomFieldsProps {
 const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpdate }: OpenRSVPCustomFieldsProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
-    const [newField, setNewField] = useState<Partial<CustomField>>({
-      type: 'text',
-      label: '',
-      labelEn: '',
-      options: [],
-      required: false,
-      displayLocations: {
-        regularInvitation: true,
-        openLink: false,
-        personalLink: false
-      }
-    });
+  const [eventLanguages, setEventLanguages] = useState<LanguageConfig[]>([]);
+  const [loadingLanguages, setLoadingLanguages] = useState(false);
+  const [newField, setNewField] = useState<Partial<CustomField>>({
+    type: 'text',
+    label: '',
+    labelEn: '',
+    options: [],
+    required: false,
+    displayLocations: {
+      regularInvitation: true,
+      openLink: false,
+      personalLink: false
+    }
+  });
   const { toast } = useToast();
+
+  // Load event languages
+  useEffect(() => {
+    const loadEventLanguages = async () => {
+      if (!selectedEventId) {
+        setEventLanguages([]);
+        return;
+      }
+
+      setLoadingLanguages(true);
+      try {
+        // Get event languages
+        const { data: eventLangs, error: eventError } = await supabase
+          .from('event_languages')
+          .select('locale')
+          .eq('event_id', selectedEventId);
+
+        if (eventError) throw eventError;
+
+        if (!eventLangs || eventLangs.length === 0) {
+          // Default to he and en
+          setEventLanguages([
+            { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱' },
+            { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' }
+          ]);
+          return;
+        }
+
+        const locales = eventLangs.map(l => l.locale);
+
+        // Get language details from system_languages
+        const { data: systemLangs, error: systemError } = await supabase
+          .from('system_languages')
+          .select('code, name, native_name, flag')
+          .in('code', locales);
+
+        if (systemError) throw systemError;
+
+        const languages = systemLangs?.map(lang => ({
+          code: lang.code,
+          name: lang.name,
+          nativeName: lang.native_name,
+          flag: lang.flag || '🌐'
+        })) || [];
+
+        setEventLanguages(languages);
+      } catch (error) {
+        console.error('Error loading languages:', error);
+        // Fallback to default
+        setEventLanguages([
+          { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱' },
+          { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' }
+        ]);
+      } finally {
+        setLoadingLanguages(false);
+      }
+    };
+
+    loadEventLanguages();
+  }, [selectedEventId]);
 
   const fieldTypes = [
     { value: 'text', label: 'טקסט חופשי', labelEn: 'Text Input' },
@@ -324,8 +394,19 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                         </Badge>
                       )}
                     </div>
-                    <p className="font-medium">{field.label}</p>
-                    <p className="text-sm text-muted-foreground">{field.labelEn}</p>
+                    <div className="space-y-1">
+                      {eventLanguages.map(lang => {
+                        const labelValue = lang.code === 'he' ? field.label :
+                                          lang.code === 'en' ? field.labelEn :
+                                          (field as any)[`label_${lang.code}`];
+                        if (!labelValue) return null;
+                        return (
+                          <p key={lang.code} className="text-sm">
+                            <span className="font-medium">{lang.flag} {lang.nativeName}:</span> {labelValue}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div className="flex gap-1">
                     <Button
@@ -390,22 +471,34 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label>תווית בעברית *</Label>
-                      <Input
-                        value={newField.label}
-                        onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
-                        placeholder="לדוגמא: האם אתה צריך הסעה?"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>תווית באנגלית *</Label>
-                      <Input
-                        value={newField.labelEn}
-                        onChange={(e) => setNewField(prev => ({ ...prev, labelEn: e.target.value }))}
-                        placeholder="Example: Do you need transportation?"
-                      />
+                    {/* Dynamic language fields */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">תוויות בשפות ({eventLanguages.length})</Label>
+                      {eventLanguages.map((lang) => (
+                        <div key={lang.code} className="space-y-2">
+                          <Label className="text-sm flex items-center gap-2">
+                            {lang.flag} {lang.nativeName}
+                          </Label>
+                          <Input
+                            value={
+                              lang.code === 'he' ? newField.label :
+                              lang.code === 'en' ? newField.labelEn :
+                              (newField as any)[`label_${lang.code}`] || ''
+                            }
+                            onChange={(e) => {
+                              if (lang.code === 'he') {
+                                setNewField(prev => ({ ...prev, label: e.target.value }));
+                              } else if (lang.code === 'en') {
+                                setNewField(prev => ({ ...prev, labelEn: e.target.value }));
+                              } else {
+                                setNewField(prev => ({ ...prev, [`label_${lang.code}`]: e.target.value }));
+                              }
+                            }}
+                            placeholder={`תווית ב${lang.nativeName}`}
+                            dir={lang.code === 'he' || lang.code === 'ar' ? 'rtl' : 'ltr'}
+                          />
+                        </div>
+                      ))}
                     </div>
 
                     {newField.type === 'select' && (
@@ -546,8 +639,19 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                         </Badge>
                       )}
                     </div>
-                    <p className="font-medium">{field.label}</p>
-                    <p className="text-sm text-muted-foreground">{field.labelEn}</p>
+                    <div className="space-y-1">
+                      {eventLanguages.map(lang => {
+                        const labelValue = lang.code === 'he' ? field.label :
+                                          lang.code === 'en' ? field.labelEn :
+                                          (field as any)[`label_${lang.code}`];
+                        if (!labelValue) return null;
+                        return (
+                          <p key={lang.code} className="text-sm">
+                            <span className="font-medium">{lang.flag} {lang.nativeName}:</span> {labelValue}
+                          </p>
+                        );
+                      })}
+                    </div>
                     {field.options && field.options.length > 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
                         אפשרויות: {field.options.join(', ')}

@@ -14,6 +14,7 @@ import ColorManager from "@/components/ColorManager";
 import ExcelImport from "@/components/ExcelImport";
 import ExcelExport from "@/components/ExcelExport";
 import LinkManager from "@/components/LinkManager";
+import ShortLinkManager from "@/components/ShortLinkManager";
 import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
 import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
@@ -678,10 +679,11 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-9 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-5 md:grid-cols-10 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
+            <TabsTrigger value="short-links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קיצורי לינקים</TabsTrigger>
             <TabsTrigger value="client-auth" className="text-xs md:text-sm px-2 py-2 whitespace-normal">גישת לקוח</TabsTrigger>
             <TabsTrigger value="language" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שפה וטקסטים</TabsTrigger>
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
@@ -729,6 +731,12 @@ const Admin = () => {
             <LinkManager
               selectedEventId={selectedEventId}
               selectedEventSlug={selectedEventSlug}
+            />
+          </TabsContent>
+
+          <TabsContent value="short-links" className="space-y-4">
+            <ShortLinkManager
+              selectedEventId={selectedEventId}
             />
           </TabsContent>
 

@@ -53,11 +53,33 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [textOverrides, setTextOverrides] = useState<TextOverrides>({});
   const [storedLanguages, setStoredLanguages] = useState<string[]>([]);
+  const [availableLanguages, setAvailableLanguages] = useState<LanguageConfig[]>([]);
   // Load event languages from Supabase when event changes
   // Keep local state (selectedLanguages) in sync so the UI reflects reality
   // Note: event.languages is not persisted in DB; we use table event_languages
   // to store languages per event
   
+  // Load system languages for the language picker
+  useEffect(() => {
+    const loadSystemLanguages = async () => {
+      const { data, error } = await supabase
+        .from('system_languages')
+        .select('code, name, native_name, flag, rtl');
+      
+      if (!error && data) {
+        const langs = data.map(lang => ({
+          code: lang.code,
+          name: lang.name,
+          nativeName: lang.native_name,
+          flag: lang.flag || '🌐',
+          rtl: lang.rtl
+        }));
+        setAvailableLanguages(langs);
+      }
+    };
+    loadSystemLanguages();
+  }, []);
+
   useEffect(() => {
     const loadLanguagesAndTexts = async () => {
       if (!event?.id) return;
@@ -100,18 +122,6 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     };
     loadLanguagesAndTexts();
   }, [event?.id]);
-
-  // Available languages - this matches EventManager
-  const availableLanguages: LanguageConfig[] = [
-    { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', rtl: true },
-    { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸', rtl: false },
-    { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', rtl: true },
-    { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺', rtl: false },
-    { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', rtl: false },
-    { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', rtl: false },
-    { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹', rtl: false },
-    { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪', rtl: false }
-  ];
 
   const handleSaveLanguages = async () => {
     if (!event) return;
@@ -218,7 +228,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
 
     // Save to database immediately
     try {
-      const langs = ['he', 'en'];
+      const langs = storedLanguages.length > 0 ? storedLanguages : ['he', 'en'];
       const { data: rows, error } = await supabase
         .from('event_languages')
         .select('locale, translations')
@@ -272,7 +282,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     if (!event || !editingKey) return;
     
     try {
-      const langs = ['he', 'en'];
+      const langs = storedLanguages.length > 0 ? storedLanguages : ['he', 'en'];
       // Fetch existing translations for these locales
       const { data: rows, error } = await supabase
         .from('event_languages')
@@ -339,7 +349,7 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
     if (!event) return;
 
     try {
-      const langs = ['he', 'en'];
+      const langs = storedLanguages.length > 0 ? storedLanguages : ['he', 'en'];
       const { data: rows, error } = await supabase
         .from('event_languages')
         .select('locale, translations')
@@ -561,40 +571,41 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Hebrew */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">עברית</Label>
-                      {editingKey === item.key ? (
-                        <Textarea
-                          dir="rtl"
-                          value={getDisplayText(item.key, 'he', item.defaultHe)}
-                          onChange={(e) => handleTextChange(item.key, 'he', e.target.value)}
-                          className="min-h-[60px] text-right"
-                          placeholder={item.defaultHe}
-                        />
-                      ) : (
-                        <div className="p-3 bg-muted/50 rounded border text-right" dir="rtl">
-                          {getDisplayText(item.key, 'he', item.defaultHe)}
+                    {storedLanguages.map(langCode => {
+                      const langConfig = availableLanguages.find(l => l.code === langCode);
+                      const langName = langConfig?.nativeName || langCode.toUpperCase();
+                      const isRtl = langConfig?.rtl || false;
+                      
+                      // Get default text based on language
+                      let defaultText = '';
+                      if (langCode === 'he') defaultText = item.defaultHe;
+                      else if (langCode === 'en') defaultText = item.defaultEn;
+                      
+                      return (
+                        <div key={langCode} className="space-y-2">
+                          <Label className="text-sm font-medium flex items-center gap-2">
+                            {langConfig?.flag} {langName}
+                          </Label>
+                          {editingKey === item.key ? (
+                            <Textarea
+                              dir={isRtl ? 'rtl' : 'ltr'}
+                              value={getDisplayText(item.key, langCode, defaultText)}
+                              onChange={(e) => handleTextChange(item.key, langCode, e.target.value)}
+                              className={`min-h-[60px] ${isRtl ? 'text-right' : ''}`}
+                              placeholder={defaultText || `Enter text in ${langName}`}
+                            />
+                          ) : (
+                            <div className={`p-3 bg-muted/50 rounded border ${isRtl ? 'text-right' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
+                              {getDisplayText(item.key, langCode, defaultText) || (
+                                <span className="text-muted-foreground italic">
+                                  {i18n.language === 'he' ? 'לא הוגדר' : 'Not set'}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-
-                    {/* English */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">English</Label>
-                      {editingKey === item.key ? (
-                        <Textarea
-                          value={getDisplayText(item.key, 'en', item.defaultEn)}
-                          onChange={(e) => handleTextChange(item.key, 'en', e.target.value)}
-                          className="min-h-[60px]"
-                          placeholder={item.defaultEn}
-                        />
-                      ) : (
-                        <div className="p-3 bg-muted/50 rounded border">
-                          {getDisplayText(item.key, 'en', item.defaultEn)}
-                        </div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

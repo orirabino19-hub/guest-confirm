@@ -296,31 +296,27 @@ const EventLanguageSettings = ({ event, onEventUpdate }: EventLanguageSettingsPr
         .in('locale', langs);
       if (error) throw error;
 
+      // Build the combined text data with all language translations
+      const hidden = textOverrides[editingKey!]?.hidden || false;
+      const textData: any = {
+        text: {},
+        hidden
+      };
+
+      // Collect all language translations for this key
+      langs.forEach(locale => {
+        const value = textOverrides[editingKey!]?.[locale];
+        if (value && value !== '') {
+          textData.text[locale] = value;
+        }
+      });
+
       const rowsMap = new Map<string, any>((rows || []).map(r => [r.locale as string, r]));
       const updates = langs.map((locale) => {
         const existing = (rowsMap.get(locale)?.translations as Record<string, any>) || {};
-        const value = textOverrides[editingKey!]?.[locale];
-        const hidden = textOverrides[editingKey!]?.hidden || false;
         const newTranslations = { ...existing };
 
-        // Create new format: {text: {locale: value}, hidden: boolean}
-        const textData = {
-          text: {},
-          hidden
-        };
-
-        // Get existing text data for other locales
-        if (existing[editingKey!]?.text) {
-          textData.text = { ...existing[editingKey!].text };
-        }
-
-        if (value === undefined || value === '') {
-          delete textData.text[locale];
-        } else {
-          textData.text[locale] = value;
-        }
-
-        // Only save if we have text or hidden flag
+        // Save the same text data structure to all locales
         if (Object.keys(textData.text).length > 0 || hidden) {
           newTranslations[editingKey!] = textData;
         } else {

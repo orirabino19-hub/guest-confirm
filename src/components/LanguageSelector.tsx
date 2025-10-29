@@ -57,6 +57,15 @@ const LanguageSelector = ({ eventId }: LanguageSelectorProps) => {
             flag: lang.flag || '🌐'
           }));
           setLanguages(loadedLanguages);
+          
+          // If current language is not in the event's languages, switch to first available
+          const currentLangExists = loadedLanguages.some(lang => lang.code === i18n.language);
+          if (!currentLangExists && loadedLanguages.length > 0) {
+            const firstLang = loadedLanguages[0];
+            i18n.changeLanguage(firstLang.code);
+            document.documentElement.dir = firstLang.code === 'he' || firstLang.code === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = firstLang.code;
+          }
         }
       } catch (error) {
         console.error('Error loading languages:', error);
@@ -64,7 +73,7 @@ const LanguageSelector = ({ eventId }: LanguageSelectorProps) => {
     };
 
     loadLanguages();
-  }, [eventId]);
+  }, [eventId, i18n]);
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 

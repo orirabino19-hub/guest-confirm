@@ -27,6 +27,8 @@ interface CustomLink {
 
 const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) => {
   const [customName, setCustomName] = useState('');
+  const [customSlug, setCustomSlug] = useState('');
+  const [openSlug, setOpenSlug] = useState('');
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
   const { toast } = useToast();
   const { generateShortLink } = useShortCodes();
@@ -66,14 +68,20 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
       const mapped: CustomLink[] = (linkRows || []).map((row: any) => {
         const isName = row.type === 'personal';
         const value = isName
-          ? decodeURIComponent((row.slug as string).split('/')[1] || '')
+          ? decodeURIComponent((row.slug as string).split('/')[1] || row.slug)
           : 'קישור פתוח';
         const mappedType: 'name' | 'open' = isName ? 'name' : 'open';
+        
+        // אם ה-slug לא מכיל '/', זה קיצור ישיר
+        const url = row.slug.includes('/')
+          ? `${currentDomain}/rsvp/${eventCode || selectedEventId}/${row.slug}`
+          : `${currentDomain}/${row.slug}`;
+        
         return {
           id: row.id,
           type: mappedType,
           value,
-          url: `${currentDomain}/rsvp/${eventCode || selectedEventId}/${row.slug}`,
+          url,
           createdAt: row.created_at,
         } as CustomLink;
       });
@@ -121,8 +129,35 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         }
       }
 
-      const encodedName = encodeURIComponent(customName.trim());
-      const slug = `name/${encodedName}`;
+      // אם יש slug מותאם אישית, נשתמש בו. אחרת נשתמש בפורמט הרגיל
+      let slug = '';
+      let finalUrl = '';
+      const currentDomain = window.location.origin;
+      
+      if (customSlug.trim()) {
+        // וידוא שה-slug ייחודי
+        const { data: existingLink } = await supabase
+          .from('links')
+          .select('id')
+          .eq('slug', customSlug.trim())
+          .maybeSingle();
+        
+        if (existingLink) {
+          toast({
+            title: "⚠️ שגיאה",
+            description: "קיצור זה כבר קיים. אנא בחר קיצור אחר",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        slug = customSlug.trim();
+        finalUrl = `${currentDomain}/${slug}`;
+      } else {
+        const encodedName = encodeURIComponent(customName.trim());
+        slug = `name/${encodedName}`;
+        finalUrl = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${slug}`;
+      }
 
       // Save to DB
       const { data: inserted, error } = await supabase
@@ -137,18 +172,17 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
 
       if (error) throw error;
 
-      const currentDomain = window.location.origin;
-      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${slug}`;
       const newLink: CustomLink = {
         id: inserted?.id || Date.now().toString(),
         type: 'name',
         value: customName.trim(),
-        url,
+        url: finalUrl,
         createdAt: inserted?.created_at || new Date().toISOString(),
       };
 
       setCustomLinks(prev => [...prev, newLink]);
       setCustomName('');
+      setCustomSlug('');
       
       toast({
         title: "🔗 קישור נוצר בהצלחה",
@@ -199,12 +233,37 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         .eq('type', 'open')
         .maybeSingle();
 
-      // Use standard 'open' slug for all open links  
-      const uniqueSlug = 'open';
-      
+      // אם יש slug מותאם אישית, נשתמש בו. אחרת נשתמש ב-'open'
+      let slug = openSlug.trim() || 'open';
+      let finalUrl = '';
       const currentDomain = window.location.origin;
+      
+      if (openSlug.trim()) {
+        // וידוא שה-slug ייחודי
+        const { data: existingLink } = await supabase
+          .from('links')
+          .select('id')
+          .eq('slug', openSlug.trim())
+          .maybeSingle();
+        
+        if (existingLink) {
+          toast({
+            title: "⚠️ שגיאה",
+            description: "קיצור זה כבר קיים. אנא בחר קיצור אחר",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        finalUrl = `${currentDomain}/${slug}`;
+      } else {
+        finalUrl = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${slug}`;
+      }
+      
       if (existing) {
-        const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${existing.slug}`;
+        const url = existing.slug.includes('/') 
+          ? `${currentDomain}/rsvp/${eventCode || selectedEventId}/${existing.slug}`
+          : `${currentDomain}/${existing.slug}`;
         const newLink: CustomLink = {
           id: existing.id,
           type: 'open',
@@ -224,23 +283,23 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
         .insert({
           event_id: selectedEventId,
           type: 'open',
-          slug: uniqueSlug,
+          slug: slug,
         })
         .select('id, created_at, slug, type')
         .maybeSingle();
 
       if (error) throw error;
 
-      const url = `${currentDomain}/rsvp/${eventCode || selectedEventId}/${inserted?.slug || uniqueSlug}`;
       const newLink: CustomLink = {
         id: inserted?.id || Date.now().toString(),
         type: 'open',
         value: 'קישור פתוח',
-        url,
+        url: finalUrl,
         createdAt: inserted?.created_at || new Date().toISOString(),
       };
 
       setCustomLinks(prev => [...prev, newLink]);
+      setOpenSlug('');
       
       toast({
         title: "🔗 קישור פתוח נוצר",
@@ -339,21 +398,36 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
           <TabsContent value="name" className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="custom-name">שם מותאם אישית</Label>
-              <div className="flex gap-2">
+              <Input
+                id="custom-name"
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                placeholder="הכנס שם לקישור..."
+              />
+              
+              <Label htmlFor="custom-slug" className="text-xs">
+                קיצור לינק (אופציונלי) - לדוגמא: Mendel
+              </Label>
+              <div className="flex gap-2 items-center">
+                <span className="text-sm text-muted-foreground">{window.location.origin}/</span>
                 <Input
-                  id="custom-name"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="הכנס שם לקישור..."
+                  id="custom-slug"
+                  value={customSlug}
+                  onChange={(e) => setCustomSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                  placeholder="Mendel"
                   className="flex-1"
                 />
-                <Button onClick={generateNameLink} disabled={!customName.trim()}>
-                  <Plus className="h-4 w-4 ml-1" />
-                  צור קישור
-                </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                ייוצר קישור: .../rsvp/[קוד-האירוע]/name/[השם]
+              
+              <Button onClick={generateNameLink} disabled={!customName.trim()} className="w-full">
+                <Plus className="h-4 w-4 ml-1" />
+                צור קישור
+              </Button>
+              
+              <p className="text-xs text-muted-foreground">
+                {customSlug.trim() 
+                  ? `ייוצר קישור קצר: ${window.location.origin}/${customSlug}`
+                  : 'ללא קיצור: .../rsvp/[קוד-האירוע]/name/[השם]'}
               </p>
             </div>
           </TabsContent>
@@ -362,12 +436,30 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>קישור פתוח לכל אורח</Label>
+                
+                <Label htmlFor="open-slug" className="text-xs">
+                  קיצור לינק (אופציונלי) - לדוגמא: OpenInvite
+                </Label>
+                <div className="flex gap-2 items-center">
+                  <span className="text-sm text-muted-foreground">{window.location.origin}/</span>
+                  <Input
+                    id="open-slug"
+                    value={openSlug}
+                    onChange={(e) => setOpenSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                    placeholder="OpenInvite"
+                    className="flex-1"
+                  />
+                </div>
+                
                 <Button onClick={generateOpenLink} className="w-full">
                   <Users className="h-4 w-4 ml-2" />
                   צור קישור פתוח
                 </Button>
-                <p className="text-sm text-muted-foreground">
-                  האורח יוכל להזין את פרטיו בעצמו בקישור זה
+                
+                <p className="text-xs text-muted-foreground">
+                  {openSlug.trim() 
+                    ? `ייוצר קישור קצר: ${window.location.origin}/${openSlug}`
+                    : 'ללא קיצור: .../rsvp/[קוד-האירוע]/open'}
                 </p>
               </div>
               

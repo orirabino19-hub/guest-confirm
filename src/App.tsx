@@ -9,6 +9,7 @@ import OpenRSVP from "./pages/OpenRSVP";
 import Admin from "./pages/Admin";
 import ClientLogin from "./pages/ClientLogin";
 import ClientDashboard from "./pages/ClientDashboard";
+import ShortLink from "./pages/ShortLink";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/client-login" element={<ClientLogin />} />
             <Route path="/client-dashboard/:eventId" element={<ClientDashboard />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/:slug" element={<ShortLink />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

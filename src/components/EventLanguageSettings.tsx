@@ -36,7 +36,10 @@ const EDITABLE_KEYS = [
   { key: 'rsvp.submitButton', label: 'Submit Button', defaultEn: '✅ Confirm Attendance', defaultHe: '✅ אשר הגעה' },
   { key: 'rsvp.eventTime', label: 'Event Time', defaultEn: '🕐 The event will take place on the scheduled date and time', defaultHe: '🕐 האירוע יתקיים בתאריך ובשעה שנקבעו' },
   { key: 'open_rsvp.first_name', label: 'First Name Label', defaultEn: 'First Name', defaultHe: 'שם פרטי' },
-  { key: 'open_rsvp.last_name', label: 'Last Name Label', defaultEn: 'Last Name', defaultHe: 'שם משפחה' }
+  { key: 'open_rsvp.last_name', label: 'Last Name Label', defaultEn: 'Last Name', defaultHe: 'שם משפחה' },
+  { key: 'rsvp.numberOfParticipants', label: 'Number of Participants', defaultEn: 'Number of Participants', defaultHe: 'מספר משתתפים' },
+  { key: 'rsvp.menLabel', label: 'Men Label', defaultEn: 'Men', defaultHe: 'גברים' },
+  { key: 'rsvp.womenLabel', label: 'Women Label', defaultEn: 'Women', defaultHe: 'נשים' }
 ];
 
 interface TextOverrides {

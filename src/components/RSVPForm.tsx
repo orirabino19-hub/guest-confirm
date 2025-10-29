@@ -476,13 +476,13 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                   className="font-medium text-center mb-4"
                   style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
                 >
-                  {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
+                  {getCustomText ? getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants") : (i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
                 </h3>
                 
                 {/* Men Counter */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
-                    {i18n.language === 'he' ? "גברים" : "Men"}
+                    {getCustomText ? getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men") : (i18n.language === 'he' ? "גברים" : "Men")}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button
@@ -519,7 +519,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                 {/* Women Counter */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
-                    {i18n.language === 'he' ? "נשים" : "Women"}
+                    {getCustomText ? getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women") : (i18n.language === 'he' ? "נשים" : "Women")}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button

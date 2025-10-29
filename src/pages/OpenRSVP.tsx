@@ -848,7 +848,7 @@ const OpenRSVP = () => {
               {(totalGuests === 0 || !hasRequiredFields()) && (
                 <p className="text-center text-sm text-muted-foreground">
                   {totalGuests === 0 
-                    ? t('rsvp.pleaseEnterGuests')
+                    ? getCustomText('rsvp.pleaseEnterGuests', i18n.language, t('rsvp.pleaseEnterGuests'))
                     : (i18n.language === 'he' ? "יש למלא את כל השדות הנדרשים" : "Please fill all required fields")
                   }
                 </p>

@@ -824,7 +824,7 @@ const OpenRSVP = () => {
               {totalGuests > 0 && (
                 <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
                   <p className="text-lg font-medium text-accent-foreground">
-                    {t('rsvp.totalGuests', { count: totalGuests })}
+                    {getCustomText('rsvp.totalGuests', i18n.language, t('rsvp.totalGuests', { count: totalGuests })).replace('{{count}}', totalGuests.toString())}
                   </p>
                 </div>
               )}

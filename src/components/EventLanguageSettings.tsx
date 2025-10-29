@@ -41,6 +41,7 @@ const EDITABLE_KEYS = [
   { key: 'rsvp.menLabel', label: 'Men Label', defaultEn: 'Men', defaultHe: 'גברים' },
   { key: 'rsvp.womenLabel', label: 'Women Label', defaultEn: 'Women', defaultHe: 'נשים' },
   { key: 'rsvp.pleaseEnterGuests', label: 'Please Enter Guests Message', defaultHe: 'אנא הזינו את מספר המוזמנים לפני האישור', defaultEn: 'Please enter the number of guests before confirming' },
+  { key: 'rsvp.totalGuests', label: 'Total Guests Label', defaultHe: 'סה"כ מוזמנים: {{count}}', defaultEn: 'Total Guests: {{count}}' }
 ];
 
 interface TextOverrides {

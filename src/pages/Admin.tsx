@@ -15,6 +15,7 @@ import ExcelImport from "@/components/ExcelImport";
 import ExcelExport from "@/components/ExcelExport";
 import LinkManager from "@/components/LinkManager";
 import ShortLinkManager from "@/components/ShortLinkManager";
+import { URLShortener } from "@/components/URLShortener";
 import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
 import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
@@ -785,6 +786,9 @@ const Admin = () => {
             />
           </TabsContent>
         </Tabs>
+        
+        {/* URL Shortener - Independent System */}
+        <URLShortener />
         
         {/* Short Links Management Section */}
         <ShortLinkManager selectedEventId={selectedEventId} />

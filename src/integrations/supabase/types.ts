@@ -345,6 +345,36 @@ export type Database = {
           },
         ]
       }
+      short_urls: {
+        Row: {
+          clicks_count: number
+          created_at: string
+          id: string
+          is_active: boolean
+          slug: string
+          target_url: string
+          updated_at: string
+        }
+        Insert: {
+          clicks_count?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          slug: string
+          target_url: string
+          updated_at?: string
+        }
+        Update: {
+          clicks_count?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          slug?: string
+          target_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       system_languages: {
         Row: {
           code: string
@@ -380,14 +410,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_event_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_guest_code: {
-        Args: { p_event_id: string }
-        Returns: string
-      }
+      generate_event_code: { Args: never; Returns: string }
+      generate_guest_code: { Args: { p_event_id: string }; Returns: string }
       get_guest_name_by_phone: {
         Args: { _event_id: string; _phone: string }
         Returns: string

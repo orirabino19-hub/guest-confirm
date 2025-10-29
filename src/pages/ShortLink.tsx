@@ -20,7 +20,30 @@ const ShortLink = () => {
       try {
         console.log('🔍 Resolving short link:', slug);
 
-        // חיפוש הלינק לפי slug
+        // First, try to find in the new short_urls table (independent URL shortener)
+        const { data: shortUrlData, error: shortUrlError } = await supabase
+          .from('short_urls')
+          .select('slug, target_url, is_active, clicks_count')
+          .eq('slug', slug)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (shortUrlData && !shortUrlError) {
+          console.log('✅ Found in short_urls table:', shortUrlData);
+          
+          // Update clicks count
+          await supabase
+            .from('short_urls')
+            .update({ clicks_count: shortUrlData.clicks_count + 1 })
+            .eq('slug', slug);
+
+          // Redirect to target URL
+          setRedirectPath(shortUrlData.target_url);
+          setLoading(false);
+          return;
+        }
+
+        // If not found in short_urls, try the old links table
         const { data: linkData, error: linkError } = await supabase
           .from('links')
           .select('id, event_id, type, slug')

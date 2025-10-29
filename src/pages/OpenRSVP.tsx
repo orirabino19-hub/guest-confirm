@@ -237,7 +237,8 @@ const OpenRSVP = () => {
           id: field.key,
           type: field.field_type as any,
           label: field.label,
-          labelEn: field.label, // נוכל להוסיף תמיכה בשפות מאוחר יותר
+          labelEn: field.label, // For backward compatibility
+          labels: (field.labels as Record<string, string>) || {},
           required: field.required,
           options: field.options as string[] || undefined
         })) || [];

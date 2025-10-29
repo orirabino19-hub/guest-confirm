@@ -78,6 +78,7 @@ const Admin = () => {
               : field.field_type,
             label: field.label,
             labelEn: field.label,
+            labels: field.labels || {},
             required: field.required,
             options: field.options,
             displayLocations: {
@@ -99,6 +100,7 @@ const Admin = () => {
               : field.field_type,
             label: field.label,
             labelEn: field.label,
+            labels: field.labels || {},
             required: field.required,
             options: field.options,
             displayLocations: {
@@ -356,6 +358,7 @@ const Admin = () => {
         .map((field, index) => ({
           key: field.id,
           label: field.label,
+          labels: field.labels || {},
           field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
           required: field.required,
           options: field.options,
@@ -367,6 +370,7 @@ const Admin = () => {
         .map((field, index) => ({
           key: field.id,
           label: field.label,
+          labels: field.labels || {},
           field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
           required: field.required,
           options: field.options,
@@ -479,6 +483,7 @@ const Admin = () => {
                 : field.field_type,
               label: field.label,
               labelEn: field.label,
+              labels: (field.labels as Record<string, string>) || {},
               required: field.required,
               options: field.options,
               displayLocations: {
@@ -500,6 +505,7 @@ const Admin = () => {
                 : field.field_type,
               label: field.label,
               labelEn: field.label,
+              labels: (field.labels as Record<string, string>) || {},
               required: field.required,
               options: field.options,
               displayLocations: {

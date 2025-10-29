@@ -23,6 +23,7 @@ export type Database = {
           is_active: boolean
           key: string
           label: string
+          labels: Json | null
           link_type: Database["public"]["Enums"]["link_type"]
           options: Json | null
           order_index: number
@@ -37,6 +38,7 @@ export type Database = {
           is_active?: boolean
           key: string
           label: string
+          labels?: Json | null
           link_type: Database["public"]["Enums"]["link_type"]
           options?: Json | null
           order_index?: number
@@ -51,6 +53,7 @@ export type Database = {
           is_active?: boolean
           key?: string
           label?: string
+          labels?: Json | null
           link_type?: Database["public"]["Enums"]["link_type"]
           options?: Json | null
           order_index?: number

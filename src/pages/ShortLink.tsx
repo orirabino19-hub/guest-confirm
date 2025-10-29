@@ -37,10 +37,19 @@ const ShortLink = () => {
             .update({ clicks_count: shortUrlData.clicks_count + 1 })
             .eq('slug', slug);
 
-          // Redirect to target URL
-          setRedirectPath(shortUrlData.target_url);
-          setLoading(false);
-          return;
+          // Check if target URL is absolute (starts with http:// or https://)
+          const targetUrl = shortUrlData.target_url;
+          if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
+            // External URL - redirect directly
+            window.location.href = targetUrl;
+            return;
+          } else {
+            // Internal path - use React Router
+            const normalizedPath = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
+            setRedirectPath(normalizedPath);
+            setLoading(false);
+            return;
+          }
         }
 
         // If not found in short_urls, try the old links table

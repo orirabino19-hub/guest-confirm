@@ -23,6 +23,7 @@ interface CustomField {
   type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn: string;
+  labels?: Record<string, string>; // Additional language translations
   options?: string[];
   required: boolean;
 }
@@ -448,7 +449,9 @@ const OpenRSVP = () => {
   };
 
   const renderCustomField = (field: CustomField) => {
-    const label = i18n.language === 'he' ? field.label : field.labelEn;
+    // Get label for current language
+    const label = field.labels?.[i18n.language] || 
+                  (i18n.language === 'he' ? field.label : field.labelEn);
     
     switch (field.type) {
       case 'text':

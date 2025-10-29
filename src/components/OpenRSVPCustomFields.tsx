@@ -229,11 +229,23 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       return;
     }
 
+    // Collect all language labels
+    const labels: Record<string, string> = {};
+    eventLanguages.forEach(lang => {
+      if (lang.code !== 'he' && lang.code !== 'en') {
+        const labelValue = (newField as any)[`label_${lang.code}`];
+        if (labelValue?.trim()) {
+          labels[lang.code] = labelValue;
+        }
+      }
+    });
+
     const fieldData: CustomField = {
       id: editingField?.id || (predefinedFields[newField.type as keyof typeof predefinedFields] ? newField.type : Date.now().toString()),
       type: newField.type as CustomField['type'],
       label: fieldLabel!,
       labelEn: fieldLabelEn!,
+      labels: Object.keys(labels).length > 0 ? labels : undefined,
       options: newField.type === 'select' ? newField.options : undefined,
       required: fieldRequired || false,
       displayLocations: newField.displayLocations || {
@@ -266,7 +278,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
 
   const handleEditField = (field: CustomField) => {
     setEditingField(field);
-    setNewField({
+    const newFieldData: any = {
       type: field.type,
       label: field.label,
       labelEn: field.labelEn,
@@ -277,7 +289,16 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         openLink: true,
         personalLink: true
       }
-    });
+    };
+    
+    // Add additional language labels
+    if (field.labels) {
+      Object.entries(field.labels).forEach(([langCode, labelValue]) => {
+        newFieldData[`label_${langCode}`] = labelValue;
+      });
+    }
+    
+    setNewField(newFieldData);
     setIsDialogOpen(true);
   };
 
@@ -398,7 +419,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                       {eventLanguages.map(lang => {
                         const labelValue = lang.code === 'he' ? field.label :
                                           lang.code === 'en' ? field.labelEn :
-                                          (field as any)[`label_${lang.code}`];
+                                          field.labels?.[lang.code];
                         if (!labelValue) return null;
                         return (
                           <p key={lang.code} className="text-sm">

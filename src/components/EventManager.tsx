@@ -23,6 +23,7 @@ export interface CustomField {
   type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn: string;
+  labels?: Record<string, string>; // Additional language translations
   options?: string[];
   required: boolean;
   displayLocations?: {

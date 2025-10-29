@@ -413,7 +413,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
           
           {/* Language Selector - Top Right */}
           <div className="absolute top-4 right-4 z-10">
-            <LanguageSelector />
+            <LanguageSelector eventId={eventId} />
           </div>
           
         </div>

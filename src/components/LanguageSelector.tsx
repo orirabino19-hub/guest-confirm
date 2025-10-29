@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -6,15 +7,64 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Languages, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const languages = [
-  { code: 'he', name: 'עברית', flag: '🇮🇱' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-];
+interface Language {
+  code: string;
+  name: string;
+  flag: string;
+}
 
-const LanguageSelector = () => {
+interface LanguageSelectorProps {
+  eventId?: string;
+}
+
+const LanguageSelector = ({ eventId }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
+  const [languages, setLanguages] = useState<Language[]>([
+    { code: 'he', name: 'עברית', flag: '🇮🇱' },
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+  ]);
+
+  useEffect(() => {
+    const loadLanguages = async () => {
+      if (!eventId) return;
+
+      try {
+        // Load event languages
+        const { data: eventLangs, error: eventError } = await supabase
+          .from('event_languages')
+          .select('locale')
+          .eq('event_id', eventId);
+
+        if (eventError || !eventLangs || eventLangs.length === 0) {
+          return; // Keep default languages
+        }
+
+        const locales = eventLangs.map(l => l.locale);
+
+        // Load system language details
+        const { data: systemLangs, error: systemError } = await supabase
+          .from('system_languages')
+          .select('code, name, native_name, flag')
+          .in('code', locales);
+
+        if (!systemError && systemLangs && systemLangs.length > 0) {
+          const loadedLanguages = systemLangs.map(lang => ({
+            code: lang.code,
+            name: lang.native_name,
+            flag: lang.flag || '🌐'
+          }));
+          setLanguages(loadedLanguages);
+        }
+      } catch (error) {
+        console.error('Error loading languages:', error);
+      }
+    };
+
+    loadLanguages();
+  }, [eventId]);
 
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
 

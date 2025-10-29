@@ -585,7 +585,7 @@ const OpenRSVP = () => {
       <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
         <Card className="w-full max-w-md mx-4">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <LanguageSelector />
+            <LanguageSelector eventId={resolvedEventId} />
             <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4 mt-4" />
             <p className="text-lg text-muted-foreground">{t('common.loading')}</p>
           </CardContent>
@@ -599,7 +599,7 @@ const OpenRSVP = () => {
       <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
         <Card className="w-full max-w-md mx-4 border-destructive/50">
           <CardContent className="text-center py-12">
-            <LanguageSelector />
+            <LanguageSelector eventId={resolvedEventId} />
             <div className="text-4xl mb-4 mt-4">❌</div>
             <h2 className="text-xl font-semibold mb-2 text-destructive">{t('common.error')}</h2>
             <p className="text-muted-foreground">{error}</p>
@@ -660,7 +660,7 @@ const OpenRSVP = () => {
           
           {/* Language Selector - Top Right */}
           <div className="absolute top-4 right-4 z-10">
-            <LanguageSelector />
+            <LanguageSelector eventId={resolvedEventId} />
           </div>
           
           {invitationType === 'image' && !invitationLoading && (

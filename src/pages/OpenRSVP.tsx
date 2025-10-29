@@ -741,13 +741,13 @@ const OpenRSVP = () => {
               {/* Default Guest Counters */}
               <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
                 <h3 className="font-medium text-center text-foreground mb-4">
-                  {i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants"}
+                  {getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
                 </h3>
                 
                 {/* Men Counter */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
-                    {i18n.language === 'he' ? "גברים" : "Men"}
+                    {getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men")}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button
@@ -784,7 +784,7 @@ const OpenRSVP = () => {
                 {/* Women Counter */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">
-                    {i18n.language === 'he' ? "נשים" : "Women"}
+                    {getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women")}
                   </Label>
                   <div className="flex items-center gap-2">
                     <Button

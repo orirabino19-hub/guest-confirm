@@ -103,20 +103,22 @@ const ShortLink = () => {
     resolveShortLink();
   }, [slug]);
 
-  if (loading) {
+  // Only show loading state - never show error during redirect
+  if (loading || (!error && !redirectPath)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
-            <p className="text-lg text-muted-foreground">טוען...</p>
+            <p className="text-lg text-muted-foreground">מעביר אותך...</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (error || !redirectPath) {
+  // Only show error if explicitly set AND loading is complete
+  if (error && !loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md mx-4 border-destructive/50">
@@ -136,7 +138,13 @@ const ShortLink = () => {
     );
   }
 
-  return <Navigate to={redirectPath} replace />;
+  // If we have a redirectPath, use React Router navigation
+  if (redirectPath) {
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  // Fallback - should never reach here
+  return null;
 };
 
 export default ShortLink;

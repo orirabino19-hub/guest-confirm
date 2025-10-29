@@ -701,28 +701,28 @@ const OpenRSVP = () => {
                 {/* First Name */}
                 <div className="space-y-2">
                   <Label htmlFor="firstName">
-                    {i18n.language === 'he' ? "שם פרטי" : "First Name"}
+                    {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
                     <span className="text-destructive mr-1">*</span>
                   </Label>
                   <Input
                     id="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name"}
+                    placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
                   />
                 </div>
 
                 {/* Last Name */}
                 <div className="space-y-2">
                   <Label htmlFor="lastName">
-                    {i18n.language === 'he' ? "שם משפחה" : "Last Name"}
+                    {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
                     <span className="text-destructive mr-1">*</span>
                   </Label>
                   <Input
                     id="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder={i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name"}
+                    placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
                   />
                 </div>
 

@@ -425,23 +425,25 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                   <Maximize2 className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
-                {invitationType === 'pdf' ? (
-                  <iframe 
-                    src={invitationUrl} 
-                    className="w-full h-[90vh] rounded-lg"
-                    title={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
-                  />
-                ) : (
-                  <img 
-                    src={invitationUrl} 
-                    alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
-                    className="w-full h-full object-contain rounded-lg"
-                    onError={(e) => {
-                      e.currentTarget.src = eventInvitation;
-                    }}
-                  />
-                )}
+              <DialogContent className="max-w-[95vw] h-[95vh] p-4 flex flex-col">
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                  {invitationType === 'pdf' ? (
+                    <iframe 
+                      src={invitationUrl} 
+                      className="w-full h-full rounded-lg"
+                      title={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                    />
+                  ) : (
+                    <img 
+                      src={invitationUrl} 
+                      alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+                      className="max-w-full max-h-full object-contain rounded-lg"
+                      onError={(e) => {
+                        e.currentTarget.src = eventInvitation;
+                      }}
+                    />
+                  )}
+                </div>
               </DialogContent>
             </Dialog>
           </div>

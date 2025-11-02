@@ -1,0 +1,2 @@
+-- Add 'email' to the field_type enum
+ALTER TYPE field_type ADD VALUE IF NOT EXISTS 'email';

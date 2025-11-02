@@ -8,7 +8,7 @@ export interface CustomFieldConfig {
   link_type: 'open' | 'personal';
   key: string;
   label: string;
-  field_type: 'text' | 'number' | 'select' | 'checkbox' | 'textarea';
+  field_type: 'text' | 'number' | 'select' | 'checkbox' | 'textarea' | 'email';
   required: boolean;
   options?: any;
   order_index: number;

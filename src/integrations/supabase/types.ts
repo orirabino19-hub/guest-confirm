@@ -424,7 +424,13 @@ export type Database = {
       }
     }
     Enums: {
-      field_type: "text" | "number" | "select" | "checkbox" | "textarea"
+      field_type:
+        | "text"
+        | "number"
+        | "select"
+        | "checkbox"
+        | "textarea"
+        | "email"
       link_type: "open" | "personal"
     }
     CompositeTypes: {
@@ -553,7 +559,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      field_type: ["text", "number", "select", "checkbox", "textarea"],
+      field_type: ["text", "number", "select", "checkbox", "textarea", "email"],
       link_type: ["open", "personal"],
     },
   },

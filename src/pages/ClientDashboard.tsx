@@ -11,9 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogOut, Users, Calendar, MapPin, Phone, Mail } from "lucide-react";
 import fleishmanPelesLogo from "@/assets/fleishman-peles-logo.png";
+import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 
 interface RSVPSubmission {
   id: string;
+  event_id: string;
   full_name: string | null;
   first_name: string | null;
   last_name: string | null;
@@ -21,6 +23,7 @@ interface RSVPSubmission {
   women_count: number;
   status: string;
   submitted_at: string;
+  updated_at: string;
   answers: any;
   guest_id: string | null;
 }
@@ -223,45 +226,10 @@ export default function ClientDashboard() {
           </TabsList>
 
           <TabsContent value="submissions">
-            <Card>
-              <CardHeader>
-                <CardTitle style={{ direction: 'rtl' }}>אישורי הגעה ({submissions.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {submissionsLoading ? (
-                  <div className="text-center py-8">טוען אישורי הגעה...</div>
-                ) : submissions.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    עדיין לא התקבלו אישורי הגעה
-                  </div>
-                ) : (
-                    <div className="space-y-3">
-                      {submissions.map((submission) => (
-                        <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center space-x-2 space-x-reverse">
-                            <Badge variant={submission.guest_id ? 'default' : 'secondary'}>
-                              {submission.guest_id ? 'מרשימה' : 'פתוח'}
-                            </Badge>
-                          </div>
-                          <div className="flex-1 text-right mr-4">
-                            <p className="font-medium">
-                              {submission.full_name || `${submission.first_name || ''} ${submission.last_name || ''}`.trim() || 'ללא שם'}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {submission.men_count + submission.women_count} אורחים
-                              {submission.men_count > 0 && ` (${submission.men_count} גברים)`}
-                              {submission.women_count > 0 && ` (${submission.women_count} נשים)`}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(submission.submitted_at).toLocaleDateString('he-IL')} {new Date(submission.submitted_at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                )}
-              </CardContent>
-            </Card>
+            <RSVPSubmissionsList 
+              submissions={submissions} 
+              loading={submissionsLoading}
+            />
           </TabsContent>
 
           <TabsContent value="guests">

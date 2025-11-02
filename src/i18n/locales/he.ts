@@ -69,6 +69,11 @@ export const he = {
     pleaseEnterGuests: "אנא הזינו את מספר המוזמנים לפני האישור",
     eventTime: "🕐 האירוע יתקיים בתאריך ובשעה שנקבעו",
     contactInfo: "📞 לשאלות: {{phone}}",
+    selectGender: "בחר/י מגדר",
+    male: "גבר",
+    female: "אישה",
+    personalDetails: "פרטים אישיים",
+    pleaseSelectGender: "יש לבחור מגדר",
     success: {
       title: "✅ האישור נקלט בהצלחה!",
       description: "תודה {{name}}, המקום שמור עבורכם"

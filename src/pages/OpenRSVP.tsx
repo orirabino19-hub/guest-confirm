@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, Loader2 } from "lucide-react";
@@ -33,6 +35,7 @@ interface Event {
   name: string;
   nameEn: string;
   customFields?: CustomField[];
+  accordion_form_enabled?: boolean;
 }
 
 const useEventInvitation = (eventId: string, language: string) => {
@@ -124,6 +127,8 @@ const OpenRSVP = () => {
   const [error, setError] = useState<string>("");
   const [resolvedEventId, setResolvedEventId] = useState<string>("");
   const [eventTheme, setEventTheme] = useState<any>(null);
+  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(null);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
@@ -324,6 +329,16 @@ const OpenRSVP = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // For accordion form: validate gender selection first
+    if (event?.accordion_form_enabled && !selectedGender) {
+      toast({
+        title: t('rsvp.error.title'),
+        description: getCustomText('rsvp.pleaseSelectGender', i18n.language, t('rsvp.pleaseSelectGender')),
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Validate required name fields 
     if (!firstName.trim()) {
       toast({
@@ -369,18 +384,24 @@ const OpenRSVP = () => {
     setSubmitting(true);
     
     try {
-      // Calculate total counts from both default counters and custom field counters
-      let totalMenCount = menCount;
-      let totalWomenCount = womenCount;
+      // Calculate total counts - for accordion form, use selected gender
+      let totalMenCount = event?.accordion_form_enabled 
+        ? (selectedGender === 'male' ? 1 : 0)
+        : menCount;
+      let totalWomenCount = event?.accordion_form_enabled
+        ? (selectedGender === 'female' ? 1 : 0)
+        : womenCount;
       
-      // Add counts from custom field counters
-      event?.customFields?.forEach(field => {
-        if (field.type === 'menCounter') {
-          totalMenCount += Number(formData[field.id] || 0);
-        } else if (field.type === 'womenCounter') {
-          totalWomenCount += Number(formData[field.id] || 0);
-        }
-      });
+      // Add counts from custom field counters (only for regular form)
+      if (!event?.accordion_form_enabled) {
+        event?.customFields?.forEach(field => {
+          if (field.type === 'menCounter') {
+            totalMenCount += Number(formData[field.id] || 0);
+          } else if (field.type === 'womenCounter') {
+            totalWomenCount += Number(formData[field.id] || 0);
+          }
+        });
+      }
 
       // Prepare submission data
       const submissionData = {
@@ -403,6 +424,8 @@ const OpenRSVP = () => {
       setLastName("");
       setMenCount(0);
       setWomenCount(0);
+      setSelectedGender(null);
+      setIsAccordionOpen(false);
       const initialFormData: Record<string, any> = {};
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
@@ -426,12 +449,16 @@ const OpenRSVP = () => {
     }
   };
 
-  // Calculate total guests from default counters plus custom fields
-  const customFieldsGuests = (event?.customFields || [])
-    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
-    .reduce((total, field) => total + (formData[field.id] || 0), 0);
+  // Calculate total guests - for accordion form it's always 1, for regular form sum all counters
+  const customFieldsGuests = event?.accordion_form_enabled 
+    ? 0 
+    : ((event?.customFields || [])
+        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+        .reduce((total, field) => total + (formData[field.id] || 0), 0));
   
-  const totalGuests = menCount + womenCount + customFieldsGuests;
+  const totalGuests = event?.accordion_form_enabled
+    ? (selectedGender ? 1 : 0)
+    : (menCount + womenCount + customFieldsGuests);
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
@@ -700,158 +727,276 @@ const OpenRSVP = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Personal Details Section */}
-              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-                {/* First Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">
-                    {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
-                    <span className="text-destructive mr-1">*</span>
-                  </Label>
-                  <Input
-                    id="firstName"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
-                  />
-                </div>
-
-                {/* Last Name */}
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">
-                    {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
-                    <span className="text-destructive mr-1">*</span>
-                  </Label>
-                  <Input
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
-                  />
-                </div>
-
-                {/* Custom Fields */}
-                {event?.customFields && event.customFields.length > 0 && (
-                  <>
-                    {event.customFields.map(renderCustomField)}
-                  </>
-                )}
-              </div>
-
-              {/* Default Guest Counters */}
-              <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-                <h3 className="font-medium text-center text-foreground mb-4">
-                  {getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
-                </h3>
-                
-                {/* Men Counter */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men")}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setMenCount(Math.max(0, menCount - 1))}
-                      disabled={menCount <= 0}
-                      className="h-10 w-10 shrink-0"
+              {event?.accordion_form_enabled ? (
+                /* Accordion Form Style */
+                <>
+                  {/* Gender Selection */}
+                  <div className="space-y-4 p-6 bg-muted/30 rounded-lg border border-border/30">
+                    <h3 className="font-medium text-center text-lg text-foreground">
+                      {getCustomText('rsvp.selectGender', i18n.language, t('rsvp.selectGender'))}
+                      <span className="text-destructive mr-1">*</span>
+                    </h3>
+                    
+                    <RadioGroup
+                      value={selectedGender || ''}
+                      onValueChange={(value: 'male' | 'female') => {
+                        setSelectedGender(value);
+                        setMenCount(value === 'male' ? 1 : 0);
+                        setWomenCount(value === 'female' ? 1 : 0);
+                        setIsAccordionOpen(true);
+                      }}
+                      className="flex gap-4 justify-center"
                     >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="20"
-                      value={menCount}
-                      onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setMenCount(Math.min(20, menCount + 1))}
-                      disabled={menCount >= 20}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <RadioGroupItem value="male" id="male" />
+                        <Label htmlFor="male" className="text-base cursor-pointer">
+                          {getCustomText('rsvp.male', i18n.language, t('rsvp.male'))}
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2 space-x-reverse">
+                        <RadioGroupItem value="female" id="female" />
+                        <Label htmlFor="female" className="text-base cursor-pointer">
+                          {getCustomText('rsvp.female', i18n.language, t('rsvp.female'))}
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
-                </div>
 
-                {/* Women Counter */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women")}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
-                      disabled={womenCount <= 0}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="20"
-                      value={womenCount}
-                      onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
-                      disabled={womenCount >= 20}
-                      className="h-10 w-10 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  {/* Accordion with all fields */}
+                  {selectedGender && (
+                    <Accordion type="single" collapsible value={isAccordionOpen ? "details" : ""}>
+                      <AccordionItem value="details">
+                        <AccordionTrigger className="text-lg font-medium">
+                          {getCustomText('rsvp.personalDetails', i18n.language, t('rsvp.personalDetails'))}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-4 pt-4">
+                            {/* First Name */}
+                            <div className="space-y-2">
+                              <Label htmlFor="firstName">
+                                {getCustomText('open_rsvp.first_name', i18n.language, 
+                                  i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                                <span className="text-destructive mr-1">*</span>
+                              </Label>
+                              <Input
+                                id="firstName"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                placeholder={getCustomText('open_rsvp.first_name', i18n.language, 
+                                  i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                              />
+                            </div>
+
+                            {/* Last Name */}
+                            <div className="space-y-2">
+                              <Label htmlFor="lastName">
+                                {getCustomText('open_rsvp.last_name', i18n.language, 
+                                  i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                                <span className="text-destructive mr-1">*</span>
+                              </Label>
+                              <Input
+                                id="lastName"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                placeholder={getCustomText('open_rsvp.last_name', i18n.language, 
+                                  i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                              />
+                            </div>
+
+                            {/* Custom Fields */}
+                            {event?.customFields && event.customFields.length > 0 && (
+                              <>
+                                {event.customFields.map(renderCustomField)}
+                              </>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    disabled={submitting || !selectedGender || !hasRequiredFields()}
+                    className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                  >
+                    {submitting ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        {t('rsvp.submitting')}
+                      </div>
+                    ) : (
+                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                    )}
+                  </Button>
+
+                  {/* Validation Message */}
+                  {(!selectedGender || !hasRequiredFields()) && (
+                    <p className="text-center text-sm text-muted-foreground">
+                      {!selectedGender 
+                        ? getCustomText('rsvp.pleaseSelectGender', i18n.language, t('rsvp.pleaseSelectGender'))
+                        : (i18n.language === 'he' ? 'יש למלא את כל השדות הנדרשים' : 'Please fill all required fields')
+                      }
+                    </p>
+                  )}
+                </>
+              ) : (
+                /* Regular Form Style */
+                <>
+                  {/* Personal Details Section */}
+                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                    {/* First Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">
+                        {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                        <span className="text-destructive mr-1">*</span>
+                      </Label>
+                      <Input
+                        id="firstName"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                      />
+                    </div>
+
+                    {/* Last Name */}
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">
+                        {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                        <span className="text-destructive mr-1">*</span>
+                      </Label>
+                      <Input
+                        id="lastName"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                      />
+                    </div>
+
+                    {/* Custom Fields */}
+                    {event?.customFields && event.customFields.length > 0 && (
+                      <>
+                        {event.customFields.map(renderCustomField)}
+                      </>
+                    )}
                   </div>
-                </div>
-              </div>
 
+                  {/* Default Guest Counters */}
+                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                    <h3 className="font-medium text-center text-foreground mb-4">
+                      {getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
+                    </h3>
+                    
+                    {/* Men Counter */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        {getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men")}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setMenCount(Math.max(0, menCount - 1))}
+                          disabled={menCount <= 0}
+                          className="h-10 w-10 shrink-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={menCount}
+                          onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
+                          className="text-center text-lg border-border/50 focus:border-primary"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setMenCount(Math.min(20, menCount + 1))}
+                          disabled={menCount >= 20}
+                          className="h-10 w-10 shrink-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
 
-              {/* Total Display */}
-              {totalGuests > 0 && (
-                <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
-                  <p className="text-lg font-medium text-accent-foreground">
-                    {getCustomText('rsvp.totalGuests', i18n.language, t('rsvp.totalGuests', { count: totalGuests })).replace('{{count}}', totalGuests.toString())}
-                  </p>
-                </div>
-              )}
-
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                disabled={submitting || !hasRequiredFields() || totalGuests === 0}
-                className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
-              >
-                {submitting ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {t('rsvp.submitting')}
+                    {/* Women Counter */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">
+                        {getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women")}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
+                          disabled={womenCount <= 0}
+                          className="h-10 w-10 shrink-0"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="20"
+                          value={womenCount}
+                          onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
+                          className="text-center text-lg border-border/50 focus:border-primary"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
+                          disabled={womenCount >= 20}
+                          className="h-10 w-10 shrink-0"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
-                )}
-              </Button>
 
-              {(totalGuests === 0 || !hasRequiredFields()) && (
-                <p className="text-center text-sm text-muted-foreground">
-                  {totalGuests === 0 
-                    ? getCustomText('rsvp.pleaseEnterGuests', i18n.language, t('rsvp.pleaseEnterGuests'))
-                    : (i18n.language === 'he' ? "יש למלא את כל השדות הנדרשים" : "Please fill all required fields")
-                  }
-                </p>
+                  {/* Total Display */}
+                  {totalGuests > 0 && (
+                    <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
+                      <p className="text-lg font-medium text-accent-foreground">
+                        {getCustomText('rsvp.totalGuests', i18n.language, t('rsvp.totalGuests', { count: totalGuests })).replace('{{count}}', totalGuests.toString())}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    disabled={submitting || !hasRequiredFields() || totalGuests === 0}
+                    className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                  >
+                    {submitting ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        {t('rsvp.submitting')}
+                      </div>
+                    ) : (
+                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                    )}
+                  </Button>
+
+                  {(totalGuests === 0 || !hasRequiredFields()) && (
+                    <p className="text-center text-sm text-muted-foreground">
+                      {totalGuests === 0 
+                        ? getCustomText('rsvp.pleaseEnterGuests', i18n.language, t('rsvp.pleaseEnterGuests'))
+                        : (i18n.language === 'he' ? "יש למלא את כל השדות הנדרשים" : "Please fill all required fields")
+                      }
+                    </p>
+                  )}
+                </>
               )}
             </form>
           </CardContent>

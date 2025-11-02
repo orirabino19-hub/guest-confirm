@@ -41,7 +41,12 @@ const EDITABLE_KEYS = [
   { key: 'rsvp.menLabel', label: 'Men Label', defaultEn: 'Men', defaultHe: 'גברים' },
   { key: 'rsvp.womenLabel', label: 'Women Label', defaultEn: 'Women', defaultHe: 'נשים' },
   { key: 'rsvp.pleaseEnterGuests', label: 'Please Enter Guests Message', defaultHe: 'אנא הזינו את מספר המוזמנים לפני האישור', defaultEn: 'Please enter the number of guests before confirming' },
-  { key: 'rsvp.totalGuests', label: 'Total Guests Label', defaultHe: 'סה"כ מוזמנים: {{count}}', defaultEn: 'Total Guests: {{count}}' }
+  { key: 'rsvp.totalGuests', label: 'Total Guests Label', defaultHe: 'סה"כ מוזמנים: {{count}}', defaultEn: 'Total Guests: {{count}}' },
+  { key: 'rsvp.selectGender', label: 'Select Gender Label', defaultHe: 'בחר/י מגדר', defaultEn: 'Select Gender' },
+  { key: 'rsvp.male', label: 'Male Label', defaultHe: 'גבר', defaultEn: 'Male' },
+  { key: 'rsvp.female', label: 'Female Label', defaultHe: 'אישה', defaultEn: 'Female' },
+  { key: 'rsvp.personalDetails', label: 'Personal Details Label', defaultHe: 'פרטים אישיים', defaultEn: 'Personal Details' },
+  { key: 'rsvp.pleaseSelectGender', label: 'Please Select Gender Message', defaultHe: 'יש לבחור מגדר', defaultEn: 'Please select gender' }
 ];
 
 interface TextOverrides {

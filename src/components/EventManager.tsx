@@ -44,6 +44,7 @@ export interface Event {
   updated_at: string;
   languages?: string[];
   customFields?: CustomField[];
+  accordion_form_enabled?: boolean;
 }
 
 interface EventManagerProps {
@@ -61,6 +62,7 @@ interface EventManagerProps {
     description?: string;
     event_date?: string;
     location?: string;
+    accordion_form_enabled?: boolean;
   }) => void;
   onEventDelete: (eventId: string) => void;
 }
@@ -82,7 +84,8 @@ const EventManager = ({
     event_date: "",
     location: "",
     invitationImage: "",
-    languages: ["he"] // Default to Hebrew
+    languages: ["he"], // Default to Hebrew
+    accordion_form_enabled: false
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -131,7 +134,8 @@ const EventManager = ({
       event_date: event.event_date?.split('T')[0] || "",
       location: event.location || "",
       invitationImage: "",
-      languages: event.languages || ["he"]
+      languages: event.languages || ["he"],
+      accordion_form_enabled: event.accordion_form_enabled || false
     });
     setIsEditOpen(true);
   };
@@ -151,10 +155,11 @@ const EventManager = ({
       title: newEvent.title,
       description: newEvent.description,
       event_date: newEvent.event_date,
-      location: newEvent.location
+      location: newEvent.location,
+      accordion_form_enabled: newEvent.accordion_form_enabled
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
     setEditingEvent(null);
     setIsEditOpen(false);
     
@@ -182,7 +187,7 @@ const EventManager = ({
       languages: newEvent.languages
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
@@ -302,7 +307,7 @@ const EventManager = ({
                      onClick={() => {
                      setIsCreateOpen(false);
                      setSelectedFile(null);
-                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
                     }}
                   >
                     ביטול
@@ -349,16 +354,36 @@ const EventManager = ({
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="edit-location">מיקום האירוע</Label>
-                  <Input
-                    id="edit-location"
-                    value={newEvent.location}
-                    onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="כתובת מדויקת או שם המקום"
-                  />
-                </div>
-                <div className="flex gap-2 pt-4">
+                 <div>
+                   <Label htmlFor="edit-location">מיקום האירוע</Label>
+                   <Input
+                     id="edit-location"
+                     value={newEvent.location}
+                     onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
+                     placeholder="כתובת מדויקת או שם המקום"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <div className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       id="accordion-form"
+                       checked={newEvent.accordion_form_enabled || false}
+                       onChange={(e) => setNewEvent(prev => ({ 
+                         ...prev, 
+                         accordion_form_enabled: e.target.checked 
+                       }))}
+                       className="rounded"
+                     />
+                     <label htmlFor="accordion-form" className="text-sm font-medium cursor-pointer">
+                       טופס בסגנון אקורדיון
+                     </label>
+                   </div>
+                   <p className="text-xs text-muted-foreground mr-6">
+                     הגולש יבחר מגדר (גבר/אישה) ואז ימלא פרטים אישיים. מתאים להדפסת כרטיסי הושבה אישיים.
+                   </p>
+                 </div>
+                 <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1">
                     עדכן אירוע
                   </Button>
@@ -368,7 +393,7 @@ const EventManager = ({
                     onClick={() => {
                       setIsEditOpen(false);
                       setEditingEvent(null);
-                      setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"] });
+                      setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
                     }}
                     className="flex-1"
                   >

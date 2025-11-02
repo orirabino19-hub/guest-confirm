@@ -110,6 +110,7 @@ export type Database = {
       }
       events: {
         Row: {
+          accordion_form_enabled: boolean | null
           client_access_enabled: boolean | null
           client_password: string | null
           client_username: string | null
@@ -125,6 +126,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accordion_form_enabled?: boolean | null
           client_access_enabled?: boolean | null
           client_password?: string | null
           client_username?: string | null
@@ -140,6 +142,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accordion_form_enabled?: boolean | null
           client_access_enabled?: boolean | null
           client_password?: string | null
           client_username?: string | null

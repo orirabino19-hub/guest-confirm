@@ -69,6 +69,11 @@ export const en = {
     pleaseEnterGuests: "Please enter the number of guests before confirming",
     eventTime: "🕐 The event will take place on the scheduled date and time",
     contactInfo: "📞 For questions: {{phone}}",
+    selectGender: "Select Gender",
+    male: "Male",
+    female: "Female",
+    personalDetails: "Personal Details",
+    pleaseSelectGender: "Please select gender",
     success: {
       title: "✅ Confirmation received successfully!",
       description: "Thank you {{name}}, your spot is reserved"

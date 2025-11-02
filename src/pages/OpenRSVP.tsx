@@ -894,7 +894,10 @@ const OpenRSVP = () => {
                         <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                      <div className="flex items-center justify-center gap-3">
+                        <CheckCircle2 className="w-6 h-6" />
+                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
+                      </div>
                     )}
                   </Button>
 
@@ -1063,7 +1066,10 @@ const OpenRSVP = () => {
                         <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                      <div className="flex items-center justify-center gap-3">
+                        <CheckCircle2 className="w-6 h-6" />
+                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
+                      </div>
                     )}
                   </Button>
 

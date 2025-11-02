@@ -8,7 +8,7 @@ import { Palette, Eye, RotateCcw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import eventInvitation from "@/assets/event-invitation.jpg";
+import eventInvitation from "@/assets/fleishman-peles-logo.png";
 
 interface ColorTheme {
   eventId: string;

@@ -19,7 +19,7 @@ export const updateMetaTags = (data: MetaTagsData) => {
   const {
     title,
     description,
-    image = '/event-invitation.jpg',
+    image = '/fleishman-peles-logo.png',
     url = window.location.href,
     locale = 'he_IL'
   } = data;
@@ -71,7 +71,7 @@ export const generateRSVPMetaTags = (eventName: string, guestName: string, invit
     eventName,
     guestName,
     url: window.location.href,
-    image: invitationImage || '/event-invitation.jpg' // Use uploaded invitation or fallback
+    image: invitationImage || '/fleishman-peles-logo.png' // Use uploaded invitation or fallback
   };
 };
 
@@ -89,7 +89,7 @@ export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: s
     description,
     eventName,
     url: window.location.href,
-    image: invitationImage || '/event-invitation.jpg' // Use uploaded invitation or fallback
+    image: invitationImage || '/fleishman-peles-logo.png' // Use uploaded invitation or fallback
   };
 };
 

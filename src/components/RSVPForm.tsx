@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
-import eventInvitation from "@/assets/event-invitation.jpg";
+import eventInvitation from "@/assets/fleishman-peles-logo.png";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

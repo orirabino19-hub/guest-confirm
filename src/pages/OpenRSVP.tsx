@@ -13,7 +13,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/
 import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Minus, Loader2, UserRound, Users, CheckCircle2 } from "lucide-react";
-import eventInvitation from "@/assets/event-invitation.jpg";
+import eventInvitation from "@/assets/fleishman-peles-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
 import { useRSVP } from "@/hooks/useRSVP";

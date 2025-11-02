@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus, Loader2 } from "lucide-react";
+import { Plus, Minus, Loader2, UserRound, Users } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
@@ -732,35 +732,89 @@ const OpenRSVP = () => {
                 /* Accordion Form Style */
                 <>
                   {/* Gender Selection */}
-                  <div className="space-y-4 p-6 bg-muted/30 rounded-lg border border-border/30">
-                    <h3 className="font-medium text-center text-lg text-foreground">
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-center text-xl text-foreground">
                       {getCustomText('rsvp.selectGender', i18n.language, t('rsvp.selectGender'))}
                       <span className="text-destructive mr-1">*</span>
                     </h3>
                     
-                    <RadioGroup
-                      value={selectedGender || ''}
-                      onValueChange={(value: 'male' | 'female') => {
-                        setSelectedGender(value);
-                        setMenCount(value === 'male' ? 1 : 0);
-                        setWomenCount(value === 'female' ? 1 : 0);
-                        setIsAccordionOpen(true);
-                      }}
-                      className="flex gap-4 justify-center"
-                    >
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <RadioGroupItem value="male" id="male" />
-                        <Label htmlFor="male" className="text-base cursor-pointer">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Male Card */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedGender('male');
+                          setMenCount(1);
+                          setWomenCount(0);
+                          setIsAccordionOpen(true);
+                        }}
+                        className={`
+                          relative p-6 rounded-xl border-2 transition-all duration-300
+                          flex flex-col items-center justify-center gap-3
+                          hover:scale-105 hover:shadow-lg
+                          ${selectedGender === 'male' 
+                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            : 'border-border/50 bg-card hover:border-primary/50'
+                          }
+                        `}
+                      >
+                        <UserRound 
+                          className={`w-12 h-12 transition-colors ${
+                            selectedGender === 'male' ? 'text-primary' : 'text-muted-foreground'
+                          }`}
+                        />
+                        <span className={`text-lg font-semibold transition-colors ${
+                          selectedGender === 'male' ? 'text-primary' : 'text-foreground'
+                        }`}>
                           {getCustomText('rsvp.male', i18n.language, t('rsvp.male'))}
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2 space-x-reverse">
-                        <RadioGroupItem value="female" id="female" />
-                        <Label htmlFor="female" className="text-base cursor-pointer">
+                        </span>
+                        {selectedGender === 'male' && (
+                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Female Card */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedGender('female');
+                          setMenCount(0);
+                          setWomenCount(1);
+                          setIsAccordionOpen(true);
+                        }}
+                        className={`
+                          relative p-6 rounded-xl border-2 transition-all duration-300
+                          flex flex-col items-center justify-center gap-3
+                          hover:scale-105 hover:shadow-lg
+                          ${selectedGender === 'female' 
+                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            : 'border-border/50 bg-card hover:border-primary/50'
+                          }
+                        `}
+                      >
+                        <Users 
+                          className={`w-12 h-12 transition-colors ${
+                            selectedGender === 'female' ? 'text-primary' : 'text-muted-foreground'
+                          }`}
+                        />
+                        <span className={`text-lg font-semibold transition-colors ${
+                          selectedGender === 'female' ? 'text-primary' : 'text-foreground'
+                        }`}>
                           {getCustomText('rsvp.female', i18n.language, t('rsvp.female'))}
-                        </Label>
-                      </div>
-                    </RadioGroup>
+                        </span>
+                        {selectedGender === 'female' && (
+                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   {/* Accordion with all fields */}

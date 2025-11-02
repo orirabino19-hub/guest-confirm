@@ -8,6 +8,7 @@ export interface CustomFieldConfig {
   link_type: 'open' | 'personal';
   key: string;
   label: string;
+  labels?: Record<string, string>;
   field_type: 'text' | 'number' | 'select' | 'checkbox' | 'textarea' | 'email';
   required: boolean;
   options?: any;
@@ -46,7 +47,13 @@ export const useCustomFields = (eventId?: string, linkType?: 'open' | 'personal'
 
       if (error) throw error;
 
-      setFields(data || []);
+      // Map the data to ensure labels is properly typed
+      const mappedData = (data || []).map(field => ({
+        ...field,
+        labels: field.labels ? field.labels as Record<string, string> : undefined
+      }));
+
+      setFields(mappedData);
     } catch (err: any) {
       setError(err.message);
       toast({
@@ -74,11 +81,12 @@ export const useCustomFields = (eventId?: string, linkType?: 'open' | 'personal'
       const fieldsToUpsert = updatedFields.map((field, index) => ({
         event_id: eventId,
         link_type: linkType,
-        key: field.key || `field_${index}`,
+        key: field.key || field.id || `field_${index}`,
         label: field.label || 'שדה',
         field_type: field.field_type || 'text',
         required: field.required || false,
         options: field.options,
+        labels: field.labels || {},
         order_index: index,
         is_active: true
       }));

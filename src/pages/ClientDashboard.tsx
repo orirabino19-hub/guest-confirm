@@ -76,6 +76,48 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rsvp_submissions')
+        .delete()
+        .eq('id', submissionId);
+
+      if (error) throw error;
+      
+      // Refresh submissions list
+      await fetchSubmissions();
+    } catch (error: any) {
+      console.error('Error deleting submission:', error);
+      setError('שגיאה במחיקת אישור ההגעה');
+    }
+  };
+
+  const handleUpdateSubmission = async (submissionId: string, updates: {
+    first_name?: string;
+    last_name?: string;
+    men_count?: number;
+    women_count?: number;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('rsvp_submissions')
+        .update({
+          ...updates,
+          full_name: `${updates.first_name || ''} ${updates.last_name || ''}`.trim()
+        })
+        .eq('id', submissionId);
+
+      if (error) throw error;
+      
+      // Refresh submissions list
+      await fetchSubmissions();
+    } catch (error: any) {
+      console.error('Error updating submission:', error);
+      setError('שגיאה בעדכון אישור ההגעה');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/client-login');
@@ -229,6 +271,8 @@ export default function ClientDashboard() {
             <RSVPSubmissionsList 
               submissions={submissions} 
               loading={submissionsLoading}
+              onDeleteSubmission={handleDeleteSubmission}
+              onUpdateSubmission={handleUpdateSubmission}
             />
           </TabsContent>
 

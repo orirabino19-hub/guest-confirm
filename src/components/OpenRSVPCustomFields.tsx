@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Settings } from 'lucide-react';
+import { Plus, Edit, Trash2, Settings, ArrowUp, ArrowDown } from 'lucide-react';
 import { CustomField } from './EventManager';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -338,6 +338,36 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     });
   };
 
+  const moveFieldUp = (fieldId: string) => {
+    const currentIndex = customFields.findIndex(field => field.id === fieldId);
+    if (currentIndex > 0) {
+      const updatedFields = [...customFields];
+      [updatedFields[currentIndex - 1], updatedFields[currentIndex]] = 
+        [updatedFields[currentIndex], updatedFields[currentIndex - 1]];
+      onCustomFieldsUpdate(updatedFields);
+      
+      toast({
+        title: "הסדר שונה",
+        description: "השדה הועבר למעלה"
+      });
+    }
+  };
+
+  const moveFieldDown = (fieldId: string) => {
+    const currentIndex = customFields.findIndex(field => field.id === fieldId);
+    if (currentIndex < customFields.length - 1) {
+      const updatedFields = [...customFields];
+      [updatedFields[currentIndex], updatedFields[currentIndex + 1]] = 
+        [updatedFields[currentIndex + 1], updatedFields[currentIndex]];
+      onCustomFieldsUpdate(updatedFields);
+      
+      toast({
+        title: "הסדר שונה",
+        description: "השדה הועבר למטה"
+      });
+    }
+  };
+
   const handleOptionChange = (index: number, value: string) => {
     const updatedOptions = [...(newField.options || [])];
     updatedOptions[index] = value;
@@ -428,8 +458,28 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
               <div className="text-sm text-muted-foreground">
                 מונים פעילים ({counterFields.length})
               </div>
-              {counterFields.map((field) => (
+              {counterFields.map((field, index) => (
                 <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveFieldUp(field.id)}
+                      disabled={index === 0}
+                      title="העבר למעלה"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveFieldDown(field.id)}
+                      disabled={index === counterFields.length - 1}
+                      title="העבר למטה"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="default">
@@ -672,8 +722,28 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
               <div className="text-sm text-muted-foreground">
                 שדות מותאמים פעילים ({otherFields.length})
               </div>
-              {otherFields.map((field) => (
+              {otherFields.map((field, index) => (
                 <div key={field.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <div className="flex flex-col gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveFieldUp(field.id)}
+                      disabled={index === 0}
+                      title="העבר למעלה"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveFieldDown(field.id)}
+                      disabled={index === otherFields.length - 1}
+                      title="העבר למטה"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant={field.id === 'fullName' || field.id === 'guestName' ? 'default' : 'outline'}>

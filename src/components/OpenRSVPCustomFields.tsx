@@ -220,13 +220,29 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       fieldLabel = predefined.label;
       fieldLabelEn = predefined.labelEn;
       fieldRequired = predefined.required;
-    } else if (!newField.label?.trim() || !newField.labelEn?.trim()) {
-      toast({
-        title: "שגיאה",
-        description: "יש למלא את השדה בעברית ובאנגלית",
-        variant: "destructive"
-      });
-      return;
+    } else {
+      // Validate only the languages that are configured for this event
+      const hasHebrew = eventLanguages.some(lang => lang.code === 'he');
+      const hasEnglish = eventLanguages.some(lang => lang.code === 'en');
+      
+      const missingLanguages = [];
+      
+      if (hasHebrew && !newField.label?.trim()) {
+        missingLanguages.push('עברית');
+      }
+      
+      if (hasEnglish && !newField.labelEn?.trim()) {
+        missingLanguages.push('אנגלית');
+      }
+      
+      if (missingLanguages.length > 0) {
+        toast({
+          title: "שגיאה",
+          description: `יש למלא את השדה ב${missingLanguages.join(' וב')}`,
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     // Collect all language labels

@@ -48,9 +48,9 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
         if (customFields) {
           const fieldsMap: Record<string, string> = {};
           customFields.forEach(field => {
-            // Prefer Hebrew label, fallback to label field
+            // Prefer Hebrew label, then English, then fallback to label field
             const labelsObj = field.labels as Record<string, string> | null;
-            const displayLabel = labelsObj?.he || field.label;
+            const displayLabel = labelsObj?.he || labelsObj?.en || field.label;
             
             // Map both by key and by id (since answers might use either)
             fieldsMap[field.key] = displayLabel;

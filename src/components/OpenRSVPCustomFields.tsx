@@ -245,7 +245,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       }
     }
 
-    // Collect all language labels
+    // Collect all language labels - save all that were entered, even if not required
     const labels: Record<string, string> = {};
     eventLanguages.forEach(lang => {
       if (lang.code !== 'he' && lang.code !== 'en') {
@@ -256,11 +256,15 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       }
     });
 
+    // Use entered values or fallback to empty string to preserve data
+    const finalLabel = fieldLabel || newField.label || '';
+    const finalLabelEn = fieldLabelEn || newField.labelEn || '';
+
     const fieldData: CustomField = {
       id: editingField?.id || (predefinedFields[newField.type as keyof typeof predefinedFields] ? newField.type : Date.now().toString()),
       type: newField.type as CustomField['type'],
-      label: fieldLabel!,
-      labelEn: fieldLabelEn!,
+      label: finalLabel,
+      labelEn: finalLabelEn,
       labels: Object.keys(labels).length > 0 ? labels : undefined,
       options: newField.type === 'select' ? newField.options : undefined,
       required: fieldRequired || false,

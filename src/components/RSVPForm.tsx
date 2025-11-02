@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Maximize2 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import eventInvitation from "@/assets/fleishman-peles-logo.png";
 import { useRSVP } from "@/hooks/useRSVP";
@@ -411,6 +412,40 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
             </>
           )}
           
+          {/* Zoom Button - Top Left */}
+          <div className="absolute top-4 left-4 z-10">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="bg-background/80 backdrop-blur-sm hover:bg-background/90 shadow-md"
+                  aria-label={i18n.language === 'he' ? "הגדל הזמנה" : "Zoom invitation"}
+                >
+                  <Maximize2 className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+                {invitationType === 'pdf' ? (
+                  <iframe 
+                    src={invitationUrl} 
+                    className="w-full h-[90vh] rounded-lg"
+                    title={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"}
+                  />
+                ) : (
+                  <img 
+                    src={invitationUrl} 
+                    alt={i18n.language === 'he' ? "הזמנה לאירוע" : "Event Invitation"} 
+                    className="w-full h-full object-contain rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = eventInvitation;
+                    }}
+                  />
+                )}
+              </DialogContent>
+            </Dialog>
+          </div>
+
           {/* Language Selector - Top Right */}
           <div className="absolute top-4 right-4 z-10">
             <LanguageSelector eventId={eventId} />

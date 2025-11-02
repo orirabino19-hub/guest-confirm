@@ -119,6 +119,7 @@ export type Database = {
           event_date: string | null
           id: string
           location: string | null
+          modern_style_enabled: boolean | null
           short_code: string | null
           slug: string
           theme: Json | null
@@ -135,6 +136,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          modern_style_enabled?: boolean | null
           short_code?: string | null
           slug?: string
           theme?: Json | null
@@ -151,6 +153,7 @@ export type Database = {
           event_date?: string | null
           id?: string
           location?: string | null
+          modern_style_enabled?: boolean | null
           short_code?: string | null
           slug?: string
           theme?: Json | null

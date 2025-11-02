@@ -118,3 +118,13 @@ All colors MUST be HSL.
     direction: rtl;
   }
 }
+
+@layer utilities {
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+  
+  .hover-scale-102 {
+    @apply transition-transform duration-300 hover:scale-[1.02];
+  }
+}

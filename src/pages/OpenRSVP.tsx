@@ -37,6 +37,7 @@ interface Event {
   nameEn: string;
   customFields?: CustomField[];
   accordion_form_enabled?: boolean;
+  modern_style_enabled?: boolean;
 }
 
 const useEventInvitation = (eventId: string, language: string) => {
@@ -257,7 +258,8 @@ const OpenRSVP = () => {
           name: eventData.title,
           nameEn: eventData.title, // נוכל להוסיף תמיכה בשפות מאוחר יותר
           customFields,
-          accordion_form_enabled: eventData.accordion_form_enabled
+          accordion_form_enabled: eventData.accordion_form_enabled,
+          modern_style_enabled: eventData.modern_style_enabled
         };
 
         setEvent(eventObj);
@@ -668,11 +670,27 @@ const OpenRSVP = () => {
     );
   }
 
+  // Check if modern style is enabled
+  const isModernStyle = event?.modern_style_enabled || false;
+
+  // Dynamic classes based on style
+  const bgClasses = isModernStyle 
+    ? "min-h-screen bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 py-8 px-4"
+    : "min-h-screen bg-background py-8 px-4";
+
+  const imageCardClasses = isModernStyle
+    ? "relative overflow-hidden rounded-lg shadow-2xl bg-white/90 backdrop-blur-md border border-white/50 animate-fade-in hover-scale"
+    : "relative overflow-hidden rounded-lg shadow-elegant bg-white";
+
+  const formCardClasses = isModernStyle
+    ? "bg-white/95 backdrop-blur-md shadow-2xl border border-white/50 animate-fade-in"
+    : "bg-gradient-card shadow-elegant border-border/50";
+
   return (
-    <div className="min-h-screen bg-background py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+    <div className={bgClasses} dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
       <div className="max-w-lg mx-auto space-y-8">
         {/* Event Invitation Image with Language Selector */}
-        <div className="relative overflow-hidden rounded-lg shadow-elegant bg-white">
+        <div className={imageCardClasses}>
           {invitationLoading ? (
             <div className="w-full h-64 bg-muted flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -758,7 +776,7 @@ const OpenRSVP = () => {
         </div>
 
         {/* RSVP Form */}
-        <Card className="bg-gradient-card shadow-elegant border-border/50">
+        <Card className={formCardClasses}>
           <CardHeader>
             {!isTextHidden('rsvp.eventInvitation') && (
               <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
@@ -803,26 +821,34 @@ const OpenRSVP = () => {
                         className={`
                           relative p-6 rounded-xl border-2 transition-all duration-300
                           flex flex-col items-center justify-center gap-3
-                          hover:scale-105 hover:shadow-lg
+                          ${isModernStyle ? 'hover-scale-102' : 'hover:scale-105'} hover:shadow-lg
                           ${selectedGender === 'male' 
-                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            ? isModernStyle
+                              ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white border-transparent shadow-lg scale-105'
+                              : 'border-primary bg-primary/10 shadow-lg'
                             : 'border-border/50 bg-card hover:border-primary/50'
                           }
                         `}
                       >
                         <UserRound 
                           className={`w-12 h-12 transition-colors ${
-                            selectedGender === 'male' ? 'text-primary' : 'text-muted-foreground'
+                            selectedGender === 'male' 
+                              ? isModernStyle ? 'text-white' : 'text-primary' 
+                              : 'text-muted-foreground'
                           }`}
                         />
                         <span className={`text-lg font-semibold transition-colors ${
-                          selectedGender === 'male' ? 'text-primary' : 'text-foreground'
+                          selectedGender === 'male' 
+                            ? isModernStyle ? 'text-white' : 'text-primary' 
+                            : 'text-foreground'
                         }`}>
                           {getCustomText('rsvp.male', i18n.language, t('rsvp.male'))}
                         </span>
                         {selectedGender === 'male' && (
-                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                            isModernStyle ? 'bg-white' : 'bg-primary'
+                          }`}>
+                            <svg className={`w-3 h-3 ${isModernStyle ? 'text-amber-500' : 'text-primary-foreground'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
@@ -841,26 +867,34 @@ const OpenRSVP = () => {
                         className={`
                           relative p-6 rounded-xl border-2 transition-all duration-300
                           flex flex-col items-center justify-center gap-3
-                          hover:scale-105 hover:shadow-lg
+                          ${isModernStyle ? 'hover-scale-102' : 'hover:scale-105'} hover:shadow-lg
                           ${selectedGender === 'female' 
-                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            ? isModernStyle
+                              ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white border-transparent shadow-lg scale-105'
+                              : 'border-primary bg-primary/10 shadow-lg'
                             : 'border-border/50 bg-card hover:border-primary/50'
                           }
                         `}
                       >
                         <Users 
                           className={`w-12 h-12 transition-colors ${
-                            selectedGender === 'female' ? 'text-primary' : 'text-muted-foreground'
+                            selectedGender === 'female' 
+                              ? isModernStyle ? 'text-white' : 'text-primary' 
+                              : 'text-muted-foreground'
                           }`}
                         />
                         <span className={`text-lg font-semibold transition-colors ${
-                          selectedGender === 'female' ? 'text-primary' : 'text-foreground'
+                          selectedGender === 'female' 
+                            ? isModernStyle ? 'text-white' : 'text-primary' 
+                            : 'text-foreground'
                         }`}>
                           {getCustomText('rsvp.female', i18n.language, t('rsvp.female'))}
                         </span>
                         {selectedGender === 'female' && (
-                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                            isModernStyle ? 'bg-white' : 'bg-primary'
+                          }`}>
+                            <svg className={`w-3 h-3 ${isModernStyle ? 'text-rose-500' : 'text-primary-foreground'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
@@ -926,9 +960,12 @@ const OpenRSVP = () => {
                   <Button 
                     type="submit" 
                     disabled={submitting || !selectedGender || !hasRequiredFields()}
-                    className="
+                    className={`
                       w-full text-lg py-7 font-semibold
-                      bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600
+                      ${isModernStyle 
+                        ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-orange-500 hover:from-amber-600 hover:via-rose-600 hover:to-orange-600' 
+                        : 'bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600'
+                      }
                       hover:shadow-2xl hover:scale-[1.02] 
                       active:scale-[0.98]
                       transition-all duration-300 
@@ -937,7 +974,7 @@ const OpenRSVP = () => {
                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                       relative overflow-hidden
                       group
-                    "
+                    `}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                     {submitting ? (
@@ -1098,9 +1135,12 @@ const OpenRSVP = () => {
                   <Button 
                     type="submit" 
                     disabled={submitting || !hasRequiredFields() || totalGuests === 0}
-                    className="
+                    className={`
                       w-full text-lg py-7 font-semibold
-                      bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600
+                      ${isModernStyle 
+                        ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-orange-500 hover:from-amber-600 hover:via-rose-600 hover:to-orange-600' 
+                        : 'bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600'
+                      }
                       hover:shadow-2xl hover:scale-[1.02] 
                       active:scale-[0.98]
                       transition-all duration-300 
@@ -1109,7 +1149,7 @@ const OpenRSVP = () => {
                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                       relative overflow-hidden
                       group
-                    "
+                    `}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                     {submitting ? (

@@ -45,6 +45,7 @@ export interface Event {
   languages?: string[];
   customFields?: CustomField[];
   accordion_form_enabled?: boolean;
+  modern_style_enabled?: boolean;
 }
 
 interface EventManagerProps {
@@ -63,6 +64,7 @@ interface EventManagerProps {
     event_date?: string;
     location?: string;
     accordion_form_enabled?: boolean;
+    modern_style_enabled?: boolean;
   }) => void;
   onEventDelete: (eventId: string) => void;
 }
@@ -85,7 +87,8 @@ const EventManager = ({
     location: "",
     invitationImage: "",
     languages: ["he"], // Default to Hebrew
-    accordion_form_enabled: false
+    accordion_form_enabled: false,
+    modern_style_enabled: false
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -135,7 +138,8 @@ const EventManager = ({
       location: event.location || "",
       invitationImage: "",
       languages: event.languages || ["he"],
-      accordion_form_enabled: event.accordion_form_enabled || false
+      accordion_form_enabled: event.accordion_form_enabled || false,
+      modern_style_enabled: event.modern_style_enabled || false
     });
     setIsEditOpen(true);
   };
@@ -156,10 +160,11 @@ const EventManager = ({
       description: newEvent.description,
       event_date: newEvent.event_date,
       location: newEvent.location,
-      accordion_form_enabled: newEvent.accordion_form_enabled
+      accordion_form_enabled: newEvent.accordion_form_enabled,
+      modern_style_enabled: newEvent.modern_style_enabled
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
     setEditingEvent(null);
     setIsEditOpen(false);
     
@@ -187,7 +192,7 @@ const EventManager = ({
       languages: newEvent.languages
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
@@ -307,7 +312,7 @@ const EventManager = ({
                      onClick={() => {
                      setIsCreateOpen(false);
                      setSelectedFile(null);
-                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
+                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
                     }}
                   >
                     ביטול
@@ -383,6 +388,27 @@ const EventManager = ({
                      הגולש יבחר מגדר (גבר/אישה) ואז ימלא פרטים אישיים. מתאים להדפסת כרטיסי הושבה אישיים.
                    </p>
                  </div>
+                 
+                 <div className="space-y-2">
+                   <div className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       id="modern-style"
+                       checked={newEvent.modern_style_enabled || false}
+                       onChange={(e) => setNewEvent(prev => ({ 
+                         ...prev, 
+                         modern_style_enabled: e.target.checked 
+                       }))}
+                       className="rounded"
+                     />
+                     <label htmlFor="modern-style" className="text-sm font-medium cursor-pointer">
+                       הפעלת עיצוב מודרני
+                     </label>
+                   </div>
+                   <p className="text-xs text-muted-foreground mr-6">
+                     עיצוב מודרני עם גרדיאנטים, אנימציות ו-glass-morphism effects
+                   </p>
+                 </div>
                  <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1">
                     עדכן אירוע
@@ -390,11 +416,11 @@ const EventManager = ({
                   <Button 
                     type="button" 
                     variant="outline" 
-                    onClick={() => {
-                      setIsEditOpen(false);
-                      setEditingEvent(null);
-                      setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false });
-                    }}
+                     onClick={() => {
+                       setIsEditOpen(false);
+                       setEditingEvent(null);
+                       setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
+                     }}
                     className="flex-1"
                   >
                     ביטול

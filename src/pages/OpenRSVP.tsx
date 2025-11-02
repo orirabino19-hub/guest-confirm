@@ -535,7 +535,7 @@ const OpenRSVP = () => {
     : "bg-gradient-card shadow-elegant border-border/50";
 
   const inputClasses = isModernStyle
-    ? "rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 transition-all duration-200 shadow-sm"
+    ? "rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 transition-all duration-200 shadow-sm placeholder:text-gray-400"
     : "";
 
   const labelClasses = isModernStyle
@@ -644,7 +644,35 @@ const OpenRSVP = () => {
         );
         
       case 'checkbox':
-        return (
+        return isModernStyle ? (
+          <label 
+            key={field.id}
+            htmlFor={field.id}
+            className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 bg-white/60 hover:bg-white/80 hover:border-amber-300 transition-all duration-200 cursor-pointer group"
+          >
+            <Checkbox
+              id={field.id}
+              checked={formData[field.id] || false}
+              onCheckedChange={(checked) => handleInputChange(field.id, checked)}
+              className="mt-0.5 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                {label}
+                {field.required && <span className="text-destructive mr-1">*</span>}
+              </span>
+            </div>
+            {formData[field.id] && (
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            )}
+          </label>
+        ) : (
           <div key={field.id} className="flex items-center space-x-2">
             <Checkbox
               id={field.id}

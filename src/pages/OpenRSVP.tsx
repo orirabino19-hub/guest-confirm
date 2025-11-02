@@ -576,14 +576,30 @@ const OpenRSVP = () => {
               {label}
               {field.required && <span className="text-destructive mr-1">*</span>}
             </Label>
-            <Input
-              id={field.id}
-              type="email"
-              value={formData[field.id] || ''}
-              onChange={(e) => handleInputChange(field.id, e.target.value)}
-              placeholder={label}
-              className={inputClasses}
-            />
+            {isModernStyle ? (
+              <div className="relative">
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <Input
+                  id={field.id}
+                  type="email"
+                  value={formData[field.id] || ''}
+                  onChange={(e) => handleInputChange(field.id, e.target.value)}
+                  placeholder={label}
+                  className={`${inputClasses} pr-10`}
+                />
+              </div>
+            ) : (
+              <Input
+                id={field.id}
+                type="email"
+                value={formData[field.id] || ''}
+                onChange={(e) => handleInputChange(field.id, e.target.value)}
+                placeholder={label}
+                className={inputClasses}
+              />
+            )}
           </div>
         );
         
@@ -938,40 +954,87 @@ const OpenRSVP = () => {
                           {getCustomText('rsvp.personalDetails', i18n.language, t('rsvp.personalDetails'))}
                         </AccordionTrigger>
                         <AccordionContent>
-                          <div className="space-y-4 pt-4">
-                            {/* First Name */}
-                            <div className="space-y-2">
-                              <Label htmlFor="firstName" className={labelClasses}>
-                                {getCustomText('open_rsvp.first_name', i18n.language, 
-                                  i18n.language === 'he' ? "שם פרטי" : "First Name")}
-                                <span className="text-destructive mr-1">*</span>
-                              </Label>
-                              <Input
-                                id="firstName"
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                placeholder={getCustomText('open_rsvp.first_name', i18n.language, 
-                                  i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
-                                className={inputClasses}
-                              />
-                            </div>
+                          <div className="space-y-5 pt-4">
+                            {/* Names Grid - 2 columns in modern style */}
+                            {isModernStyle ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* First Name */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="firstName" className={labelClasses}>
+                                    {getCustomText('open_rsvp.first_name', i18n.language, 
+                                      i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                                    <span className="text-destructive mr-1">*</span>
+                                  </Label>
+                                  <div className="relative">
+                                    <UserRound className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Input
+                                      id="firstName"
+                                      value={firstName}
+                                      onChange={(e) => setFirstName(e.target.value)}
+                                      placeholder={getCustomText('open_rsvp.first_name', i18n.language, 
+                                        i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                                      className={`${inputClasses} pr-10`}
+                                    />
+                                  </div>
+                                </div>
 
-                            {/* Last Name */}
-                            <div className="space-y-2">
-                              <Label htmlFor="lastName" className={labelClasses}>
-                                {getCustomText('open_rsvp.last_name', i18n.language, 
-                                  i18n.language === 'he' ? "שם משפחה" : "Last Name")}
-                                <span className="text-destructive mr-1">*</span>
-                              </Label>
-                              <Input
-                                id="lastName"
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                placeholder={getCustomText('open_rsvp.last_name', i18n.language, 
-                                  i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
-                                className={inputClasses}
-                              />
-                            </div>
+                                {/* Last Name */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="lastName" className={labelClasses}>
+                                    {getCustomText('open_rsvp.last_name', i18n.language, 
+                                      i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                                    <span className="text-destructive mr-1">*</span>
+                                  </Label>
+                                  <div className="relative">
+                                    <UserRound className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Input
+                                      id="lastName"
+                                      value={lastName}
+                                      onChange={(e) => setLastName(e.target.value)}
+                                      placeholder={getCustomText('open_rsvp.last_name', i18n.language, 
+                                        i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                                      className={`${inputClasses} pr-10`}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                {/* First Name */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="firstName" className={labelClasses}>
+                                    {getCustomText('open_rsvp.first_name', i18n.language, 
+                                      i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                                    <span className="text-destructive mr-1">*</span>
+                                  </Label>
+                                  <Input
+                                    id="firstName"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                    placeholder={getCustomText('open_rsvp.first_name', i18n.language, 
+                                      i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                                    className={inputClasses}
+                                  />
+                                </div>
+
+                                {/* Last Name */}
+                                <div className="space-y-2">
+                                  <Label htmlFor="lastName" className={labelClasses}>
+                                    {getCustomText('open_rsvp.last_name', i18n.language, 
+                                      i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                                    <span className="text-destructive mr-1">*</span>
+                                  </Label>
+                                  <Input
+                                    id="lastName"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    placeholder={getCustomText('open_rsvp.last_name', i18n.language, 
+                                      i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                                    className={inputClasses}
+                                  />
+                                </div>
+                              </>
+                            )}
 
                             {/* Custom Fields */}
                             {event?.customFields && event.customFields.length > 0 && (
@@ -1034,35 +1097,77 @@ const OpenRSVP = () => {
                 <>
                   {/* Personal Details Section */}
                   <div className={sectionClasses}>
-                    {/* First Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName" className={labelClasses}>
-                        {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
-                        <span className="text-destructive mr-1">*</span>
-                      </Label>
-                      <Input
-                        id="firstName"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
-                        className={inputClasses}
-                      />
-                    </div>
+                    {isModernStyle ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* First Name */}
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName" className={labelClasses}>
+                            {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                            <span className="text-destructive mr-1">*</span>
+                          </Label>
+                          <div className="relative">
+                            <UserRound className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                              id="firstName"
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                              className={`${inputClasses} pr-10`}
+                            />
+                          </div>
+                        </div>
 
-                    {/* Last Name */}
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName" className={labelClasses}>
-                        {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
-                        <span className="text-destructive mr-1">*</span>
-                      </Label>
-                      <Input
-                        id="lastName"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
-                        className={inputClasses}
-                      />
-                    </div>
+                        {/* Last Name */}
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName" className={labelClasses}>
+                            {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                            <span className="text-destructive mr-1">*</span>
+                          </Label>
+                          <div className="relative">
+                            <UserRound className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Input
+                              id="lastName"
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                              className={`${inputClasses} pr-10`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* First Name */}
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName" className={labelClasses}>
+                            {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
+                            <span className="text-destructive mr-1">*</span>
+                          </Label>
+                          <Input
+                            id="firstName"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                            className={inputClasses}
+                          />
+                        </div>
+
+                        {/* Last Name */}
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName" className={labelClasses}>
+                            {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
+                            <span className="text-destructive mr-1">*</span>
+                          </Label>
+                          <Input
+                            id="lastName"
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                            className={inputClasses}
+                          />
+                        </div>
+                      </>
+                    )}
 
                     {/* Custom Fields */}
                     {event?.customFields && event.customFields.length > 0 && (

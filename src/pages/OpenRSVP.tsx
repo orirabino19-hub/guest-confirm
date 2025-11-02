@@ -1199,9 +1199,9 @@ const OpenRSVP = () => {
 
                     {/* Custom Fields */}
                     {event?.customFields && event.customFields.length > 0 && (
-                      <>
+                      <div className="space-y-4">
                         {event.customFields.map(renderCustomField)}
-                      </>
+                      </div>
                     )}
                   </div>
 

@@ -252,7 +252,8 @@ const OpenRSVP = () => {
           id: eventData.id,
           name: eventData.title,
           nameEn: eventData.title, // נוכל להוסיף תמיכה בשפות מאוחר יותר
-          customFields
+          customFields,
+          accordion_form_enabled: eventData.accordion_form_enabled
         };
 
         setEvent(eventObj);

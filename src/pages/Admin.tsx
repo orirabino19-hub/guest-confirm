@@ -27,10 +27,22 @@ import { useCustomFields } from "@/hooks/useCustomFields";
 import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 import AuthSettings from "@/components/AuthSettings";
 import { supabase } from "@/integrations/supabase/client";
+import { activatePhoneNumberField } from "@/utils/activateField";
 
 const Admin = () => {
   const { events, loading: eventsLoading, createEvent, updateEvent, deleteEvent } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  
+  // Temporary: Activate Phone Number field on mount
+  useEffect(() => {
+    if (selectedEventId) {
+      activatePhoneNumberField(selectedEventId).then(result => {
+        if (result.success) {
+          console.log('Phone Number field activated');
+        }
+      });
+    }
+  }, [selectedEventId]);
   const { guests, loading: guestsLoading, createGuest, deleteGuest } = useGuests();
   const { submissions, deleteSubmission, updateSubmission } = useRSVP(); // טוען את כל הsubmissions
   

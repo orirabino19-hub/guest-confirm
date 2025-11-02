@@ -70,12 +70,34 @@ export const useCustomFields = (eventId?: string, linkType?: 'open' | 'personal'
     try {
       if (!eventId || !linkType) return;
 
-      // First, deactivate all existing fields for this event and link type
-      await supabase
+      // Get the keys of fields being updated
+      const updatedKeys = updatedFields.map((field, index) => 
+        field.key || field.id || `field_${index}`
+      );
+
+      // Deactivate only the fields that are NOT in the updated list
+      // This preserves fields that weren't included in this update
+      const { data: existingFields } = await supabase
         .from('custom_fields_config')
-        .update({ is_active: false })
+        .select('key')
         .eq('event_id', eventId)
-        .eq('link_type', linkType);
+        .eq('link_type', linkType)
+        .eq('is_active', true);
+
+      if (existingFields && existingFields.length > 0) {
+        const keysToDeactivate = existingFields
+          .map(f => f.key)
+          .filter(key => !updatedKeys.includes(key));
+
+        if (keysToDeactivate.length > 0) {
+          await supabase
+            .from('custom_fields_config')
+            .update({ is_active: false })
+            .eq('event_id', eventId)
+            .eq('link_type', linkType)
+            .in('key', keysToDeactivate);
+        }
+      }
 
       // Then insert or update the new fields
       const fieldsToUpsert = updatedFields.map((field, index) => ({

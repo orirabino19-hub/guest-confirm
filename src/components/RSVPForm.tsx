@@ -118,6 +118,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
   const [womenCount, setWomenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventTheme, setEventTheme] = useState<any>(null);
+  const [isModernStyle, setIsModernStyle] = useState(false);
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
   const { submitRSVP } = useRSVP();
@@ -134,7 +135,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
     }
   }, [invitationUrl, invitationLoading, onInvitationLoad]);
 
-  // Load event theme colors
+  // Load event theme colors and modern style setting
   useEffect(() => {
     const loadEventTheme = async () => {
       if (!currentEventId) return;
@@ -142,7 +143,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
       try {
         const { data, error } = await supabase
           .from('events')
-          .select('theme')
+          .select('theme, modern_style_enabled')
           .eq('id', currentEventId)
           .single();
 
@@ -152,6 +153,8 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
           const theme = typeof data.theme === 'string' ? JSON.parse(data.theme) : data.theme;
           setEventTheme(theme);
         }
+        
+        setIsModernStyle(data?.modern_style_enabled || false);
       } catch (error: any) {
         console.error('Error loading event theme:', error);
       }
@@ -248,11 +251,19 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
     const label = i18n.language === 'he' ? field.label : (field.labelEn || field.label);
     const value = formData[field.id] || '';
 
+    const modernInputClasses = isModernStyle
+      ? "rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 transition-all duration-200 shadow-sm placeholder:text-gray-400"
+      : "border-border/50 focus:border-primary";
+
+    const modernLabelClasses = isModernStyle
+      ? "text-sm font-semibold text-gray-700"
+      : "text-sm font-medium";
+
     switch (field.type) {
       case 'text':
         return (
           <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-sm font-medium">
+            <Label htmlFor={field.id} className={modernLabelClasses}>
               {label} {field.required && <span className="text-destructive">*</span>}
             </Label>
             <Input
@@ -260,7 +271,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
               type="text"
               value={value}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
-              className="border-border/50 focus:border-primary"
+              className={modernInputClasses}
               required={field.required}
             />
           </div>
@@ -269,7 +280,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
       case 'email':
         return (
           <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-sm font-medium">
+            <Label htmlFor={field.id} className={modernLabelClasses}>
               {label} {field.required && <span className="text-destructive">*</span>}
             </Label>
             <Input
@@ -277,7 +288,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
               type="email"
               value={value}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
-              className="border-border/50 focus:border-primary"
+              className={modernInputClasses}
               required={field.required}
             />
           </div>
@@ -286,11 +297,11 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
       case 'select':
         return (
           <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-sm font-medium">
+            <Label htmlFor={field.id} className={modernLabelClasses}>
               {label} {field.required && <span className="text-destructive">*</span>}
             </Label>
             <Select value={value} onValueChange={(val) => handleInputChange(field.id, val)}>
-              <SelectTrigger>
+              <SelectTrigger className={isModernStyle ? 'rounded-xl border-gray-200 focus:border-amber-400' : ''}>
                 <SelectValue placeholder="בחר אפשרות" />
               </SelectTrigger>
               <SelectContent>
@@ -305,7 +316,35 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
         );
 
       case 'checkbox':
-        return (
+        return isModernStyle ? (
+          <label 
+            key={field.id}
+            htmlFor={field.id}
+            className="flex items-start gap-3 p-4 rounded-xl border-2 border-gray-200 bg-white/60 hover:bg-white/80 hover:border-amber-300 transition-all duration-200 cursor-pointer group"
+          >
+            <Checkbox
+              id={field.id}
+              checked={formData[field.id] || false}
+              onCheckedChange={(checked) => handleInputChange(field.id, checked)}
+              className="mt-0.5 data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                {label}
+                {field.required && <span className="text-destructive mr-1">*</span>}
+              </span>
+            </div>
+            {formData[field.id] && (
+              <div className="flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                  <svg className="w-3 h-3 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+            )}
+          </label>
+        ) : (
           <div key={field.id} className="flex items-center space-x-2 space-x-reverse">
             <Checkbox
               id={field.id}
@@ -322,7 +361,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
       case 'womenCounter':
         return (
           <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-sm font-medium">
+            <Label htmlFor={field.id} className={modernLabelClasses}>
               {label} {field.required && <span className="text-destructive">*</span>}
             </Label>
             <div className="flex items-center gap-2">
@@ -332,7 +371,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                 size="icon"
                 onClick={() => decrementCounter(field.id)}
                 disabled={!value || value <= 0}
-                className="h-10 w-10 shrink-0"
+                className={`h-10 w-10 shrink-0 ${
+                  isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                }`}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -343,7 +384,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                 max="10"
                 value={value || 0}
                 onChange={(e) => handleInputChange(field.id, Number(e.target.value))}
-                className="text-center text-lg border-border/50 focus:border-primary"
+                className={`text-center text-lg ${modernInputClasses}`}
               />
               <Button
                 type="button"
@@ -351,7 +392,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                 size="icon"
                 onClick={() => incrementCounter(field.id)}
                 disabled={value >= 10}
-                className="h-10 w-10 shrink-0"
+                className={`h-10 w-10 shrink-0 ${
+                  isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                }`}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -378,19 +421,44 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
     '--custom-card-bg': eventTheme.cardBackground,
   } as React.CSSProperties : {};
 
+  // Modern style classes
+  const bgClasses = isModernStyle
+    ? "min-h-screen py-4 px-4 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 font-sans"
+    : "min-h-screen py-4 px-4";
+
+  const imageCardClasses = isModernStyle
+    ? "relative overflow-hidden rounded-2xl shadow-2xl bg-white"
+    : "relative overflow-hidden rounded-lg bg-white";
+
+  const formCardClasses = isModernStyle
+    ? "shadow-2xl bg-white/90 backdrop-blur-sm border-0 rounded-2xl"
+    : "shadow-elegant border-border/50";
+
+  const inputClasses = isModernStyle
+    ? "rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 transition-all duration-200 shadow-sm placeholder:text-gray-400"
+    : "border-border/50 focus:border-primary";
+
+  const labelClasses = isModernStyle
+    ? "text-sm font-semibold text-gray-700"
+    : "text-sm font-medium";
+
+  const sectionClasses = isModernStyle
+    ? "space-y-3 p-6 rounded-2xl border-0 bg-gradient-to-r from-amber-50/50 to-rose-50/50"
+    : "space-y-3 p-3 rounded-lg border";
+
   return (
     <div 
-      className="min-h-screen py-4 px-4" 
+      className={bgClasses}
       dir={i18n.language === 'he' ? 'rtl' : 'ltr'}
       style={{
-        backgroundColor: eventTheme?.backgroundColor || 'hsl(var(--background))',
-        color: eventTheme?.textColor || 'hsl(var(--foreground))',
-        ...themeStyles
+        backgroundColor: isModernStyle ? undefined : (eventTheme?.backgroundColor || 'hsl(var(--background))'),
+        color: isModernStyle ? undefined : (eventTheme?.textColor || 'hsl(var(--foreground))'),
+        ...(!isModernStyle ? themeStyles : {})
       }}
     >
-      <div className="max-w-lg mx-auto space-y-4">
+      <div className="max-w-lg mx-auto space-y-8">
         {/* Event Invitation Image with Language Selector */}
-        <div className="relative overflow-hidden rounded-lg bg-white">
+        <div className={imageCardClasses}>
           {invitationLoading ? (
             <div className="w-full h-64 bg-muted flex items-center justify-center">
               <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -474,25 +542,29 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
         {/* Combined Welcome and RSVP Form */}
         <Card 
-          className="shadow-elegant border-border/50"
-          style={{
+          className={formCardClasses}
+          style={!isModernStyle ? {
             backgroundColor: eventTheme?.cardBackground || 'hsl(var(--card-background))',
             borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}50` : undefined
-          }}
+          } : undefined}
         >
           <CardHeader className="text-center pb-4">
             {!isTextHidden?.('rsvp.welcome') && (
               <CardTitle 
-                className="text-xl md:text-2xl font-bold mb-2"
-                style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
+                className={`text-xl md:text-2xl font-bold mb-2 ${
+                  isModernStyle ? 'bg-gradient-to-r from-amber-600 via-rose-600 to-orange-600 bg-clip-text text-transparent' : ''
+                }`}
+                style={!isModernStyle ? { color: eventTheme?.textColor || 'hsl(var(--foreground))' } : undefined}
               >
                 {getCustomText ? getCustomText('rsvp.welcome', i18n.language, t('rsvp.welcome', { name: guestName })) : t('rsvp.welcome', { name: guestName })}
               </CardTitle>
             )}
             {!isTextHidden?.('rsvp.eventInvitation') && (
               <p 
-                className="mb-3" 
-                style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+                className={`mb-3 ${
+                  isModernStyle ? 'text-gray-600 font-medium' : ''
+                }`}
+                style={!isModernStyle ? { color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' } : undefined}
               >
                 {getCustomText ? getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName })) : t('rsvp.eventInvitation', { eventName })}
               </p>
@@ -500,16 +572,20 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
             <div className="border-t border-border/30 pt-4">
               {!isTextHidden?.('rsvp.confirmTitle') && (
                 <CardTitle 
-                  className="text-lg font-semibold"
-                  style={{ color: eventTheme?.primaryColor || 'hsl(var(--primary))' }}
+                  className={`text-lg font-semibold ${
+                    isModernStyle ? 'text-amber-600' : ''
+                  }`}
+                  style={!isModernStyle ? { color: eventTheme?.primaryColor || 'hsl(var(--primary))' } : undefined}
                 >
                   {getCustomText ? getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle')) : t('rsvp.confirmTitle')}
                 </CardTitle>
               )}
               {!isTextHidden?.('rsvp.confirmDescription') && (
                 <p 
-                  className="text-sm mt-1"
-                  style={{ color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' }}
+                  className={`text-sm mt-1 ${
+                    isModernStyle ? 'text-gray-600' : ''
+                  }`}
+                  style={!isModernStyle ? { color: eventTheme?.secondaryColor || 'hsl(var(--muted-foreground))' } : undefined}
                 >
                   {getCustomText ? getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription')) : t('rsvp.confirmDescription')}
                 </p>
@@ -520,22 +596,24 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* CRITICAL: Default Guest Counters - Always show for personal RSVP links */}
               <div 
-                className="space-y-3 p-3 rounded-lg border"
-                style={{
+                className={sectionClasses}
+                style={!isModernStyle ? {
                   backgroundColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}10` : 'hsl(var(--muted) / 0.3)',
                   borderColor: eventTheme?.secondaryColor ? `${eventTheme.secondaryColor}30` : 'hsl(var(--border) / 0.3)'
-                }}
+                } : undefined}
               >
                 <h3 
-                  className="font-medium text-center mb-4"
-                  style={{ color: eventTheme?.textColor || 'hsl(var(--foreground))' }}
+                  className={`font-medium text-center mb-4 ${
+                    isModernStyle ? 'text-gray-800 font-bold text-lg' : ''
+                  }`}
+                  style={!isModernStyle ? { color: eventTheme?.textColor || 'hsl(var(--foreground))' } : undefined}
                 >
                   {getCustomText ? getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants") : (i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
                 </h3>
                 
                 {/* Men Counter */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">
+                  <Label className={labelClasses}>
                     {getCustomText ? getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men") : (i18n.language === 'he' ? "גברים" : "Men")}
                   </Label>
                   <div className="flex items-center gap-2">
@@ -545,7 +623,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       size="icon"
                       onClick={() => setMenCount(Math.max(0, menCount - 1))}
                       disabled={menCount <= 0}
-                      className="h-10 w-10 shrink-0"
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -555,7 +635,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       max="20"
                       value={menCount}
                       onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
+                      className={`text-center text-lg ${inputClasses}`}
                     />
                     <Button
                       type="button"
@@ -563,7 +643,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       size="icon"
                       onClick={() => setMenCount(Math.min(20, menCount + 1))}
                       disabled={menCount >= 20}
-                      className="h-10 w-10 shrink-0"
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -572,7 +654,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
                 {/* Women Counter */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">
+                  <Label className={labelClasses}>
                     {getCustomText ? getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women") : (i18n.language === 'he' ? "נשים" : "Women")}
                   </Label>
                   <div className="flex items-center gap-2">
@@ -582,7 +664,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       size="icon"
                       onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
                       disabled={womenCount <= 0}
-                      className="h-10 w-10 shrink-0"
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -592,7 +676,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       max="20"
                       value={womenCount}
                       onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
-                      className="text-center text-lg border-border/50 focus:border-primary"
+                      className={`text-center text-lg ${inputClasses}`}
                     />
                     <Button
                       type="button"
@@ -600,7 +684,9 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                       size="icon"
                       onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
                       disabled={womenCount >= 20}
-                      className="h-10 w-10 shrink-0"
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -621,8 +707,14 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
               {/* Total Display */}
               {totalGuests > 0 && (
-                <div className="text-center p-3 bg-accent/50 rounded-lg border border-accent">
-                  <p className="text-base font-medium text-accent-foreground">
+                <div className={`text-center p-4 rounded-lg border ${
+                  isModernStyle 
+                    ? 'bg-gradient-to-r from-amber-50 to-rose-50 border-amber-200' 
+                    : 'bg-accent/50 border-accent'
+                }`}>
+                  <p className={`text-lg font-medium ${
+                    isModernStyle ? 'text-gray-800 font-bold' : 'text-accent-foreground'
+                  }`}>
                     {t('rsvp.totalGuests', { count: totalGuests })}
                   </p>
                 </div>
@@ -632,13 +724,30 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
               <Button 
                 type="submit" 
                 disabled={isSubmitting || (!hasRequiredFields && customFields.some(f => f.required)) || totalGuests === 0}
-                className="w-full text-lg py-4 hover:opacity-90 transition-all duration-300 shadow-elegant"
-                style={{
+                className={`
+                  w-full text-lg py-7 font-semibold
+                  ${isModernStyle 
+                    ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-orange-500 hover:from-amber-600 hover:via-rose-600 hover:to-orange-600' 
+                    : 'hover:opacity-90'
+                  }
+                  hover:shadow-2xl hover:scale-[1.02] 
+                  active:scale-[0.98]
+                  transition-all duration-300 
+                  shadow-lg
+                  text-white
+                  disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                  relative overflow-hidden
+                  group
+                `}
+                style={!isModernStyle ? {
                   backgroundColor: eventTheme?.primaryColor || 'hsl(var(--primary))',
                   color: eventTheme?.cardBackground || 'hsl(var(--primary-foreground))',
                   background: eventTheme?.primaryColor ? eventTheme.primaryColor : undefined
-                }}
+                } : undefined}
               >
+                {isModernStyle && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                )}
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -355,27 +355,43 @@ const Admin = () => {
       // Create separate arrays for different link types based on displayLocations
       const openLinkFields = fields
         .filter(field => field.displayLocations?.openLink)
-        .map((field, index) => ({
-          key: field.id,
-          label: field.label,
-          labels: field.labels || {},
-          field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
-          required: field.required,
-          options: field.options,
-          order_index: index
-        }));
+        .map((field, index) => {
+          // Build labels object including English
+          const labels = { ...(field.labels || {}) };
+          if (field.labelEn) {
+            labels.en = field.labelEn;
+          }
+          
+          return {
+            key: field.id,
+            label: field.label,
+            labels: labels,
+            field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+            required: field.required,
+            options: field.options,
+            order_index: index
+          };
+        });
 
       const personalLinkFields = fields
         .filter(field => field.displayLocations?.personalLink)
-        .map((field, index) => ({
-          key: field.id,
-          label: field.label,
-          labels: field.labels || {},
-          field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
-          required: field.required,
-          options: field.options,
-          order_index: index
-        }));
+        .map((field, index) => {
+          // Build labels object including English
+          const labels = { ...(field.labels || {}) };
+          if (field.labelEn) {
+            labels.en = field.labelEn;
+          }
+          
+          return {
+            key: field.id,
+            label: field.label,
+            labels: labels,
+            field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+            required: field.required,
+            options: field.options,
+            order_index: index
+          };
+        });
 
       console.log('🔍 Open link fields to save:', openLinkFields);
       console.log('🔍 Personal link fields to save:', personalLinkFields);

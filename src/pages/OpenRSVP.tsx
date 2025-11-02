@@ -238,15 +238,18 @@ const OpenRSVP = () => {
         }
 
         // המרת הנתונים לפורמט הנדרש
-        const customFields: CustomField[] = customFieldsData?.map(field => ({
-          id: field.key,
-          type: field.field_type as any,
-          label: field.label,
-          labelEn: field.label, // For backward compatibility
-          labels: (field.labels as Record<string, string>) || {},
-          required: field.required,
-          options: field.options as string[] || undefined
-        })) || [];
+        const customFields: CustomField[] = customFieldsData?.map(field => {
+          const labels = (field.labels as Record<string, string>) || {};
+          return {
+            id: field.key,
+            type: field.field_type as any,
+            label: field.label,
+            labelEn: labels.en || field.label, // Get English from labels or fallback to Hebrew
+            labels: labels,
+            required: field.required,
+            options: field.options as string[] || undefined
+          };
+        }) || [];
 
         const eventObj: Event = {
           id: eventData.id,

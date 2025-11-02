@@ -305,7 +305,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     const newFieldData: any = {
       type: field.type,
       label: field.label,
-      labelEn: field.labelEn,
+      labelEn: field.labels?.en || field.labelEn, // Get English from labels.en if exists
       options: field.options || [],
       required: field.required,
       displayLocations: field.displayLocations || {
@@ -315,10 +315,12 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
       }
     };
     
-    // Add additional language labels
+    // Add additional language labels (skip 'en' as it's already in labelEn)
     if (field.labels) {
       Object.entries(field.labels).forEach(([langCode, labelValue]) => {
-        newFieldData[`label_${langCode}`] = labelValue;
+        if (langCode !== 'en') {
+          newFieldData[`label_${langCode}`] = labelValue;
+        }
       });
     }
     

@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus, Loader2, UserRound, Users } from "lucide-react";
+import { Plus, Minus, Loader2, UserRound, Users, CheckCircle2 } from "lucide-react";
 import eventInvitation from "@/assets/event-invitation.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
@@ -874,15 +874,29 @@ const OpenRSVP = () => {
                   <Button 
                     type="submit" 
                     disabled={submitting || !selectedGender || !hasRequiredFields()}
-                    className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                    className="
+                      w-full text-lg py-7 font-semibold
+                      bg-gradient-to-r from-primary via-primary/90 to-primary
+                      hover:shadow-2xl hover:scale-[1.02] 
+                      active:scale-[0.98]
+                      transition-all duration-300 
+                      shadow-lg
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                      relative overflow-hidden
+                      group
+                    "
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                     {submitting ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        {t('rsvp.submitting')}
+                      <div className="flex items-center justify-center gap-3">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                      <div className="flex items-center justify-center gap-3">
+                        <CheckCircle2 className="w-6 h-6" />
+                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
+                      </div>
                     )}
                   </Button>
 
@@ -1031,15 +1045,29 @@ const OpenRSVP = () => {
                   <Button 
                     type="submit" 
                     disabled={submitting || !hasRequiredFields() || totalGuests === 0}
-                    className="w-full text-lg py-6 bg-gradient-primary hover:opacity-90 transition-all duration-300 shadow-elegant"
+                    className="
+                      w-full text-lg py-7 font-semibold
+                      bg-gradient-to-r from-primary via-primary/90 to-primary
+                      hover:shadow-2xl hover:scale-[1.02] 
+                      active:scale-[0.98]
+                      transition-all duration-300 
+                      shadow-lg
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                      relative overflow-hidden
+                      group
+                    "
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                     {submitting ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        {t('rsvp.submitting')}
+                      <div className="flex items-center justify-center gap-3">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
+                      <div className="flex items-center justify-center gap-3">
+                        <CheckCircle2 className="w-6 h-6" />
+                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
+                      </div>
                     )}
                   </Button>
 

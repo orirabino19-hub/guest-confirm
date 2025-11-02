@@ -483,158 +483,6 @@ const OpenRSVP = () => {
     return true;
   };
 
-  const renderCustomField = (field: CustomField) => {
-    // Get label for current language
-    const label = field.labels?.[i18n.language] || 
-                  (i18n.language === 'he' ? field.label : field.labelEn);
-    
-    switch (field.type) {
-      case 'text':
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-            <Input
-              id={field.id}
-              value={formData[field.id] || ''}
-              onChange={(e) => handleInputChange(field.id, e.target.value)}
-              placeholder={label}
-            />
-          </div>
-        );
-        
-      case 'email':
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-            <Input
-              id={field.id}
-              type="email"
-              value={formData[field.id] || ''}
-              onChange={(e) => handleInputChange(field.id, e.target.value)}
-              placeholder={label}
-            />
-          </div>
-        );
-        
-      case 'textarea':
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-            <Textarea
-              id={field.id}
-              value={formData[field.id] || ''}
-              onChange={(e) => handleInputChange(field.id, e.target.value)}
-              placeholder={label}
-              rows={3}
-            />
-          </div>
-        );
-        
-      case 'select':
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id}>
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-            <Select value={formData[field.id] || ''} onValueChange={(value) => handleInputChange(field.id, value)}>
-              <SelectTrigger>
-                <SelectValue placeholder={i18n.language === 'he' ? "בחר אפשרות" : "Select option"} />
-              </SelectTrigger>
-              <SelectContent>
-                {field.options?.map((option, index) => (
-                  <SelectItem key={index} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        );
-        
-      case 'checkbox':
-        return (
-          <div key={field.id} className="flex items-center space-x-2">
-            <Checkbox
-              id={field.id}
-              checked={formData[field.id] || false}
-              onCheckedChange={(checked) => handleInputChange(field.id, checked)}
-            />
-            <Label htmlFor={field.id} className="text-sm font-normal">
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-          </div>
-        );
-
-      case 'menCounter':
-      case 'womenCounter':
-        const count = formData[field.id] || 0;
-        const increment = () => {
-          if (count < 10) {
-            handleInputChange(field.id, count + 1);
-          }
-        };
-        const decrement = () => {
-          if (count > 0) {
-            handleInputChange(field.id, count - 1);
-          }
-        };
-        
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.id} className="text-sm font-medium">
-              {label}
-              {field.required && <span className="text-destructive mr-1">*</span>}
-            </Label>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={decrement}
-                disabled={count <= 0}
-                className="h-10 w-10 shrink-0"
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Input
-                id={field.id}
-                type="number"
-                min="0"
-                max="10"
-                value={count}
-                onChange={(e) => handleInputChange(field.id, Number(e.target.value))}
-                className="text-center text-lg border-border/50 focus:border-primary"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={increment}
-                disabled={count >= 10}
-                className="h-10 w-10 shrink-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
@@ -675,7 +523,7 @@ const OpenRSVP = () => {
 
   // Dynamic classes based on style
   const bgClasses = isModernStyle 
-    ? "min-h-screen bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 py-8 px-4"
+    ? "min-h-screen bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 py-8 px-4 font-open-sans"
     : "min-h-screen bg-background py-8 px-4";
 
   const imageCardClasses = isModernStyle
@@ -683,8 +531,181 @@ const OpenRSVP = () => {
     : "relative overflow-hidden rounded-lg shadow-elegant bg-white";
 
   const formCardClasses = isModernStyle
-    ? "bg-white/95 backdrop-blur-md shadow-2xl border border-white/50 animate-fade-in"
+    ? "bg-white/95 backdrop-blur-md shadow-2xl border border-white/50 animate-fade-in rounded-2xl"
     : "bg-gradient-card shadow-elegant border-border/50";
+
+  const inputClasses = isModernStyle
+    ? "rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 transition-all duration-200 shadow-sm"
+    : "";
+
+  const labelClasses = isModernStyle
+    ? "text-sm font-semibold text-gray-700"
+    : "";
+
+  const sectionClasses = isModernStyle
+    ? "space-y-4 p-6 bg-gradient-to-br from-white/60 to-white/40 rounded-2xl border border-white/40 shadow-sm backdrop-blur-sm"
+    : "space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30";
+
+  const renderCustomField = (field: CustomField) => {
+    // Get label for current language
+    const label = field.labels?.[i18n.language] || 
+                  (i18n.language === 'he' ? field.label : field.labelEn);
+    
+    switch (field.type) {
+      case 'text':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={labelClasses}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <Input
+              id={field.id}
+              value={formData[field.id] || ''}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              placeholder={label}
+              className={inputClasses}
+            />
+          </div>
+        );
+        
+      case 'email':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={labelClasses}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <Input
+              id={field.id}
+              type="email"
+              value={formData[field.id] || ''}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              placeholder={label}
+              className={inputClasses}
+            />
+          </div>
+        );
+        
+      case 'textarea':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={labelClasses}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <Textarea
+              id={field.id}
+              value={formData[field.id] || ''}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              placeholder={label}
+              rows={3}
+              className={inputClasses}
+            />
+          </div>
+        );
+        
+      case 'select':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={labelClasses}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <Select value={formData[field.id] || ''} onValueChange={(value) => handleInputChange(field.id, value)}>
+              <SelectTrigger className={inputClasses}>
+                <SelectValue placeholder={i18n.language === 'he' ? "בחר אפשרות" : "Select option"} />
+              </SelectTrigger>
+              <SelectContent>
+                {field.options?.map((option, index) => (
+                  <SelectItem key={index} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+        
+      case 'checkbox':
+        return (
+          <div key={field.id} className="flex items-center space-x-2">
+            <Checkbox
+              id={field.id}
+              checked={formData[field.id] || false}
+              onCheckedChange={(checked) => handleInputChange(field.id, checked)}
+            />
+            <Label htmlFor={field.id} className={`text-sm font-normal ${labelClasses}`}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+          </div>
+        );
+
+      case 'menCounter':
+      case 'womenCounter':
+        const count = formData[field.id] || 0;
+        const increment = () => {
+          if (count < 10) {
+            handleInputChange(field.id, count + 1);
+          }
+        };
+        const decrement = () => {
+          if (count > 0) {
+            handleInputChange(field.id, count - 1);
+          }
+        };
+        
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className={labelClasses || "text-sm font-medium"}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={decrement}
+                disabled={count <= 0}
+                className={`h-10 w-10 shrink-0 ${
+                  isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                }`}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Input
+                id={field.id}
+                type="number"
+                min="0"
+                max="10"
+                value={count}
+                onChange={(e) => handleInputChange(field.id, Number(e.target.value))}
+                className={`text-center text-lg ${
+                  inputClasses || 'border-border/50 focus:border-primary'
+                }`}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={increment}
+                disabled={count >= 10}
+                className={`h-10 w-10 shrink-0 ${
+                  isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                }`}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className={bgClasses} dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
@@ -779,23 +800,29 @@ const OpenRSVP = () => {
         <Card className={formCardClasses}>
           <CardHeader>
             {!isTextHidden('rsvp.eventInvitation') && (
-              <CardTitle className="text-2xl md:text-3xl font-bold text-foreground text-center mb-3">
+              <CardTitle className={`text-2xl md:text-3xl font-bold text-center mb-3 ${
+                isModernStyle ? 'bg-gradient-to-r from-amber-600 via-rose-600 to-orange-600 bg-clip-text text-transparent' : 'text-foreground'
+              }`}>
                 {getCustomText('rsvp.eventInvitation', i18n.language, t('rsvp.eventInvitation', { eventName: i18n.language === 'he' ? event.name : event.nameEn }))}
               </CardTitle>
             )}
             {!isTextHidden("rsvp.fillDetailsInstruction") && (
-              <p className="text-muted-foreground text-lg text-center mb-4">
+              <p className={`text-lg text-center mb-4 ${
+                isModernStyle ? 'text-gray-600 font-medium' : 'text-muted-foreground'
+              }`}>
                 {getCustomText("rsvp.fillDetailsInstruction", i18n.language, i18n.language === 'he' ? "אנא מלא את פרטיך להשתתפות באירוע" : "Please fill in your details to participate in the event")}
               </p>
             )}
             <div className="text-center">
               {!isTextHidden('rsvp.confirmTitle') && (
-                <h2 className="text-xl font-semibold text-primary">
+                <h2 className={`text-xl font-semibold ${
+                  isModernStyle ? 'text-amber-600' : 'text-primary'
+                }`}>
                   {getCustomText('rsvp.confirmTitle', i18n.language, t('rsvp.confirmTitle'))}
                 </h2>
               )}
               {!isTextHidden('rsvp.confirmDescription') && (
-                <p className="text-muted-foreground">
+                <p className={isModernStyle ? 'text-gray-600' : 'text-muted-foreground'}>
                   {getCustomText('rsvp.confirmDescription', i18n.language, t('rsvp.confirmDescription'))}
                 </p>
               )}
@@ -914,7 +941,7 @@ const OpenRSVP = () => {
                           <div className="space-y-4 pt-4">
                             {/* First Name */}
                             <div className="space-y-2">
-                              <Label htmlFor="firstName">
+                              <Label htmlFor="firstName" className={labelClasses}>
                                 {getCustomText('open_rsvp.first_name', i18n.language, 
                                   i18n.language === 'he' ? "שם פרטי" : "First Name")}
                                 <span className="text-destructive mr-1">*</span>
@@ -925,12 +952,13 @@ const OpenRSVP = () => {
                                 onChange={(e) => setFirstName(e.target.value)}
                                 placeholder={getCustomText('open_rsvp.first_name', i18n.language, 
                                   i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                                className={inputClasses}
                               />
                             </div>
 
                             {/* Last Name */}
                             <div className="space-y-2">
-                              <Label htmlFor="lastName">
+                              <Label htmlFor="lastName" className={labelClasses}>
                                 {getCustomText('open_rsvp.last_name', i18n.language, 
                                   i18n.language === 'he' ? "שם משפחה" : "Last Name")}
                                 <span className="text-destructive mr-1">*</span>
@@ -941,6 +969,7 @@ const OpenRSVP = () => {
                                 onChange={(e) => setLastName(e.target.value)}
                                 placeholder={getCustomText('open_rsvp.last_name', i18n.language, 
                                   i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                                className={inputClasses}
                               />
                             </div>
 
@@ -1004,10 +1033,10 @@ const OpenRSVP = () => {
                 /* Regular Form Style */
                 <>
                   {/* Personal Details Section */}
-                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
+                  <div className={sectionClasses}>
                     {/* First Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">
+                      <Label htmlFor="firstName" className={labelClasses}>
                         {getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "שם פרטי" : "First Name")}
                         <span className="text-destructive mr-1">*</span>
                       </Label>
@@ -1016,12 +1045,13 @@ const OpenRSVP = () => {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder={getCustomText('open_rsvp.first_name', i18n.language, i18n.language === 'he' ? "הזן שם פרטי" : "Enter first name")}
+                        className={inputClasses}
                       />
                     </div>
 
                     {/* Last Name */}
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">
+                      <Label htmlFor="lastName" className={labelClasses}>
                         {getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "שם משפחה" : "Last Name")}
                         <span className="text-destructive mr-1">*</span>
                       </Label>
@@ -1030,6 +1060,7 @@ const OpenRSVP = () => {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder={getCustomText('open_rsvp.last_name', i18n.language, i18n.language === 'he' ? "הזן שם משפחה" : "Enter last name")}
+                        className={inputClasses}
                       />
                     </div>
 
@@ -1042,14 +1073,16 @@ const OpenRSVP = () => {
                   </div>
 
                   {/* Default Guest Counters */}
-                  <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/30">
-                    <h3 className="font-medium text-center text-foreground mb-4">
+                  <div className={sectionClasses}>
+                    <h3 className={`font-medium text-center mb-4 ${
+                      isModernStyle ? 'text-gray-800 font-bold text-lg' : 'text-foreground'
+                    }`}>
                       {getCustomText('rsvp.numberOfParticipants', i18n.language, i18n.language === 'he' ? "מספר משתתפים" : "Number of Participants")}
                     </h3>
                     
                     {/* Men Counter */}
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">
+                      <Label className={labelClasses || "text-sm font-medium"}>
                         {getCustomText('rsvp.menLabel', i18n.language, i18n.language === 'he' ? "גברים" : "Men")}
                       </Label>
                       <div className="flex items-center gap-2">
@@ -1059,7 +1092,9 @@ const OpenRSVP = () => {
                           size="icon"
                           onClick={() => setMenCount(Math.max(0, menCount - 1))}
                           disabled={menCount <= 0}
-                          className="h-10 w-10 shrink-0"
+                          className={`h-10 w-10 shrink-0 ${
+                            isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                          }`}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -1069,7 +1104,11 @@ const OpenRSVP = () => {
                           max="20"
                           value={menCount}
                           onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
-                          className="text-center text-lg border-border/50 focus:border-primary"
+                          className={`text-center text-lg ${
+                            isModernStyle 
+                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200' 
+                              : 'border-border/50 focus:border-primary'
+                          }`}
                         />
                         <Button
                           type="button"
@@ -1077,7 +1116,9 @@ const OpenRSVP = () => {
                           size="icon"
                           onClick={() => setMenCount(Math.min(20, menCount + 1))}
                           disabled={menCount >= 20}
-                          className="h-10 w-10 shrink-0"
+                          className={`h-10 w-10 shrink-0 ${
+                            isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                          }`}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -1086,7 +1127,7 @@ const OpenRSVP = () => {
 
                     {/* Women Counter */}
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">
+                      <Label className={labelClasses || "text-sm font-medium"}>
                         {getCustomText('rsvp.womenLabel', i18n.language, i18n.language === 'he' ? "נשים" : "Women")}
                       </Label>
                       <div className="flex items-center gap-2">
@@ -1096,7 +1137,9 @@ const OpenRSVP = () => {
                           size="icon"
                           onClick={() => setWomenCount(Math.max(0, womenCount - 1))}
                           disabled={womenCount <= 0}
-                          className="h-10 w-10 shrink-0"
+                          className={`h-10 w-10 shrink-0 ${
+                            isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                          }`}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -1106,7 +1149,11 @@ const OpenRSVP = () => {
                           max="20"
                           value={womenCount}
                           onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
-                          className="text-center text-lg border-border/50 focus:border-primary"
+                          className={`text-center text-lg ${
+                            isModernStyle 
+                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200' 
+                              : 'border-border/50 focus:border-primary'
+                          }`}
                         />
                         <Button
                           type="button"
@@ -1114,7 +1161,9 @@ const OpenRSVP = () => {
                           size="icon"
                           onClick={() => setWomenCount(Math.min(20, womenCount + 1))}
                           disabled={womenCount >= 20}
-                          className="h-10 w-10 shrink-0"
+                          className={`h-10 w-10 shrink-0 ${
+                            isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                          }`}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>

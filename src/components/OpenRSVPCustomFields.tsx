@@ -689,8 +689,8 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                     <div className="space-y-1">
                       {eventLanguages.map(lang => {
                         const labelValue = lang.code === 'he' ? field.label :
-                                          lang.code === 'en' ? field.labelEn :
-                                          (field as any)[`label_${lang.code}`];
+                                          lang.code === 'en' ? (field.labels?.en || field.labelEn) :
+                                          field.labels?.[lang.code];
                         if (!labelValue) return null;
                         return (
                           <p key={lang.code} className="text-sm">

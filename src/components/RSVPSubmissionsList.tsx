@@ -42,7 +42,7 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
       try {
         const { data: customFields } = await supabase
           .from('custom_fields_config')
-          .select('key, label, labels, event_id')
+          .select('id, key, label, labels, event_id')
           .in('event_id', eventIds);
 
         if (customFields) {
@@ -50,7 +50,11 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
           customFields.forEach(field => {
             // Prefer Hebrew label, fallback to label field
             const labelsObj = field.labels as Record<string, string> | null;
-            fieldsMap[field.key] = labelsObj?.he || field.label;
+            const displayLabel = labelsObj?.he || field.label;
+            
+            // Map both by key and by id (since answers might use either)
+            fieldsMap[field.key] = displayLabel;
+            fieldsMap[field.id] = displayLabel;
           });
           setCustomFieldsMap(fieldsMap);
         }

@@ -876,11 +876,12 @@ const OpenRSVP = () => {
                     disabled={submitting || !selectedGender || !hasRequiredFields()}
                     className="
                       w-full text-lg py-7 font-semibold
-                      bg-gradient-to-r from-primary via-primary/90 to-primary
+                      bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600
                       hover:shadow-2xl hover:scale-[1.02] 
                       active:scale-[0.98]
                       transition-all duration-300 
                       shadow-lg
+                      text-white
                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                       relative overflow-hidden
                       group
@@ -893,10 +894,7 @@ const OpenRSVP = () => {
                         <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center gap-3">
-                        <CheckCircle2 className="w-6 h-6" />
-                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
-                      </div>
+                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
                     )}
                   </Button>
 
@@ -1047,11 +1045,12 @@ const OpenRSVP = () => {
                     disabled={submitting || !hasRequiredFields() || totalGuests === 0}
                     className="
                       w-full text-lg py-7 font-semibold
-                      bg-gradient-to-r from-primary via-primary/90 to-primary
+                      bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600
                       hover:shadow-2xl hover:scale-[1.02] 
                       active:scale-[0.98]
                       transition-all duration-300 
                       shadow-lg
+                      text-white
                       disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
                       relative overflow-hidden
                       group
@@ -1064,10 +1063,7 @@ const OpenRSVP = () => {
                         <span>{t('rsvp.submitting')}</span>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center gap-3">
-                        <CheckCircle2 className="w-6 h-6" />
-                        <span>{!isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))}</span>
-                      </div>
+                      !isTextHidden('rsvp.submitButton') && getCustomText('rsvp.submitButton', i18n.language, t('rsvp.submitButton'))
                     )}
                   </Button>
 

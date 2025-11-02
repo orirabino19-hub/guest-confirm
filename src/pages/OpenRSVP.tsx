@@ -23,7 +23,7 @@ import { updateMetaTags, generateOpenRSVPMetaTags } from "@/utils/metaTags";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'email' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn: string;
   labels?: Record<string, string>; // Additional language translations
@@ -496,6 +496,23 @@ const OpenRSVP = () => {
             </Label>
             <Input
               id={field.id}
+              value={formData[field.id] || ''}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              placeholder={label}
+            />
+          </div>
+        );
+        
+      case 'email':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id}>
+              {label}
+              {field.required && <span className="text-destructive mr-1">*</span>}
+            </Label>
+            <Input
+              id={field.id}
+              type="email"
               value={formData[field.id] || ''}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
               placeholder={label}

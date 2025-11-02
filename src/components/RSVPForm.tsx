@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'email' | 'menCounter' | 'womenCounter';
   label: string;
   labelEn?: string;
   required: boolean;
@@ -258,6 +258,23 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
             <Input
               id={field.id}
               type="text"
+              value={value}
+              onChange={(e) => handleInputChange(field.id, e.target.value)}
+              className="border-border/50 focus:border-primary"
+              required={field.required}
+            />
+          </div>
+        );
+
+      case 'email':
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id} className="text-sm font-medium">
+              {label} {field.required && <span className="text-destructive">*</span>}
+            </Label>
+            <Input
+              id={field.id}
+              type="email"
               value={value}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
               className="border-border/50 focus:border-primary"

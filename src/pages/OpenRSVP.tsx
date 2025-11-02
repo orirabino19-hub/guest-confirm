@@ -127,6 +127,8 @@ const OpenRSVP = () => {
   const [error, setError] = useState<string>("");
   const [resolvedEventId, setResolvedEventId] = useState<string>("");
   const [eventTheme, setEventTheme] = useState<any>(null);
+  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(null);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
   const { generateMissingCodes } = useShortCodes();
@@ -327,6 +329,16 @@ const OpenRSVP = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // For accordion form: validate gender selection first
+    if (event?.accordion_form_enabled && !selectedGender) {
+      toast({
+        title: t('rsvp.error.title'),
+        description: getCustomText('rsvp.pleaseSelectGender', i18n.language, t('rsvp.pleaseSelectGender')),
+        variant: "destructive"
+      });
+      return;
+    }
 
     // Validate required name fields
     if (!firstName.trim()) {
@@ -373,9 +385,13 @@ const OpenRSVP = () => {
     setSubmitting(true);
     
     try {
-      // Calculate total counts
-      let totalMenCount = menCount;
-      let totalWomenCount = womenCount;
+      // Calculate total counts - for accordion form, use selected gender
+      let totalMenCount = event?.accordion_form_enabled 
+        ? (selectedGender === 'male' ? 1 : 0)
+        : menCount;
+      let totalWomenCount = event?.accordion_form_enabled
+        ? (selectedGender === 'female' ? 1 : 0)
+        : womenCount;
       
       // Add counts from custom field counters (only for regular form)
       if (!event?.accordion_form_enabled) {
@@ -409,6 +425,8 @@ const OpenRSVP = () => {
       setLastName("");
       setMenCount(0);
       setWomenCount(0);
+      setSelectedGender(null);
+      setIsAccordionOpen(false);
       const initialFormData: Record<string, any> = {};
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
@@ -432,12 +450,16 @@ const OpenRSVP = () => {
     }
   };
 
-  // Calculate total guests from all counters
-  const customFieldsGuests = (event?.customFields || [])
-    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
-    .reduce((total, field) => total + (formData[field.id] || 0), 0);
+  // Calculate total guests - for accordion form it's always 1, for regular form sum all counters
+  const customFieldsGuests = event?.accordion_form_enabled 
+    ? 0 
+    : ((event?.customFields || [])
+        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+        .reduce((total, field) => total + (formData[field.id] || 0), 0));
   
-  const totalGuests = menCount + womenCount + customFieldsGuests;
+  const totalGuests = event?.accordion_form_enabled
+    ? (selectedGender ? 1 : 0)
+    : (menCount + womenCount + customFieldsGuests);
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
@@ -709,15 +731,97 @@ const OpenRSVP = () => {
               {event?.accordion_form_enabled ? (
                 /* Accordion Form Style */
                 <>
+                  {/* Gender Selection - without title */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Male Card */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedGender('male');
+                          setMenCount(1);
+                          setWomenCount(0);
+                          setIsAccordionOpen(true);
+                        }}
+                        className={`
+                          relative p-6 rounded-xl border-2 transition-all duration-300
+                          flex flex-col items-center justify-center gap-3
+                          hover:scale-105 hover:shadow-lg
+                          ${selectedGender === 'male' 
+                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            : 'border-border/50 bg-card hover:border-primary/50'
+                          }
+                        `}
+                      >
+                        <UserRound 
+                          className={`w-12 h-12 transition-colors ${
+                            selectedGender === 'male' ? 'text-primary' : 'text-muted-foreground'
+                          }`}
+                        />
+                        <span className={`text-lg font-semibold transition-colors ${
+                          selectedGender === 'male' ? 'text-primary' : 'text-foreground'
+                        }`}>
+                          {getCustomText('rsvp.male', i18n.language, t('rsvp.male'))}
+                        </span>
+                        {selectedGender === 'male' && (
+                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Female Card */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedGender('female');
+                          setMenCount(0);
+                          setWomenCount(1);
+                          setIsAccordionOpen(true);
+                        }}
+                        className={`
+                          relative p-6 rounded-xl border-2 transition-all duration-300
+                          flex flex-col items-center justify-center gap-3
+                          hover:scale-105 hover:shadow-lg
+                          ${selectedGender === 'female' 
+                            ? 'border-primary bg-primary/10 shadow-lg' 
+                            : 'border-border/50 bg-card hover:border-primary/50'
+                          }
+                        `}
+                      >
+                        <Users 
+                          className={`w-12 h-12 transition-colors ${
+                            selectedGender === 'female' ? 'text-primary' : 'text-muted-foreground'
+                          }`}
+                        />
+                        <span className={`text-lg font-semibold transition-colors ${
+                          selectedGender === 'female' ? 'text-primary' : 'text-foreground'
+                        }`}>
+                          {getCustomText('rsvp.female', i18n.language, t('rsvp.female'))}
+                        </span>
+                        {selectedGender === 'female' && (
+                          <div className="absolute top-3 right-3 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Accordion with all fields */}
-                  <Accordion type="single" collapsible defaultValue="details">
-                    <AccordionItem value="details">
-                      <AccordionTrigger className="text-lg font-medium">
-                        {getCustomText('rsvp.personalDetails', i18n.language, t('rsvp.personalDetails'))}
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-4 pt-4">
-                          {/* First Name */}
+                  {selectedGender && (
+                    <Accordion type="single" collapsible value={isAccordionOpen ? "details" : ""}>
+                      <AccordionItem value="details">
+                        <AccordionTrigger className="text-lg font-medium">
+                          {getCustomText('rsvp.personalDetails', i18n.language, t('rsvp.personalDetails'))}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-4 pt-4">
+                            {/* First Name */}
                             <div className="space-y-2">
                               <Label htmlFor="firstName">
                                 {getCustomText('open_rsvp.first_name', i18n.language, 
@@ -755,15 +859,16 @@ const OpenRSVP = () => {
                                 {event.customFields.map(renderCustomField)}
                               </>
                             )}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  )}
 
                   {/* Submit Button */}
                   <Button 
                     type="submit" 
-                    disabled={submitting || !hasRequiredFields()}
+                    disabled={submitting || !selectedGender || !hasRequiredFields()}
                     className="
                       w-full text-lg py-7 font-semibold
                       bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600
@@ -792,9 +897,12 @@ const OpenRSVP = () => {
                   </Button>
 
                   {/* Validation Message */}
-                  {!hasRequiredFields() && (
+                  {(!selectedGender || !hasRequiredFields()) && (
                     <p className="text-center text-sm text-muted-foreground">
-                      {i18n.language === 'he' ? 'יש למלא את כל השדות הנדרשים' : 'Please fill all required fields'}
+                      {!selectedGender 
+                        ? getCustomText('rsvp.pleaseSelectGender', i18n.language, t('rsvp.pleaseSelectGender'))
+                        : (i18n.language === 'he' ? 'יש למלא את כל השדות הנדרשים' : 'Please fill all required fields')
+                      }
                     </p>
                   )}
                 </>

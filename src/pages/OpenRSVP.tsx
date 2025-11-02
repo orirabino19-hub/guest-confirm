@@ -1239,7 +1239,7 @@ const OpenRSVP = () => {
                           onChange={(e) => setMenCount(Math.max(0, Number(e.target.value)))}
                           className={`text-center text-lg ${
                             isModernStyle 
-                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200' 
+                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 placeholder:text-gray-400' 
                               : 'border-border/50 focus:border-primary'
                           }`}
                         />
@@ -1284,7 +1284,7 @@ const OpenRSVP = () => {
                           onChange={(e) => setWomenCount(Math.max(0, Number(e.target.value)))}
                           className={`text-center text-lg ${
                             isModernStyle 
-                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200' 
+                              ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 placeholder:text-gray-400' 
                               : 'border-border/50 focus:border-primary'
                           }`}
                         />
@@ -1306,8 +1306,14 @@ const OpenRSVP = () => {
 
                   {/* Total Display */}
                   {totalGuests > 0 && (
-                    <div className="text-center p-4 bg-accent/50 rounded-lg border border-accent">
-                      <p className="text-lg font-medium text-accent-foreground">
+                    <div className={`text-center p-4 rounded-lg border ${
+                      isModernStyle 
+                        ? 'bg-gradient-to-r from-amber-50 to-rose-50 border-amber-200' 
+                        : 'bg-accent/50 border-accent'
+                    }`}>
+                      <p className={`text-lg font-medium ${
+                        isModernStyle ? 'text-gray-800 font-bold' : 'text-accent-foreground'
+                      }`}>
                         {getCustomText('rsvp.totalGuests', i18n.language, t('rsvp.totalGuests', { count: totalGuests })).replace('{{count}}', totalGuests.toString())}
                       </p>
                     </div>

@@ -243,6 +243,10 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         });
         return;
       }
+      
+      // Save the entered values
+      fieldLabel = newField.label || '';
+      fieldLabelEn = newField.labelEn || '';
     }
 
     // Collect all language labels - save all that were entered, even if not required

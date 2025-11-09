@@ -46,7 +46,8 @@ const EDITABLE_KEYS = [
   { key: 'rsvp.male', label: 'Male Label', defaultHe: 'גבר', defaultEn: 'Male' },
   { key: 'rsvp.female', label: 'Female Label', defaultHe: 'אישה', defaultEn: 'Female' },
   { key: 'rsvp.personalDetails', label: 'Personal Details Label', defaultHe: 'פרטים אישיים', defaultEn: 'Personal Details' },
-  { key: 'rsvp.pleaseSelectGender', label: 'Please Select Gender Message', defaultHe: 'יש לבחור מגדר', defaultEn: 'Please select gender' }
+  { key: 'rsvp.pleaseSelectGender', label: 'Please Select Gender Message', defaultHe: 'יש לבחור מגדר', defaultEn: 'Please select gender' },
+  { key: 'rsvp.genderSelectionNote', label: 'Gender Selection Note (below validation)', defaultHe: '', defaultEn: '' }
 ];
 
 interface TextOverrides {

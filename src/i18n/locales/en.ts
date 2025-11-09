@@ -74,6 +74,7 @@ export const en = {
     female: "Female",
     personalDetails: "Personal Details",
     pleaseSelectGender: "Please select gender",
+    genderSelectionNote: "",
     success: {
       title: "✅ Confirmation received successfully!",
       description: "Thank you {{name}}, your spot is reserved"

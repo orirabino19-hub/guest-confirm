@@ -1119,6 +1119,18 @@ const OpenRSVP = () => {
                       }
                     </p>
                   )}
+
+                  {/* Additional Gender Selection Note - Always Visible */}
+                  {!isTextHidden('rsvp.genderSelectionNote') && 
+                   getCustomText('rsvp.genderSelectionNote', i18n.language, t('rsvp.genderSelectionNote')) && (
+                    <p className={`text-center text-sm mt-2 ${
+                      isModernStyle 
+                        ? 'text-amber-700/80 font-medium' 
+                        : 'text-muted-foreground'
+                    }`}>
+                      {getCustomText('rsvp.genderSelectionNote', i18n.language, t('rsvp.genderSelectionNote'))}
+                    </p>
+                  )}
                 </>
               ) : (
                 /* Regular Form Style */

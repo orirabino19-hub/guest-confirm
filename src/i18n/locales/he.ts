@@ -74,6 +74,7 @@ export const he = {
     female: "אישה",
     personalDetails: "פרטים אישיים",
     pleaseSelectGender: "יש לבחור מגדר",
+    genderSelectionNote: "",
     success: {
       title: "✅ האישור נקלט בהצלחה!",
       description: "תודה {{name}}, המקום שמור עבורכם"

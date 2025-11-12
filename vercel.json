@@ -5,12 +5,12 @@
       "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/short-link?s=:slug"
     },
     {
-      "source": "/rsvp/:eventId/open/:lang",
-      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=:eventId&lang=:lang"
+      "source": "/rsvp/:code/open/:lang",
+      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=:code&lang=:lang"
     },
     {
-      "source": "/rsvp/:eventId/open",
-      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=:eventId&lang=he"
+      "source": "/rsvp/:code/open",
+      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=:code"
     }
   ]
 }

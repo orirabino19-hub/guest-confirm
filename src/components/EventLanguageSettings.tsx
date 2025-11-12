@@ -28,6 +28,8 @@ interface EventLanguageSettingsProps {
 
 // Default translatable keys that can be overridden per event
 const EDITABLE_KEYS = [
+  { key: 'rsvp.eventTitle', label: 'Event Title (Meta Tag)', defaultEn: 'Event Name', defaultHe: 'שם האירוע' },
+  { key: 'rsvp.eventDescription', label: 'Event Description (Meta Tag)', defaultEn: 'Event description for sharing', defaultHe: 'תיאור האירוע לשיתוף' },
   { key: 'rsvp.welcome', label: 'Welcome Message', defaultEn: 'Hello {{name}}! 👋', defaultHe: 'שלום {{name}}! 👋' },
   { key: 'rsvp.eventInvitation', label: 'Event Invitation', defaultEn: 'We are honored to invite you to {{eventName}}', defaultHe: 'אנחנו מתכבדים להזמינכם ל{{eventName}}' },
   { key: 'rsvp.confirmTitle', label: 'Confirm Title', defaultEn: 'RSVP Confirmation', defaultHe: 'אישור הגעה' },

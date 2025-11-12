@@ -154,6 +154,11 @@ const OpenRSVP = () => {
   useEffect(() => {
     if (event && !invitationLoading && invitationUrl) {
       const locale = getOpenGraphLocale(i18n.language);
+      
+      // Use customText or fallback to i18n translations
+      const eventTitle = getCustomText('rsvp.eventTitle', i18n.language, event.name);
+      const eventDescription = getCustomText('rsvp.eventDescription', i18n.language, '');
+      
       const translations = {
         titlePrefix: i18n.language === 'he' ? 'הזמנה ל' : 
                      i18n.language === 'de' ? 'Einladung zu ' : 
@@ -161,14 +166,14 @@ const OpenRSVP = () => {
         openRegistration: i18n.language === 'he' ? 'הרשמה פתוחה לכולם - הרשם עכשיו!' :
                           i18n.language === 'de' ? 'Offene Registrierung für alle - Jetzt anmelden!' :
                           'Open registration for everyone - Register now!',
-        defaultDescription: i18n.language === 'he' ? `הוזמנת לאירוע "${event.name}".` :
-                           i18n.language === 'de' ? `Sie sind zum Event "${event.name}" eingeladen.` :
-                           `You are invited to the event "${event.name}".`
+        defaultDescription: i18n.language === 'he' ? `הוזמנת לאירוע "${eventTitle}".` :
+                           i18n.language === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen.` :
+                           `You are invited to the event "${eventTitle}".`
       };
-      const metaTags = generateOpenRSVPMetaTags(event.name, undefined, invitationUrl, locale, translations);
+      const metaTags = generateOpenRSVPMetaTags(eventTitle, eventDescription, invitationUrl, locale, translations);
       updateMetaTags(metaTags);
     }
-  }, [event, invitationUrl, invitationLoading, i18n.language]);
+  }, [event, invitationUrl, invitationLoading, i18n.language, getCustomText]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -286,24 +291,26 @@ const OpenRSVP = () => {
 
         setEvent(eventObj);
         
-        // Update page title
+        // Update page title using custom text or fallback
         const titlePrefix = i18n.language === 'he' ? 'הזמנה ל' : 
                            i18n.language === 'de' ? 'Einladung zu ' : 
                            'Invitation to ';
-        document.title = `${titlePrefix}${eventData.title}`;
+        const eventTitle = getCustomText('rsvp.eventTitle', i18n.language, eventData.title);
+        document.title = `${titlePrefix}${eventTitle}`;
         
         // Initial meta tags update (will be updated again when invitation loads)
         const locale = getOpenGraphLocale(i18n.language);
+        const eventDescription = getCustomText('rsvp.eventDescription', i18n.language, '');
         const translations = {
           titlePrefix,
           openRegistration: i18n.language === 'he' ? 'הרשמה פתוחה לכולם - הרשם עכשיו!' :
                            i18n.language === 'de' ? 'Offene Registrierung für alle - Jetzt anmelden!' :
                            'Open registration for everyone - Register now!',
-          defaultDescription: i18n.language === 'he' ? `הוזמנת לאירוע "${eventData.title}".` :
-                             i18n.language === 'de' ? `Sie sind zum Event "${eventData.title}" eingeladen.` :
-                             `You are invited to the event "${eventData.title}".`
+          defaultDescription: i18n.language === 'he' ? `הוזמנת לאירוע "${eventTitle}".` :
+                             i18n.language === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen.` :
+                             `You are invited to the event "${eventTitle}".`
         };
-        const initialMetaTags = generateOpenRSVPMetaTags(eventData.title, eventData.description, undefined, locale, translations);
+        const initialMetaTags = generateOpenRSVPMetaTags(eventTitle, eventDescription, undefined, locale, translations);
         updateMetaTags(initialMetaTags);
         
         // Initialize form data with default values

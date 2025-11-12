@@ -3,6 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Pre-initialize language before React loads -->
+    <script>
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const langFromUrl = urlParams.get('lang');
+        const supportedLanguages = ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'];
+        
+        if (langFromUrl && supportedLanguages.includes(langFromUrl)) {
+          console.log('🌐 Pre-setting language from URL:', langFromUrl);
+          // Set HTML dir attribute for RTL languages
+          if (['he', 'ar'].includes(langFromUrl)) {
+            document.documentElement.setAttribute('dir', 'rtl');
+          } else {
+            document.documentElement.setAttribute('dir', 'ltr');
+          }
+          // Set language attribute
+          document.documentElement.setAttribute('lang', langFromUrl);
+          // Pre-set in localStorage to prevent flash
+          localStorage.setItem('i18nextLng', langFromUrl);
+        }
+      })();
+    </script>
     <title>אישור הגעה לאירוע</title>
     <meta name="description" content="מערכת אישור הגעה מתקדמת לאירועים. הזמינו אורחים בקלות ונהלו את רשימת המוזמנים" />
     <meta name="author" content="RSVP System" />

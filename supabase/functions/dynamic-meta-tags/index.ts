@@ -146,25 +146,30 @@ serve(async (req) => {
     };
     
     // Build translated content - try rsvp keys first (matches RSVP page), then event keys
-    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], {
-      he: event.title || 'אירוע',
-      en: event.title || 'Event',
-      de: event.title || 'Veranstaltung',
-      ar: event.title || 'حدث',
-      ru: event.title || 'Событие',
-      fr: event.title || 'Événement',
-      es: event.title || 'Evento'
-    });
+    // Default texts in multiple languages (used only when no translation exists)
+    const defaultEventTitle = {
+      he: 'אירוע',
+      en: 'Event',
+      de: 'Veranstaltung',
+      ar: 'حدث',
+      ru: 'Событие',
+      fr: 'Événement',
+      es: 'Evento'
+    };
     
-    const eventDescription = getTranslation(['rsvp.eventDescription', 'event.description'], {
-      he: event.description || `הוזמנת לאירוע "${eventTitle}"`,
-      en: event.description || `You are invited to the event "${eventTitle}"`,
-      de: event.description || `Sie sind zum Event "${eventTitle}" eingeladen`,
-      ar: event.description || `أنت مدعو للحدث "${eventTitle}"`,
-      ru: event.description || `Вы приглашены на событие "${eventTitle}"`,
-      fr: event.description || `Vous êtes invité à l'événement "${eventTitle}"`,
-      es: event.description || `Estás invitado al evento "${eventTitle}"`
-    });
+    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], defaultEventTitle);
+    
+    const defaultEventDescription = {
+      he: `הוזמנת לאירוע "${eventTitle}"`,
+      en: `You are invited to "${eventTitle}"`,
+      de: `Sie sind zu "${eventTitle}" eingeladen`,
+      ar: `أنت مدعو إلى "${eventTitle}"`,
+      ru: `Вы приглашены на "${eventTitle}"`,
+      fr: `Vous êtes invité à "${eventTitle}"`,
+      es: `Estás invitado a "${eventTitle}"`
+    };
+    
+    const eventDescription = getTranslation(['rsvp.eventDescription', 'event.description', 'rsvp.eventInvitation'], defaultEventDescription);
     
     const titlePrefix = 
       langParam === 'he' ? 'הזמנה ל' :

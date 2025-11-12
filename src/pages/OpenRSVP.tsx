@@ -135,6 +135,14 @@ const OpenRSVP = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
 
+  // Handle language from URL parameter
+  useEffect(() => {
+    const langParam = searchParams.get('lang');
+    if (langParam && ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(langParam)) {
+      console.log('🌐 Setting language from URL:', langParam);
+      i18n.changeLanguage(langParam);
+    }
+  }, [searchParams, i18n]);
   const { generateMissingCodes } = useShortCodes();
   const { submitRSVP } = useRSVP();
   const { getCustomText, isTextHidden } = useCustomTexts(resolvedEventId);

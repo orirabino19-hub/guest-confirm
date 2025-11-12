@@ -15,23 +15,13 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const pathname = url.pathname;
-    // Check both query param and path for language
-    let langParam = url.searchParams.get('lang');
-    if (!langParam) {
-      // Try to extract from path like /rsvp/8/open/de
-      const pathMatch = pathname.match(/\/open\/([a-z]{2})$/);
-      if (pathMatch) {
-        langParam = pathMatch[1];
-      }
-    }
-    langParam = langParam || 'he';
+    const langParam = url.searchParams.get('lang') || 'he';
     
     // Detect if request is from a bot (WhatsApp, Facebook, Twitter, etc.)
     const userAgent = req.headers.get('user-agent') || '';
     const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
     
     console.log('Request received:', { pathname, lang: langParam, userAgent });
-    console.log('Bot detected:', isBot);
     
     // Get event code or ID from query params
     const eventCode = url.searchParams.get('code');
@@ -91,94 +81,34 @@ serve(async (req) => {
     
     console.log('Event loaded:', event.title);
     
-    // Fetch event languages and translations - use event.id instead of eventId
+    // Fetch event languages and translations
     const { data: languages } = await supabase
       .from('event_languages')
       .select('locale, translations')
-      .eq('event_id', event.id);
+      .eq('event_id', eventId);
     
     console.log('Languages loaded:', languages?.length || 0);
     
-    // Helper to get translated text - check multiple keys in order
-    const getTranslation = (keys: string[], fallbackText: Record<string, string>) => {
-      if (!languages || languages.length === 0) {
-        return fallbackText[langParam] || fallbackText['en'] || fallbackText['he'] || '';
-      }
+    // Helper to get translated text
+    const getTranslation = (key: string, defaultValue: string) => {
+      if (!languages || languages.length === 0) return defaultValue;
       
-      // Try to find translation for requested language
       const lang = languages.find(l => l.locale === langParam);
       if (lang?.translations && typeof lang.translations === 'object') {
-        for (const key of keys) {
-          const translation = (lang.translations as any)[key];
-          if (translation) {
-            console.log(`Translation found for key "${key}" in ${langParam}:`, translation);
-            if (translation.text && typeof translation.text === 'object') {
-              const translatedText = translation.text[langParam];
-              if (translatedText) {
-                console.log(`Using translation for "${key}":`, translatedText);
-                return translatedText;
-              }
-            }
-            if (typeof translation === 'string') {
-              return translation;
-            }
-          }
-        }
+        const translation = (lang.translations as any)[key];
+        if (translation) return translation;
       }
-      
-      // Fallback to English if requested language not found
-      if (langParam !== 'en') {
-        console.log(`No ${langParam} translation found, trying English`);
-        const enLang = languages.find(l => l.locale === 'en');
-        if (enLang?.translations && typeof enLang.translations === 'object') {
-          for (const key of keys) {
-            const translation = (enLang.translations as any)[key];
-            if (translation) {
-              if (translation.text && typeof translation.text === 'object') {
-                const translatedText = translation.text['en'];
-                if (translatedText) {
-                  console.log(`Using English fallback for "${key}":`, translatedText);
-                  return translatedText;
-                }
-              }
-              if (typeof translation === 'string') {
-                return translation;
-              }
-            }
-          }
-        }
-      }
-      
-      // Final fallback to provided text
-      console.log(`No translation found, using fallback for ${langParam}`);
-      return fallbackText[langParam] || fallbackText['en'] || fallbackText['he'] || '';
+      return defaultValue;
     };
     
-    // Build translated content - try rsvp keys first (matches RSVP page), then event keys
-    // Default texts in multiple languages (used only when no translation exists)
-    const defaultEventTitle = {
-      he: 'אירוע',
-      en: 'Event',
-      de: 'Veranstaltung',
-      ar: 'حدث',
-      ru: 'Событие',
-      fr: 'Événement',
-      es: 'Evento'
-    };
-    
-    const eventTitle = getTranslation(['meta.ogTitle', 'rsvp.eventTitle', 'event.title'], defaultEventTitle);
-    
-    const defaultEventDescription = {
-      he: `הוזמנת לאירוע "${eventTitle}"`,
-      en: `You are invited to "${eventTitle}"`,
-      de: `Sie sind zu "${eventTitle}" eingeladen`,
-      ar: `أنت مدعو إلى "${eventTitle}"`,
-      ru: `Вы приглашены на "${eventTitle}"`,
-      fr: `Vous êtes invité à "${eventTitle}"`,
-      es: `Estás invitado a "${eventTitle}"`
-    };
-    
-    const eventDescription = getTranslation(['meta.ogDescription', 'rsvp.eventDescription', 'event.description', 'rsvp.eventInvitation'], defaultEventDescription);
+    // Build translated content
+    const eventTitle = event.title || getTranslation('event.title', 'אירוע');
+    const eventDescription = event.description || getTranslation('event.description', 
+      langParam === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
+      langParam === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
+      langParam === 'en' ? `You are invited to the event "${eventTitle}"` :
+      `הוזמנת לאירוע "${eventTitle}"`
+    );
     
     const titlePrefix = 
       langParam === 'he' ? 'הזמנה ל' :
@@ -192,24 +122,24 @@ serve(async (req) => {
     
     const fullTitle = `${titlePrefix}${eventTitle}`;
     
-    // Get invitation image from storage - use event.id instead of eventId
+    // Get invitation image from storage
     const { data: storageData } = await supabase
       .storage
       .from('invitations')
-      .list(`${event.id}/${langParam}`, { limit: 1 });
+      .list(`${eventId}/${langParam}`, { limit: 1 });
     
     let imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/default-invitation.jpg`;
     if (storageData && storageData.length > 0) {
-      imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${event.id}/${langParam}/${storageData[0].name}`;
+      imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${eventId}/${langParam}/${storageData[0].name}`;
     } else {
       // Fallback to default language
       const { data: defaultStorage } = await supabase
         .storage
         .from('invitations')
-        .list(`${event.id}/he`, { limit: 1 });
+        .list(`${eventId}/he`, { limit: 1 });
       
       if (defaultStorage && defaultStorage.length > 0) {
-        imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${event.id}/he/${defaultStorage[0].name}`;
+        imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${eventId}/he/${defaultStorage[0].name}`;
       }
     }
     
@@ -229,16 +159,23 @@ serve(async (req) => {
     
     // Use short_code if available, otherwise use UUID
     const displayCode = event.short_code || event.id;
-    const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}&direct=1`;
+    const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}`;
     
-    console.log(isBot ? 'Bot detected, serving meta tags HTML' : 'Regular user, serving HTML with quick redirect');
+    // If not a bot, redirect to the React app
+    if (!isBot) {
+      console.log('Regular user detected, redirecting to React app');
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': currentUrl,
+        },
+      });
+    }
     
-    // Generate HTML with dynamic meta tags
-    // For bots: no redirect (so they see the meta tags)
-    // For users: redirect to actual app with 'direct' param to bypass rewrite
-    const redirectMeta = !isBot ? `<meta http-equiv="refresh" content="0;url=${currentUrl}" />` : '';
-    const redirectScript = !isBot ? `<script>window.location.replace('${currentUrl}');</script>` : '';
+    console.log('Bot detected, serving meta tags HTML');
     
+    // Generate HTML with dynamic meta tags for bots
     const html = `<!DOCTYPE html>
 <html lang="${langParam}" dir="${langParam === 'he' || langParam === 'ar' ? 'rtl' : 'ltr'}">
   <head>
@@ -267,12 +204,15 @@ serve(async (req) => {
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/jpeg" />
     
-    ${redirectMeta}
-    ${redirectScript}
+    <!-- Redirect to actual app -->
+    <meta http-equiv="refresh" content="0;url=${currentUrl}" />
+    <script>
+      window.location.href = '${currentUrl}';
+    </script>
   </head>
   <body>
-    ${!isBot ? '<p>מפנה אותך לדף האירוע... / Redirecting to event page...</p>' : '<p>FP Pro Events</p>'}
-    ${!isBot ? `<p><a href="${currentUrl}">לחץ כאן אם לא הועברת אוטומטית / Click here if not redirected automatically</a></p>` : ''}
+    <p>מפנה אותך לדף האירוע... / Redirecting to event page...</p>
+    <p><a href="${currentUrl}">לחץ כאן אם לא הועברת אוטומטית / Click here if not redirected automatically</a></p>
   </body>
 </html>`;
     

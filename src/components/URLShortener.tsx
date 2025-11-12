@@ -109,11 +109,11 @@ export const URLShortener = () => {
   };
 
   const copyUrl = (slug: string) => {
-    const fullUrl = `https://fp-pro.info/s/${slug}`;
+    const fullUrl = `${window.location.origin}/${slug}`;
     navigator.clipboard.writeText(fullUrl);
     toast({
       title: "✅ הועתק!",
-      description: "הלינק הועתק ללוח - מתאים לשיתוף ברשתות חברתיות",
+      description: "הלינק הועתק ללוח",
     });
   };
 
@@ -184,7 +184,7 @@ export const URLShortener = () => {
             <Label htmlFor="slug">קיצור (באנגלית)</Label>
             <div className="flex gap-2">
               <span className="flex items-center px-3 rounded-md border bg-background text-muted-foreground text-sm">
-                https://fp-pro.info/s/
+                {window.location.origin}/
               </span>
               <Input
                 id="slug"
@@ -220,9 +220,7 @@ export const URLShortener = () => {
 
         {/* Short URLs List */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm">קיצורים קיימים ({shortUrls.length})</h3>
-          </div>
+          <h3 className="font-semibold text-sm">קיצורים קיימים ({shortUrls.length})</h3>
           
           {shortUrls.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
@@ -241,7 +239,7 @@ export const URLShortener = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <code className="text-sm font-mono font-semibold text-primary">
-                          https://fp-pro.info/s/{url.slug}
+                          {window.location.origin}/{url.slug}
                         </code>
                         {!url.is_active && (
                           <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
@@ -268,7 +266,7 @@ export const URLShortener = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => copyUrl(url.slug)}
-                        title="העתק קישור"
+                        title="העתק"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>

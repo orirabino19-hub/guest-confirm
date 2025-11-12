@@ -1,9 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { initI18n } from './i18n'
+import './i18n'
 
-// Wait for i18n to be fully initialized before rendering React
-initI18n().then(() => {
-  createRoot(document.getElementById("root")!).render(<App />);
-});
+createRoot(document.getElementById("root")!).render(<App />);

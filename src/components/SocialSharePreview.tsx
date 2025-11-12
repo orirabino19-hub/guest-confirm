@@ -50,23 +50,20 @@ const SocialSharePreview = ({ eventId, language, open, onOpenChange }: SocialSha
         .select('locale, translations')
         .eq('event_id', eventId);
 
-      // Helper to get translated text - check multiple keys in order
-      const getTranslation = (keys: string[], defaultValue: string) => {
+      // Helper to get translated text
+      const getTranslation = (key: string, defaultValue: string) => {
         if (!languages || languages.length === 0) return defaultValue;
         
         const lang = languages.find(l => l.locale === language);
         if (lang?.translations && typeof lang.translations === 'object') {
-          // Try each key in order until we find a translation
-          for (const key of keys) {
-            const translation = (lang.translations as any)[key];
-            if (translation) return translation;
-          }
+          const translation = (lang.translations as any)[key];
+          if (translation) return translation;
         }
         return defaultValue;
       };
 
-      // Build translated content - try rsvp keys first (matches RSVP page), then event keys
-      const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], event.title || 'אירוע');
+      // Build translated content
+      const eventTitle = event.title || getTranslation('event.title', 'אירוע');
       
       const titlePrefix = 
         language === 'he' ? 'הזמנה ל' :
@@ -80,14 +77,11 @@ const SocialSharePreview = ({ eventId, language, open, onOpenChange }: SocialSha
 
       const fullTitle = `${titlePrefix}${eventTitle}`;
 
-      const eventDescription = getTranslation(
-        ['rsvp.eventDescription', 'event.description'],
-        event.description || (
-          language === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
-          language === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
-          language === 'en' ? `You are invited to the event "${eventTitle}"` :
-          `הוזמנת לאירוע "${eventTitle}"`
-        )
+      const eventDescription = event.description || getTranslation('event.description', 
+        language === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
+        language === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
+        language === 'en' ? `You are invited to the event "${eventTitle}"` :
+        `הוזמנת לאירוע "${eventTitle}"`
       );
 
       // Get invitation image from storage

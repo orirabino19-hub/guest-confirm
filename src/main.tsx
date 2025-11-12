@@ -12,6 +12,17 @@ const initApp = async () => {
     });
   }
   
+  // Hide loading spinner and show content
+  const loadingSpinner = document.querySelector('.i18n-loading');
+  if (loadingSpinner) {
+    loadingSpinner.remove();
+  }
+  
+  const root = document.getElementById("root");
+  if (root) {
+    root.classList.add('i18n-ready');
+  }
+  
   createRoot(document.getElementById("root")!).render(<App />);
 };
 

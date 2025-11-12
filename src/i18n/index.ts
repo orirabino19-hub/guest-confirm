@@ -20,6 +20,9 @@ const supportedLanguages = ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'];
 
 // If lang is in URL, use it directly without LanguageDetector
 if (langFromUrl && supportedLanguages.includes(langFromUrl)) {
+  // Store in localStorage to prevent any flash of wrong language
+  localStorage.setItem('i18nextLng', langFromUrl);
+  
   i18n
     .use(initReactI18next)
     .init({

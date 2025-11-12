@@ -13,13 +13,21 @@ const resources = {
   }
 };
 
+// Extract lang from URL if present
+const urlParams = new URLSearchParams(window.location.search);
+const langFromUrl = urlParams.get('lang');
+const supportedLanguages = ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'];
+const initialLanguage = langFromUrl && supportedLanguages.includes(langFromUrl) 
+  ? langFromUrl 
+  : 'he';
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
     fallbackLng: 'he', // Default to Hebrew
-    lng: 'he', // Default language
+    lng: initialLanguage, // Use language from URL or default to Hebrew
     debug: false,
 
     interpolation: {

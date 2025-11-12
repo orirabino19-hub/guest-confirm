@@ -42,32 +42,19 @@ const ShortLink = () => {
           if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
             // Check if it's pointing to our Edge Function
             if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
-              // Extract parameters from Edge Function URL
-              const targetUrlObj = new URL(targetUrl);
-              const code = targetUrlObj.searchParams.get('code');
-              const lang = targetUrlObj.searchParams.get('lang') || 'he';
-              
-              // Detect if request is from a bot
-              const userAgent = navigator.userAgent || '';
-              const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
-              
-              if (isBot) {
-                // For bots, redirect to Edge Function to serve meta tags
-                window.location.href = targetUrl;
-              } else {
-                // For regular users, redirect directly to the RSVP page
-                const rsvpPath = `/rsvp/${code}/open?lang=${lang}`;
-                setRedirectPath(rsvpPath);
-                setLoading(false);
-              }
+              console.log('🔄 Redirecting to Edge Function:', targetUrl);
+              // Always redirect to Edge Function - it will handle bot detection and user redirect
+              window.location.href = targetUrl;
               return;
             }
             
             // Other external URLs - redirect directly
+            console.log('🌐 External redirect:', targetUrl);
             window.location.href = targetUrl;
             return;
           } else {
             // Internal path - use React Router
+            console.log('📍 Internal navigation:', targetUrl);
             const normalizedPath = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
             setRedirectPath(normalizedPath);
             setLoading(false);

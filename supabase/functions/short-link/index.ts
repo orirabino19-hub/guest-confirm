@@ -65,16 +65,23 @@ serve(async (req) => {
       .update({ clicks_count: shortUrl.clicks_count + 1 })
       .eq('id', shortUrl.id);
     
-    // Extract eventCode from target_url path (e.g., /rsvp/8/open -> 8)
-    const urlMatch = shortUrl.target_url.match(/\/rsvp\/([^\/]+)/);
-    const eventCode = urlMatch ? urlMatch[1] : null;
+    // Extract eventCode from target_url
+    // Try to extract from query params first (old format: ?code=8&lang=de)
+    const urlObj = new URL(shortUrl.target_url, 'https://dummy.com');
+    let eventCode = urlObj.searchParams.get('code');
+    
+    // If not in query params, try to extract from path (new format: /rsvp/8/open)
+    if (!eventCode) {
+      const urlMatch = shortUrl.target_url.match(/\/rsvp\/([^\/\?]+)/);
+      eventCode = urlMatch ? urlMatch[1] : null;
+    }
     
     if (!eventCode) {
-      console.error('Event code not found in target URL path');
+      console.error('Event code not found in target URL');
       return new Response('Invalid target URL - missing event code', { status: 400 });
     }
     
-    console.log('Extracted event code from URL path:', eventCode);
+    console.log('Extracted event code:', eventCode);
     
     // Detect if request is from a bot
     const userAgent = req.headers.get('user-agent') || '';

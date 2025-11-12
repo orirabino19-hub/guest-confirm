@@ -85,7 +85,7 @@ serve(async (req) => {
     const { data: languages } = await supabase
       .from('event_languages')
       .select('locale, translations')
-      .eq('event_id', eventId);
+      .eq('event_id', event.id);
     
     console.log('Languages loaded:', languages?.length || 0);
     

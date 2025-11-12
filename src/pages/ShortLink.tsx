@@ -40,7 +40,30 @@ const ShortLink = () => {
           // Check if target URL is absolute (starts with http:// or https://)
           const targetUrl = shortUrlData.target_url;
           if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
-            // External URL - redirect directly
+            // Check if it's pointing to our Edge Function
+            if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
+              // Extract parameters from Edge Function URL
+              const targetUrlObj = new URL(targetUrl);
+              const code = targetUrlObj.searchParams.get('code');
+              const lang = targetUrlObj.searchParams.get('lang') || 'he';
+              
+              // Detect if request is from a bot
+              const userAgent = navigator.userAgent || '';
+              const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
+              
+              if (isBot) {
+                // For bots, redirect to Edge Function to serve meta tags
+                window.location.href = targetUrl;
+              } else {
+                // For regular users, redirect directly to the RSVP page
+                const rsvpPath = `/rsvp/${code}/open?lang=${lang}`;
+                setRedirectPath(rsvpPath);
+                setLoading(false);
+              }
+              return;
+            }
+            
+            // Other external URLs - redirect directly
             window.location.href = targetUrl;
             return;
           } else {

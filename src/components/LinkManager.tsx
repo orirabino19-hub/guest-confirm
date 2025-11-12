@@ -323,13 +323,54 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     });
   };
 
-  const copySocialLink = (eventId: string, lang: string = 'he') => {
-    const socialUrl = `https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=${eventId}&lang=${lang}`;
-    navigator.clipboard.writeText(socialUrl);
-    toast({
-      title: "📱 קישור לשיתוף הועתק",
-      description: "קישור מותאם לווטסאפ/פייסבוק"
-    });
+  const copySocialLink = async (eventId: string, lang: string = 'he') => {
+    try {
+      // Get event short_code
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('short_code')
+        .eq('id', eventId)
+        .maybeSingle();
+      
+      const eventCode = eventData?.short_code || eventId;
+      
+      // Generate a unique slug for this short link
+      const randomSlug = Math.random().toString(36).substring(2, 8);
+      const slug = `${eventCode}-${lang}-${randomSlug}`;
+      
+      // Create the target URL (Edge Function with parameters)
+      const targetUrl = `https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=${eventCode}&lang=${lang}`;
+      
+      // Save to short_urls table
+      const { data: shortUrl, error } = await supabase
+        .from('short_urls')
+        .insert({
+          slug,
+          target_url: targetUrl,
+          is_active: true
+        })
+        .select('slug')
+        .single();
+      
+      if (error) throw error;
+      
+      // Copy the short branded link
+      const currentDomain = window.location.origin;
+      const shortLink = `${currentDomain}/s/${shortUrl.slug}`;
+      
+      navigator.clipboard.writeText(shortLink);
+      toast({
+        title: "📱 קישור קצר לשיתוף הועתק",
+        description: `${shortLink}`
+      });
+    } catch (error) {
+      console.error('Failed to create social link:', error);
+      toast({
+        title: "⚠️ שגיאה",
+        description: "לא ניתן ליצור קישור שיתוף",
+        variant: "destructive"
+      });
+    }
   };
 
   const deleteLink = async (linkId: string) => {

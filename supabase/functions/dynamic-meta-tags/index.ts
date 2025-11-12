@@ -21,33 +21,58 @@ serve(async (req) => {
     const userAgent = req.headers.get('user-agent') || '';
     const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
     
-    console.log('Request received:', { pathname, lang: langParam });
+    console.log('Request received:', { pathname, lang: langParam, userAgent });
     
-    // Extract eventId from path like /rsvp/8/open or from query params
-    let eventId = url.searchParams.get('eventId');
-    if (!eventId) {
-      const match = pathname.match(/\/rsvp\/([^\/]+)\/open/);
-      eventId = match ? match[1] : null;
+    // Get event code or ID from query params
+    const eventCode = url.searchParams.get('code');
+    const eventId = url.searchParams.get('eventId');
+    
+    if (!eventCode && !eventId) {
+      console.error('Event code or ID not found in URL');
+      return new Response('Event code or ID required', { status: 400 });
     }
     
-    if (!eventId) {
-      console.error('Event ID not found in URL');
-      return new Response('Event ID required', { status: 400 });
-    }
-    
-    console.log('Processing event:', eventId);
+    console.log('Processing event:', { eventCode, eventId });
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Fetch event data
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('id, title, description')
-      .eq('id', eventId)
-      .single();
+    // Fetch event data - try by short_code first, then by UUID
+    let event;
+    let eventError;
+    
+    if (eventCode) {
+      // Try to find by short_code
+      const result = await supabase
+        .from('events')
+        .select('id, title, description, short_code')
+        .eq('short_code', eventCode)
+        .maybeSingle();
+      event = result.data;
+      eventError = result.error;
+      
+      // If not found, try as UUID
+      if (!event && eventCode.length > 10) {
+        const uuidResult = await supabase
+          .from('events')
+          .select('id, title, description, short_code')
+          .eq('id', eventCode)
+          .maybeSingle();
+        event = uuidResult.data;
+        eventError = uuidResult.error;
+      }
+    } else if (eventId) {
+      // Direct UUID lookup
+      const result = await supabase
+        .from('events')
+        .select('id, title, description, short_code')
+        .eq('id', eventId)
+        .maybeSingle();
+      event = result.data;
+      eventError = result.error;
+    }
     
     if (eventError || !event) {
       console.error('Event not found:', eventError);
@@ -132,7 +157,9 @@ serve(async (req) => {
     };
     const locale = localeMap[langParam] || 'he_IL';
     
-    const currentUrl = `https://fp-pro.info/rsvp/${eventId}/open?lang=${langParam}`;
+    // Use short_code if available, otherwise use UUID
+    const displayCode = event.short_code || event.id;
+    const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}`;
     
     // If not a bot, redirect to the React app
     if (!isBot) {

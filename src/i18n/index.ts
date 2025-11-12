@@ -120,8 +120,8 @@ async function loadDynamicTranslations(eventId: string, language: string): Promi
   }
 }
 
-// Initialize i18n
-const initI18n = async () => {
+// Initialize i18n and return a promise
+export const initI18n = async (): Promise<void> => {
   const targetLang = (langFromUrl && supportedLanguages.includes(langFromUrl)) ? langFromUrl : 'he';
   
   // Initialize i18n with basic config first
@@ -154,8 +154,5 @@ const initI18n = async () => {
     loadingScreen.remove();
   }
 };
-
-// Start initialization
-initI18n();
 
 export default i18n;

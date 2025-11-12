@@ -13,13 +13,35 @@ const resources = {
   }
 };
 
+// ✅ Read language from URL BEFORE initializing i18n
+const getInitialLanguage = (): string => {
+  // Check URL parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const langParam = urlParams.get('lang');
+  
+  if (langParam && ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(langParam)) {
+    console.log('🌐 Initial language from URL:', langParam);
+    return langParam;
+  }
+  
+  // Fallback to localStorage or default
+  const storedLang = localStorage.getItem('i18nextLng');
+  if (storedLang && ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(storedLang)) {
+    return storedLang;
+  }
+  
+  return 'he'; // Default to Hebrew
+};
+
+const initialLanguage = getInitialLanguage();
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'he', // Default to Hebrew
-    lng: 'he', // Default language
+    fallbackLng: 'he',
+    lng: initialLanguage, // ✅ Use language from URL
     debug: false,
 
     interpolation: {
@@ -27,7 +49,8 @@ i18n
     },
 
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
+      lookupQuerystring: 'lang',
       lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
     },

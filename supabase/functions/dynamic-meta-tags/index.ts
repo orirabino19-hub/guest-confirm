@@ -182,21 +182,10 @@ serve(async (req) => {
     const displayCode = event.short_code || event.id;
     const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}`;
     
-    // If not a bot, redirect to the React app
-    if (!isBot) {
-      console.log('Regular user detected, redirecting to React app');
-      return new Response(null, {
-        status: 302,
-        headers: {
-          ...corsHeaders,
-          'Location': currentUrl,
-        },
-      });
-    }
+    console.log(isBot ? 'Bot detected, serving meta tags HTML' : 'Regular user, serving HTML with quick redirect');
     
-    console.log('Bot detected, serving meta tags HTML');
-    
-    // Generate HTML with dynamic meta tags for bots
+    // Generate HTML with dynamic meta tags (for both bots and users)
+    // Users will see this briefly before being redirected by meta-refresh
     const html = `<!DOCTYPE html>
 <html lang="${langParam}" dir="${langParam === 'he' || langParam === 'ar' ? 'rtl' : 'ltr'}">
   <head>

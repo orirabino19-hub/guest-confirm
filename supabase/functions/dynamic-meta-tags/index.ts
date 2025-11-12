@@ -22,6 +22,7 @@ serve(async (req) => {
     const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
     
     console.log('Request received:', { pathname, lang: langParam, userAgent });
+    console.log('Bot detected:', isBot);
     
     // Get event code or ID from query params
     const eventCode = url.searchParams.get('code');

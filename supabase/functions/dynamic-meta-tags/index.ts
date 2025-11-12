@@ -82,11 +82,11 @@ serve(async (req) => {
     
     console.log('Event loaded:', event.title);
     
-    // Fetch event languages and translations
+    // Fetch event languages and translations - use event.id instead of eventId
     const { data: languages } = await supabase
       .from('event_languages')
       .select('locale, translations')
-      .eq('event_id', eventId);
+      .eq('event_id', event.id);
     
     console.log('Languages loaded:', languages?.length || 0);
     
@@ -132,24 +132,24 @@ serve(async (req) => {
     
     const fullTitle = `${titlePrefix}${eventTitle}`;
     
-    // Get invitation image from storage
+    // Get invitation image from storage - use event.id instead of eventId
     const { data: storageData } = await supabase
       .storage
       .from('invitations')
-      .list(`${eventId}/${langParam}`, { limit: 1 });
+      .list(`${event.id}/${langParam}`, { limit: 1 });
     
     let imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/default-invitation.jpg`;
     if (storageData && storageData.length > 0) {
-      imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${eventId}/${langParam}/${storageData[0].name}`;
+      imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${event.id}/${langParam}/${storageData[0].name}`;
     } else {
       // Fallback to default language
       const { data: defaultStorage } = await supabase
         .storage
         .from('invitations')
-        .list(`${eventId}/he`, { limit: 1 });
+        .list(`${event.id}/he`, { limit: 1 });
       
       if (defaultStorage && defaultStorage.length > 0) {
-        imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${eventId}/he/${defaultStorage[0].name}`;
+        imageUrl = `${supabaseUrl}/storage/v1/object/public/invitations/${event.id}/he/${defaultStorage[0].name}`;
       }
     }
     

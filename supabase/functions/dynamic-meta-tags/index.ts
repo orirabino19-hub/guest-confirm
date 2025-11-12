@@ -15,7 +15,16 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const pathname = url.pathname;
-    const langParam = url.searchParams.get('lang') || 'he';
+    // Check both query param and path for language
+    let langParam = url.searchParams.get('lang');
+    if (!langParam) {
+      // Try to extract from path like /rsvp/8/open/de
+      const pathMatch = pathname.match(/\/open\/([a-z]{2})$/);
+      if (pathMatch) {
+        langParam = pathMatch[1];
+      }
+    }
+    langParam = langParam || 'he';
     
     // Detect if request is from a bot (WhatsApp, Facebook, Twitter, etc.)
     const userAgent = req.headers.get('user-agent') || '';

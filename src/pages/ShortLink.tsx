@@ -3,6 +3,18 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
+// Helper function to extract language from slug
+// Expected format: {eventCode}-{lang}-{randomString} or just {slug}
+const extractLanguageFromSlug = (slug: string): string => {
+  const parts = slug.split('-');
+  // If slug has at least 2 parts and second part is 2 characters (language code)
+  if (parts.length >= 2 && parts[1].length === 2) {
+    return parts[1];
+  }
+  // Default to Hebrew if no language found
+  return 'he';
+};
+
 const ShortLink = () => {
   const { slug } = useParams<{ slug: string }>();
   const [loading, setLoading] = useState(true);
@@ -31,6 +43,10 @@ const ShortLink = () => {
         if (shortUrlData && !shortUrlError) {
           console.log('✅ Found in short_urls table:', shortUrlData);
           
+          // Extract language from slug
+          const lang = extractLanguageFromSlug(slug);
+          console.log('🌍 Extracted language:', lang);
+          
           // Update clicks count
           await supabase
             .from('short_urls')
@@ -40,24 +56,25 @@ const ShortLink = () => {
           // Check if target URL is absolute (starts with http:// or https://)
           const targetUrl = shortUrlData.target_url;
           if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
-          // Check if it's pointing to our Edge Function
-          if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
-            console.log('🔄 Redirecting to Edge Function:', targetUrl);
-            // For regular users - browser will follow Edge Function's 302 redirect
-            // For bots (WhatsApp, Facebook) - they will read HTML with meta tags from Edge Function
-            window.location.href = targetUrl;
-            return;
-          }
+            // Check if it's pointing to our Edge Function
+            if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
+              console.log('🔄 Redirecting to Edge Function:', targetUrl);
+              // For regular users - browser will follow Edge Function's 302 redirect
+              // For bots (WhatsApp, Facebook) - they will read HTML with meta tags from Edge Function
+              window.location.href = targetUrl;
+              return;
+            }
             
             // Other external URLs - redirect directly
             console.log('🌐 External redirect:', targetUrl);
             window.location.href = targetUrl;
             return;
           } else {
-            // Internal path - use React Router
+            // Internal path - use React Router and add language parameter
             console.log('📍 Internal navigation:', targetUrl);
             const normalizedPath = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
-            setRedirectPath(normalizedPath);
+            const pathWithLang = `${normalizedPath}?lang=${lang}`;
+            setRedirectPath(pathWithLang);
             setLoading(false);
             return;
           }

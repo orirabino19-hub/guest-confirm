@@ -6,6 +6,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper function to extract language from slug
+// Expected format: {eventCode}-{lang}-{randomString} or just {slug}
+function extractLanguageFromSlug(slug: string): string {
+  const parts = slug.split('-');
+  // If slug has at least 2 parts and second part is 2 characters (language code)
+  if (parts.length >= 2 && parts[1].length === 2) {
+    return parts[1];
+  }
+  // Default to Hebrew if no language found
+  return 'he';
+}
+
 serve(async (req) => {
   // Handle CORS
   if (req.method === 'OPTIONS') {
@@ -43,23 +55,26 @@ serve(async (req) => {
     
     console.log('Short URL found:', { slug: shortUrl.slug, target_url: shortUrl.target_url });
     
+    // Extract language from slug
+    const langParam = extractLanguageFromSlug(slug);
+    console.log('Extracted language from slug:', langParam);
+    
     // Increment clicks count
     await supabase
       .from('short_urls')
       .update({ clicks_count: shortUrl.clicks_count + 1 })
       .eq('id', shortUrl.id);
     
-    // Parse target URL to extract event code and language
-    const targetUrl = new URL(shortUrl.target_url, supabaseUrl);
-    const eventCode = targetUrl.searchParams.get('code');
-    const langParam = targetUrl.searchParams.get('lang') || 'he';
+    // Extract eventCode from target_url path (e.g., /rsvp/8/open -> 8)
+    const urlMatch = shortUrl.target_url.match(/\/rsvp\/([^\/]+)/);
+    const eventCode = urlMatch ? urlMatch[1] : null;
     
     if (!eventCode) {
-      console.error('Event code not found in target URL');
+      console.error('Event code not found in target URL path');
       return new Response('Invalid target URL - missing event code', { status: 400 });
     }
     
-    console.log('Extracted from target URL:', { eventCode, lang: langParam });
+    console.log('Extracted event code from URL path:', eventCode);
     
     // Detect if request is from a bot
     const userAgent = req.headers.get('user-agent') || '';

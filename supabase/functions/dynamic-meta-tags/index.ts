@@ -229,15 +229,15 @@ serve(async (req) => {
     
     // Use short_code if available, otherwise use UUID
     const displayCode = event.short_code || event.id;
-    const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}`;
+    const currentUrl = `https://fp-pro.info/rsvp/${displayCode}/open?lang=${langParam}&direct=1`;
     
     console.log(isBot ? 'Bot detected, serving meta tags HTML' : 'Regular user, serving HTML with quick redirect');
     
     // Generate HTML with dynamic meta tags
     // For bots: no redirect (so they see the meta tags)
-    // For users: redirect to actual app
+    // For users: redirect to actual app with 'direct' param to bypass rewrite
     const redirectMeta = !isBot ? `<meta http-equiv="refresh" content="0;url=${currentUrl}" />` : '';
-    const redirectScript = !isBot ? `<script>window.location.href = '${currentUrl}';</script>` : '';
+    const redirectScript = !isBot ? `<script>window.location.replace('${currentUrl}');</script>` : '';
     
     const html = `<!DOCTYPE html>
 <html lang="${langParam}" dir="${langParam === 'he' || langParam === 'ar' ? 'rtl' : 'ltr'}">

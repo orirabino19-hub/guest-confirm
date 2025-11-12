@@ -6,11 +6,23 @@
     },
     {
       "source": "/rsvp/:code/open/:lang",
+      "missing": [
+        {
+          "type": "query",
+          "key": "direct"
+        }
+      ],
       "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=:code&lang=:lang"
     },
     {
       "source": "/rsvp/:code/open",
-      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=:code&lang=$arg_lang"
+      "missing": [
+        {
+          "type": "query",
+          "key": "direct"
+        }
+      ],
+      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?code=:code"
     }
   ]
 }

@@ -2,3 +2,6 @@ project_id = "jaddfwycowygakforhro"
 
 [functions.dynamic-meta-tags]
 verify_jwt = false
+
+[functions.short-link]
+verify_jwt = false

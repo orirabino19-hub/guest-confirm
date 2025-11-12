@@ -91,45 +91,80 @@ serve(async (req) => {
     console.log('Languages loaded:', languages?.length || 0);
     
     // Helper to get translated text - check multiple keys in order
-    const getTranslation = (keys: string[], defaultValue: string) => {
-      if (!languages || languages.length === 0) return defaultValue;
+    const getTranslation = (keys: string[], fallbackText: Record<string, string>) => {
+      if (!languages || languages.length === 0) {
+        return fallbackText[langParam] || fallbackText['en'] || fallbackText['he'] || '';
+      }
       
+      // Try to find translation for requested language
       const lang = languages.find(l => l.locale === langParam);
       if (lang?.translations && typeof lang.translations === 'object') {
-        // Try each key in order until we find a translation
         for (const key of keys) {
           const translation = (lang.translations as any)[key];
           if (translation) {
-            console.log(`Translation found for key "${key}":`, translation);
-            // Extract text from the translation object structure
+            console.log(`Translation found for key "${key}" in ${langParam}:`, translation);
             if (translation.text && typeof translation.text === 'object') {
               const translatedText = translation.text[langParam];
               if (translatedText) {
-                console.log(`Extracted text for "${key}" in ${langParam}:`, translatedText);
+                console.log(`Using translation for "${key}":`, translatedText);
                 return translatedText;
               }
             }
-            // Fallback if translation is a simple string
             if (typeof translation === 'string') {
               return translation;
             }
           }
         }
       }
-      return defaultValue;
+      
+      // Fallback to English if requested language not found
+      if (langParam !== 'en') {
+        console.log(`No ${langParam} translation found, trying English`);
+        const enLang = languages.find(l => l.locale === 'en');
+        if (enLang?.translations && typeof enLang.translations === 'object') {
+          for (const key of keys) {
+            const translation = (enLang.translations as any)[key];
+            if (translation) {
+              if (translation.text && typeof translation.text === 'object') {
+                const translatedText = translation.text['en'];
+                if (translatedText) {
+                  console.log(`Using English fallback for "${key}":`, translatedText);
+                  return translatedText;
+                }
+              }
+              if (typeof translation === 'string') {
+                return translation;
+              }
+            }
+          }
+        }
+      }
+      
+      // Final fallback to provided text
+      console.log(`No translation found, using fallback for ${langParam}`);
+      return fallbackText[langParam] || fallbackText['en'] || fallbackText['he'] || '';
     };
     
     // Build translated content - try rsvp keys first (matches RSVP page), then event keys
-    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], event.title || 'אירוע');
-    const eventDescription = getTranslation(
-      ['rsvp.eventDescription', 'event.description'],
-      event.description || (
-        langParam === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
-        langParam === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
-        langParam === 'en' ? `You are invited to the event "${eventTitle}"` :
-        `הוזמנת לאירוע "${eventTitle}"`
-      )
-    );
+    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], {
+      he: event.title || 'אירוע',
+      en: event.title || 'Event',
+      de: event.title || 'Veranstaltung',
+      ar: event.title || 'حدث',
+      ru: event.title || 'Событие',
+      fr: event.title || 'Événement',
+      es: event.title || 'Evento'
+    });
+    
+    const eventDescription = getTranslation(['rsvp.eventDescription', 'event.description'], {
+      he: event.description || `הוזמנת לאירוע "${eventTitle}"`,
+      en: event.description || `You are invited to the event "${eventTitle}"`,
+      de: event.description || `Sie sind zum Event "${eventTitle}" eingeladen`,
+      ar: event.description || `أنت مدعو للحدث "${eventTitle}"`,
+      ru: event.description || `Вы приглашены на событие "${eventTitle}"`,
+      fr: event.description || `Vous êtes invité à l'événement "${eventTitle}"`,
+      es: event.description || `Estás invitado al evento "${eventTitle}"`
+    });
     
     const titlePrefix = 
       langParam === 'he' ? 'הזמנה ל' :

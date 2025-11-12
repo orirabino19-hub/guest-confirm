@@ -233,8 +233,12 @@ serve(async (req) => {
     
     console.log(isBot ? 'Bot detected, serving meta tags HTML' : 'Regular user, serving HTML with quick redirect');
     
-    // Generate HTML with dynamic meta tags (for both bots and users)
-    // Users will see this briefly before being redirected by meta-refresh
+    // Generate HTML with dynamic meta tags
+    // For bots: no redirect (so they see the meta tags)
+    // For users: redirect to actual app
+    const redirectMeta = !isBot ? `<meta http-equiv="refresh" content="0;url=${currentUrl}" />` : '';
+    const redirectScript = !isBot ? `<script>window.location.href = '${currentUrl}';</script>` : '';
+    
     const html = `<!DOCTYPE html>
 <html lang="${langParam}" dir="${langParam === 'he' || langParam === 'ar' ? 'rtl' : 'ltr'}">
   <head>
@@ -263,15 +267,12 @@ serve(async (req) => {
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/jpeg" />
     
-    <!-- Redirect to actual app -->
-    <meta http-equiv="refresh" content="0;url=${currentUrl}" />
-    <script>
-      window.location.href = '${currentUrl}';
-    </script>
+    ${redirectMeta}
+    ${redirectScript}
   </head>
   <body>
-    <p>מפנה אותך לדף האירוע... / Redirecting to event page...</p>
-    <p><a href="${currentUrl}">לחץ כאן אם לא הועברת אוטומטית / Click here if not redirected automatically</a></p>
+    ${!isBot ? '<p>מפנה אותך לדף האירוע... / Redirecting to event page...</p>' : '<p>FP Pro Events</p>'}
+    ${!isBot ? `<p><a href="${currentUrl}">לחץ כאן אם לא הועברת אוטומטית / Click here if not redirected automatically</a></p>` : ''}
   </body>
 </html>`;
     

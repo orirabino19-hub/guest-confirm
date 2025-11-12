@@ -32,94 +32,11 @@ const ShortLink = () => {
       try {
         console.log('🔍 Resolving short link:', slug);
 
-        // First, try to find in the new short_urls table (independent URL shortener)
-        const { data: shortUrlData, error: shortUrlError } = await supabase
-          .from('short_urls')
-          .select('slug, target_url, is_active, clicks_count')
-          .eq('slug', slug)
-          .eq('is_active', true)
-          .maybeSingle();
-
-        if (shortUrlData && !shortUrlError) {
-          console.log('✅ Found in short_urls table:', shortUrlData);
-          
-          // Extract language from slug
-          const lang = extractLanguageFromSlug(slug);
-          console.log('🌍 Extracted language:', lang);
-          
-          // Update clicks count
-          await supabase
-            .from('short_urls')
-            .update({ clicks_count: shortUrlData.clicks_count + 1 })
-            .eq('slug', slug);
-
-          // Check if target URL is absolute (starts with http:// or https://)
-          const targetUrl = shortUrlData.target_url;
-          if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
-            // Check if it's pointing to our Edge Function
-            if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
-              console.log('🔄 Redirecting to Edge Function:', targetUrl);
-              // For regular users - browser will follow Edge Function's 302 redirect
-              // For bots (WhatsApp, Facebook) - they will read HTML with meta tags from Edge Function
-              window.location.href = targetUrl;
-              return;
-            }
-            
-            // Other external URLs - redirect directly
-            console.log('🌐 External redirect:', targetUrl);
-            window.location.href = targetUrl;
-            return;
-          } else {
-            // Internal path - use React Router and add language parameter
-            console.log('📍 Internal navigation:', targetUrl);
-            const normalizedPath = targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`;
-            const pathWithLang = `${normalizedPath}?lang=${lang}`;
-            setRedirectPath(pathWithLang);
-            setLoading(false);
-            return;
-          }
-        }
-
-        // If not found in short_urls, try the old links table
-        const { data: linkData, error: linkError } = await supabase
-          .from('links')
-          .select('id, event_id, type, slug')
-          .eq('slug', slug)
-          .eq('is_active', true)
-          .maybeSingle();
-
-        console.log('Link lookup result:', { linkData, linkError });
-
-        if (linkError || !linkData) {
-          console.error('Short link not found:', slug);
-          setError(true);
-          setLoading(false);
-          return;
-        }
-
-        // קבלת קוד האירוע
-        const { data: eventData } = await supabase
-          .from('events')
-          .select('short_code, id')
-          .eq('id', linkData.event_id)
-          .maybeSingle();
-
-        const eventCode = eventData?.short_code || eventData?.id;
-
-        // בניית הנתיב המתאים לפי סוג הלינק
-        let path = '';
-        if (linkData.type === 'open') {
-          path = `/rsvp/${eventCode}/open`;
-        } else if (linkData.type === 'personal' && linkData.slug.includes('/')) {
-          // לינק אישי עם שם
-          path = `/rsvp/${eventCode}/${linkData.slug}`;
-        } else {
-          // אם זה לינק אישי אבל בלי שם בודד - נעביר ל-open
-          path = `/rsvp/${eventCode}/open`;
-        }
-
-        console.log('✅ Redirecting to:', path);
-        setRedirectPath(path);
+        // For all /s/* routes, redirect directly to short-link Edge Function
+        // This handles both bots (will get HTML with meta tags) and regular users (will get 302 redirect)
+        console.log('🔄 Redirecting to short-link Edge Function');
+        window.location.href = `https://jaddfwycowygakforhro.supabase.co/functions/v1/short-link?s=${slug}`;
+        return;
       } catch (err) {
         console.error('Error resolving short link:', err);
         setError(true);

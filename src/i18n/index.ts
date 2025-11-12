@@ -124,9 +124,18 @@ async function loadDynamicTranslations(eventId: string, language: string): Promi
 export const initI18n = async (): Promise<void> => {
   const targetLang = (langFromUrl && supportedLanguages.includes(langFromUrl)) ? langFromUrl : 'he';
   
-  // Load dynamic translations BEFORE initializing i18n
-  const finalResources = { ...resources };
+  // Build finalResources dynamically based on URL lang
+  const finalResources: Record<string, any> = {};
   
+  // Only include Hebrew if no lang param or lang=he
+  if (!langFromUrl || langFromUrl === 'he') {
+    finalResources.he = { translation: he };
+  }
+  
+  // Always include English as fallback
+  finalResources.en = { translation: en };
+  
+  // Load dynamic translations for requested language
   if (eventIdentifier && langFromUrl && supportedLanguages.includes(langFromUrl)) {
     const dynamicTranslations = await loadDynamicTranslations(eventIdentifier, langFromUrl);
     
@@ -145,7 +154,7 @@ export const initI18n = async (): Promise<void> => {
     .init({
       resources: finalResources,
       lng: targetLang,
-      fallbackLng: 'en',
+      fallbackLng: ['en'], // Always fallback to English, not Hebrew
       debug: false,
       interpolation: {
         escapeValue: false,

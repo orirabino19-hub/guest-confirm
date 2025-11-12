@@ -127,16 +127,17 @@ export const initI18n = async (): Promise<void> => {
   // Build finalResources dynamically based on URL lang
   const finalResources: Record<string, any> = {};
   
-  // Only include Hebrew if no lang param or lang=he
-  if (!langFromUrl || langFromUrl === 'he') {
-    finalResources.he = { translation: he };
-  }
-  
   // Always include English as fallback
   finalResources.en = { translation: en };
   
+  // If target language is Hebrew, include it
+  if (targetLang === 'he') {
+    finalResources.he = { translation: he };
+  }
+  
   // Load dynamic translations for requested language
-  if (eventIdentifier && langFromUrl && supportedLanguages.includes(langFromUrl)) {
+  if (eventIdentifier && langFromUrl && supportedLanguages.includes(langFromUrl) && langFromUrl !== 'en' && langFromUrl !== 'he') {
+    console.log('🔄 Loading dynamic translations for', langFromUrl);
     const dynamicTranslations = await loadDynamicTranslations(eventIdentifier, langFromUrl);
     
     if (dynamicTranslations && Object.keys(dynamicTranslations).length > 0) {
@@ -145,7 +146,19 @@ export const initI18n = async (): Promise<void> => {
         translation: dynamicTranslations
       };
       console.log('🌐 Dynamic translations loaded for', langFromUrl, '- total keys:', Object.keys(dynamicTranslations).length);
+    } else {
+      console.log('⚠️ No dynamic translations found for', langFromUrl, '- will fallback to English');
+      // Make sure we don't try to use a language without resources
+      // If no translations exist, we should fallback to English in i18n config
     }
+  }
+  
+  // Determine if we have resources for target language
+  const hasTargetLangResources = finalResources[targetLang];
+  const effectiveLang = hasTargetLangResources ? targetLang : 'en';
+  
+  if (!hasTargetLangResources && targetLang !== 'en') {
+    console.log('⚠️ No resources for', targetLang, '- falling back to English');
   }
   
   // Now initialize i18n with all resources ready
@@ -153,18 +166,19 @@ export const initI18n = async (): Promise<void> => {
     .use(initReactI18next)
     .init({
       resources: finalResources,
-      lng: targetLang,
+      lng: effectiveLang, // Use English if no resources for target language
       fallbackLng: ['en'], // Always fallback to English, not Hebrew
-      debug: false,
+      debug: true, // Enable debug to see what's happening
       interpolation: {
         escapeValue: false,
       },
     });
 
-  console.log('✅ i18n initialized with language:', targetLang);
+  console.log('✅ i18n initialized with language:', effectiveLang, '(requested:', targetLang, ')');
+  console.log('📦 Available resources:', Object.keys(finalResources));
 
-  // Wait for i18n to be fully ready before removing loading screen
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Wait for i18n to be fully ready and for React to process the language change
+  await new Promise(resolve => setTimeout(resolve, 200));
 
   // Remove loading screen
   const loadingScreen = document.getElementById('i18n-loading');

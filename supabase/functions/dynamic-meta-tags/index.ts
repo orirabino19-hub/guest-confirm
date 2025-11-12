@@ -17,6 +17,10 @@ serve(async (req) => {
     const pathname = url.pathname;
     const langParam = url.searchParams.get('lang') || 'he';
     
+    // Detect if request is from a bot (WhatsApp, Facebook, Twitter, etc.)
+    const userAgent = req.headers.get('user-agent') || '';
+    const isBot = /WhatsApp|facebookexternalhit|Facebot|Twitterbot|TelegramBot|bot|crawler|spider|LinkedInBot/i.test(userAgent);
+    
     console.log('Request received:', { pathname, lang: langParam });
     
     // Extract eventId from path like /rsvp/8/open or from query params
@@ -130,7 +134,21 @@ serve(async (req) => {
     
     const currentUrl = `https://fp-pro.info/rsvp/${eventId}/open?lang=${langParam}`;
     
-    // Generate HTML with dynamic meta tags
+    // If not a bot, redirect to the React app
+    if (!isBot) {
+      console.log('Regular user detected, redirecting to React app');
+      return new Response(null, {
+        status: 302,
+        headers: {
+          ...corsHeaders,
+          'Location': currentUrl,
+        },
+      });
+    }
+    
+    console.log('Bot detected, serving meta tags HTML');
+    
+    // Generate HTML with dynamic meta tags for bots
     const html = `<!DOCTYPE html>
 <html lang="${langParam}" dir="${langParam === 'he' || langParam === 'ar' ? 'rtl' : 'ltr'}">
   <head>

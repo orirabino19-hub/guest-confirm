@@ -323,6 +323,15 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     });
   };
 
+  const copySocialLink = (eventId: string, lang: string = 'he') => {
+    const socialUrl = `https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=${eventId}&lang=${lang}`;
+    navigator.clipboard.writeText(socialUrl);
+    toast({
+      title: "📱 קישור לשיתוף הועתק",
+      description: "קישור מותאם לווטסאפ/פייסבוק"
+    });
+  };
+
   const deleteLink = async (linkId: string) => {
     try {
       await supabase.from('links').delete().eq('id', linkId);
@@ -492,20 +501,38 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
                     <p className="text-xs text-muted-foreground font-mono break-all">
                       {link.url}
                     </p>
+                    {link.type === 'open' && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        💡 טיפ: השתמש בכפתור 📱 לשיתוף בווטסאפ/פייסבוק עם תמונה מותאמת
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => copyLink(link.url, link.value)}
+                      title="העתק קישור רגיל"
                     >
                       <Copy className="h-4 w-4" />
                     </Button>
+                    {link.type === 'open' && selectedEventId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => copySocialLink(selectedEventId, 'he')}
+                        title="העתק קישור לשיתוף חברתי (WhatsApp/Facebook)"
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        📱
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteLink(link.id)}
                       className="text-red-500 hover:text-red-700"
+                      title="מחק קישור"
                     >
                       ×
                     </Button>

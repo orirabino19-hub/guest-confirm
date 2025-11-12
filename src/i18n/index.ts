@@ -13,6 +13,9 @@ const resources = {
   }
 };
 
+// Languages that have translation files
+const availableLanguages = ['he', 'en'];
+
 // Extract lang from URL if present
 const urlParams = new URLSearchParams(window.location.search);
 const langFromUrl = urlParams.get('lang');
@@ -23,12 +26,15 @@ if (langFromUrl && supportedLanguages.includes(langFromUrl)) {
   // Store in localStorage to prevent any flash of wrong language
   localStorage.setItem('i18nextLng', langFromUrl);
   
+  // If the language doesn't have translations, fall back to English (not Hebrew)
+  const actualLng = availableLanguages.includes(langFromUrl) ? langFromUrl : 'en';
+  
   i18n
     .use(initReactI18next)
     .init({
       resources,
-      lng: langFromUrl,
-      fallbackLng: 'he',
+      lng: actualLng,
+      fallbackLng: 'en',
       debug: false,
       interpolation: {
         escapeValue: false,

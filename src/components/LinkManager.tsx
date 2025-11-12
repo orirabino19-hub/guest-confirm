@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
-import { Link, Copy, User, Users, Plus, Settings } from 'lucide-react';
+import { Link, Copy, User, Users, Plus, Settings, Globe } from 'lucide-react';
 import OpenRSVPCustomFields from './OpenRSVPCustomFields';
 import { CustomField } from './EventManager';
 import { useShortCodes } from '@/hooks/useShortCodes';
@@ -25,11 +26,19 @@ interface CustomLink {
   createdAt: string;
 }
 
+interface SystemLanguage {
+  code: string;
+  name: string;
+  native_name: string;
+  flag: string | null;
+}
+
 const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) => {
   const [customName, setCustomName] = useState('');
   const [customSlug, setCustomSlug] = useState('');
   const [openSlug, setOpenSlug] = useState('');
   const [customLinks, setCustomLinks] = useState<CustomLink[]>([]);
+  const [systemLanguages, setSystemLanguages] = useState<SystemLanguage[]>([]);
   const { toast } = useToast();
   const { generateShortLink } = useShortCodes();
 
@@ -97,8 +106,24 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
     }
   };
 
+  // Load system languages
+  const loadSystemLanguages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('system_languages')
+        .select('code, name, native_name, flag')
+        .order('name');
+      
+      if (error) throw error;
+      setSystemLanguages(data || []);
+    } catch (error) {
+      console.error('Failed to load languages:', error);
+    }
+  };
+
   useEffect(() => {
     loadLinks();
+    loadSystemLanguages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId]);
 
@@ -558,15 +583,41 @@ const LinkManager = ({ selectedEventId, selectedEventSlug }: LinkManagerProps) =
                       <Copy className="h-4 w-4" />
                     </Button>
                     {link.type === 'open' && selectedEventId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => copySocialLink(selectedEventId, 'he')}
-                        title="העתק קישור לשיתוף חברתי (WhatsApp/Facebook)"
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        📱
-                      </Button>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="צור קישור לשיתוף חברתי בשפה מסוימת"
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            <Globe className="h-4 w-4 ml-1" />
+                            📱
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-64 p-2" align="end">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium mb-2">בחר שפה לשיתוף:</p>
+                            <div className="max-h-48 overflow-y-auto space-y-1">
+                              {systemLanguages.map((lang) => (
+                                <Button
+                                  key={lang.code}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start text-right"
+                                  onClick={() => copySocialLink(selectedEventId, lang.code)}
+                                >
+                                  {lang.flag && <span className="ml-2">{lang.flag}</span>}
+                                  <span className="flex-1">{lang.native_name}</span>
+                                  <span className="text-xs text-muted-foreground mr-2">
+                                    {lang.code}
+                                  </span>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                     <Button
                       variant="ghost"

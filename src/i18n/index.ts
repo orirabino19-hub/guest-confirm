@@ -163,6 +163,9 @@ export const initI18n = async (): Promise<void> => {
 
   console.log('✅ i18n initialized with language:', targetLang);
 
+  // Wait for i18n to be fully ready before removing loading screen
+  await new Promise(resolve => setTimeout(resolve, 100));
+
   // Remove loading screen
   const loadingScreen = document.getElementById('i18n-loading');
   if (loadingScreen) {

@@ -90,25 +90,34 @@ serve(async (req) => {
     
     console.log('Languages loaded:', languages?.length || 0);
     
-    // Helper to get translated text
-    const getTranslation = (key: string, defaultValue: string) => {
+    // Helper to get translated text - check multiple keys in order
+    const getTranslation = (keys: string[], defaultValue: string) => {
       if (!languages || languages.length === 0) return defaultValue;
       
       const lang = languages.find(l => l.locale === langParam);
       if (lang?.translations && typeof lang.translations === 'object') {
-        const translation = (lang.translations as any)[key];
-        if (translation) return translation;
+        // Try each key in order until we find a translation
+        for (const key of keys) {
+          const translation = (lang.translations as any)[key];
+          if (translation) {
+            console.log(`Translation found for key "${key}":`, translation);
+            return translation;
+          }
+        }
       }
       return defaultValue;
     };
     
-    // Build translated content
-    const eventTitle = event.title || getTranslation('event.title', 'אירוע');
-    const eventDescription = event.description || getTranslation('event.description', 
-      langParam === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
-      langParam === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
-      langParam === 'en' ? `You are invited to the event "${eventTitle}"` :
-      `הוזמנת לאירוע "${eventTitle}"`
+    // Build translated content - try rsvp keys first (matches RSVP page), then event keys
+    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], event.title || 'אירוע');
+    const eventDescription = getTranslation(
+      ['rsvp.eventDescription', 'event.description'],
+      event.description || (
+        langParam === 'he' ? `הוזמנת לאירוע "${eventTitle}"` :
+        langParam === 'de' ? `Sie sind zum Event "${eventTitle}" eingeladen` :
+        langParam === 'en' ? `You are invited to the event "${eventTitle}"` :
+        `הוזמנת לאירוע "${eventTitle}"`
+      )
     );
     
     const titlePrefix = 

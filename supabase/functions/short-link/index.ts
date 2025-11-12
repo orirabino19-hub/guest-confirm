@@ -114,7 +114,18 @@ serve(async (req) => {
           const translation = (lang.translations as any)[key];
           if (translation) {
             console.log(`Translation found for key "${key}":`, translation);
-            return translation;
+            // Extract text from the translation object structure
+            if (translation.text && typeof translation.text === 'object') {
+              const translatedText = translation.text[langParam];
+              if (translatedText) {
+                console.log(`Extracted text for "${key}" in ${langParam}:`, translatedText);
+                return translatedText;
+              }
+            }
+            // Fallback if translation is a simple string
+            if (typeof translation === 'string') {
+              return translation;
+            }
           }
         }
       }

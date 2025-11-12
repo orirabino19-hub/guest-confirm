@@ -34,6 +34,8 @@ const App = () => {
             <Route path="/admin" element={<Admin />} />
             <Route path="/client-login" element={<ClientLogin />} />
             <Route path="/client-dashboard/:eventId" element={<ClientDashboard />} />
+            {/* Short links route - must be before the catch-all */}
+            <Route path="/s/:slug" element={<ShortLink />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/:slug" element={<ShortLink />} />
             <Route path="*" element={<NotFound />} />

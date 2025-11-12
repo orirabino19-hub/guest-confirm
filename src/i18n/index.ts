@@ -124,29 +124,35 @@ async function loadDynamicTranslations(eventId: string, language: string): Promi
 export const initI18n = async (): Promise<void> => {
   const targetLang = (langFromUrl && supportedLanguages.includes(langFromUrl)) ? langFromUrl : 'he';
   
-  // Initialize i18n with basic config first
+  // Load dynamic translations BEFORE initializing i18n
+  const finalResources = { ...resources };
+  
+  if (eventIdentifier && langFromUrl && supportedLanguages.includes(langFromUrl)) {
+    const dynamicTranslations = await loadDynamicTranslations(eventIdentifier, langFromUrl);
+    
+    if (dynamicTranslations && Object.keys(dynamicTranslations).length > 0) {
+      // Add dynamic translations to resources before init
+      finalResources[langFromUrl] = {
+        translation: dynamicTranslations
+      };
+      console.log('🌐 Dynamic translations loaded for', langFromUrl, '- total keys:', Object.keys(dynamicTranslations).length);
+    }
+  }
+  
+  // Now initialize i18n with all resources ready
   await i18n
     .use(initReactI18next)
     .init({
-      resources,
+      resources: finalResources,
       lng: targetLang,
-      fallbackLng: 'en', // Fallback to English instead of Hebrew
+      fallbackLng: 'en',
       debug: false,
       interpolation: {
         escapeValue: false,
       },
     });
 
-  // Load dynamic translations if we have an event identifier
-  if (eventIdentifier && langFromUrl && supportedLanguages.includes(langFromUrl)) {
-    const dynamicTranslations = await loadDynamicTranslations(eventIdentifier, langFromUrl);
-    
-    if (dynamicTranslations && Object.keys(dynamicTranslations).length > 0) {
-      // Add dynamic translations to i18n
-      i18n.addResourceBundle(langFromUrl, 'translation', dynamicTranslations, true, true);
-      console.log('🌐 Dynamic translations loaded for', langFromUrl);
-    }
-  }
+  console.log('✅ i18n initialized with language:', targetLang);
 
   // Remove loading screen
   const loadingScreen = document.getElementById('i18n-loading');

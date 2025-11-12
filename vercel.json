@@ -3,6 +3,10 @@
     {
       "source": "/s/:slug",
       "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/short-link?s=:slug"
+    },
+    {
+      "source": "/rsvp/:eventId/open",
+      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=:eventId"
     }
   ]
 }

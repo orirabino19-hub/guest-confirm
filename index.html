@@ -73,6 +73,60 @@
   </head>
 
   <body>
+    <!-- Loading screen while translations load -->
+    <div id="i18n-loading" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    ">
+      <div style="text-align: center; color: white;">
+        <div style="
+          width: 50px;
+          height: 50px;
+          border: 3px solid rgba(255,255,255,0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 20px;
+        "></div>
+        <p id="loading-text" style="font-size: 18px; font-family: 'Open Sans', sans-serif;">טוען...</p>
+      </div>
+    </div>
+    
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    
+    <script>
+      // Set loading text based on language
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang');
+        const loadingTexts = {
+          'he': 'טוען...',
+          'en': 'Loading...',
+          'de': 'Wird geladen...',
+          'ar': 'جاري التحميل...',
+          'ru': 'Загрузка...',
+          'fr': 'Chargement...',
+          'es': 'Cargando...'
+        };
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText && lang && loadingTexts[lang]) {
+          loadingText.textContent = loadingTexts[lang];
+        }
+      })();
+    </script>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

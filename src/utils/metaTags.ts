@@ -76,20 +76,52 @@ export const generateRSVPMetaTags = (eventName: string, guestName: string, invit
 };
 
 /**
+ * Map language codes to Open Graph locales
+ */
+export const getOpenGraphLocale = (language: string): string => {
+  const localeMap: Record<string, string> = {
+    'he': 'he_IL',
+    'en': 'en_US',
+    'de': 'de_DE',
+    'ar': 'ar_AR',
+    'ru': 'ru_RU',
+    'fr': 'fr_FR',
+    'es': 'es_ES'
+  };
+  return localeMap[language] || 'he_IL';
+};
+
+/**
  * Generate meta tags for Open RSVP page
  */
-export const generateOpenRSVPMetaTags = (eventName: string, eventDescription?: string, invitationImage?: string): MetaTagsData => {
-  const title = `הזמנה ל${eventName}`;
+export const generateOpenRSVPMetaTags = (
+  eventName: string, 
+  eventDescription?: string, 
+  invitationImage?: string,
+  locale?: string,
+  translations?: {
+    titlePrefix?: string;
+    defaultDescription?: string;
+    openRegistration?: string;
+  }
+): MetaTagsData => {
+  const titlePrefix = translations?.titlePrefix || 'הזמנה ל';
+  const title = `${titlePrefix}${eventName}`;
+  
+  const openRegistration = translations?.openRegistration || 'הרשמה פתוחה לכולם - הרשם עכשיו!';
+  const defaultDescription = translations?.defaultDescription || `הוזמנת לאירוע "${eventName}". ${openRegistration}`;
+  
   const description = eventDescription 
-    ? `${eventDescription} - הרשמה פתוחה לכולם!`
-    : `הוזמנת לאירוע "${eventName}". הרשמה פתוחה לכולם - הרשם עכשיו!`;
+    ? `${eventDescription} - ${openRegistration}`
+    : defaultDescription;
 
   return {
     title,
     description,
     eventName,
     url: window.location.href,
-    image: invitationImage || '/fleishman-peles-logo.png' // Use uploaded invitation or fallback
+    image: invitationImage || '/fleishman-peles-logo.png',
+    locale: locale || 'he_IL'
   };
 };
 

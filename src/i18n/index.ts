@@ -17,28 +17,38 @@ const resources = {
 const urlParams = new URLSearchParams(window.location.search);
 const langFromUrl = urlParams.get('lang');
 const supportedLanguages = ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'];
-const initialLanguage = langFromUrl && supportedLanguages.includes(langFromUrl) 
-  ? langFromUrl 
-  : 'he';
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'he', // Default to Hebrew
-    lng: initialLanguage, // Use language from URL or default to Hebrew
-    debug: false,
-
-    interpolation: {
-      escapeValue: false, // React already escapes
-    },
-
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      lookupLocalStorage: 'i18nextLng',
-      caches: ['localStorage'],
-    },
-  });
+// If lang is in URL, use it directly without LanguageDetector
+if (langFromUrl && supportedLanguages.includes(langFromUrl)) {
+  i18n
+    .use(initReactI18next)
+    .init({
+      resources,
+      lng: langFromUrl,
+      fallbackLng: 'he',
+      debug: false,
+      interpolation: {
+        escapeValue: false,
+      },
+    });
+} else {
+  // Use LanguageDetector only when no URL param
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'he',
+      debug: false,
+      interpolation: {
+        escapeValue: false,
+      },
+      detection: {
+        order: ['localStorage', 'navigator', 'htmlTag'],
+        lookupLocalStorage: 'i18nextLng',
+        caches: ['localStorage'],
+      },
+    });
+}
 
 export default i18n;

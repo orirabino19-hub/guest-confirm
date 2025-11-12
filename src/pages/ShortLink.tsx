@@ -40,13 +40,29 @@ const ShortLink = () => {
           // Check if target URL is absolute (starts with http:// or https://)
           const targetUrl = shortUrlData.target_url;
           if (targetUrl.startsWith('http://') || targetUrl.startsWith('https://')) {
-            // Check if it's pointing to our Edge Function
-            if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
-              console.log('🔄 Redirecting to Edge Function:', targetUrl);
-              // Always redirect to Edge Function - it will handle bot detection and user redirect
+          // Check if it's pointing to our Edge Function
+          if (targetUrl.includes('/functions/v1/dynamic-meta-tags')) {
+            console.log('🔄 Extracting params from Edge Function URL:', targetUrl);
+            
+            try {
+              // Extract code and lang from the Edge Function URL
+              const urlObj = new URL(targetUrl);
+              const code = urlObj.searchParams.get('code');
+              const lang = urlObj.searchParams.get('lang') || 'he';
+              
+              // Direct navigation to RSVP page - bypasses Edge Function for regular users
+              // Bots will still get meta tags from the Edge Function since they don't execute JS
+              console.log('✅ Direct redirect to RSVP:', `/rsvp/${code}/open?lang=${lang}`);
+              setRedirectPath(`/rsvp/${code}/open?lang=${lang}`);
+              setLoading(false);
+              return;
+            } catch (err) {
+              console.error('Failed to parse Edge Function URL:', err);
+              // Fallback to original behavior if parsing fails
               window.location.href = targetUrl;
               return;
             }
+          }
             
             // Other external URLs - redirect directly
             console.log('🌐 External redirect:', targetUrl);

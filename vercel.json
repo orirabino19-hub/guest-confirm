@@ -6,7 +6,7 @@
     },
     {
       "source": "/rsvp/:eventId/open",
-      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=:eventId"
+      "destination": "https://jaddfwycowygakforhro.supabase.co/functions/v1/dynamic-meta-tags?eventId=:eventId&lang=$query_lang"
     }
   ]
 }

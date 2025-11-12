@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Copy, ExternalLink, Trash2, BarChart3, Share2 } from "lucide-react";
+import { Copy, ExternalLink, Trash2, BarChart3 } from "lucide-react";
 
 interface ShortURL {
   id: string;
@@ -109,20 +109,11 @@ export const URLShortener = () => {
   };
 
   const copyUrl = (slug: string) => {
-    const fullUrl = `${window.location.origin}/${slug}`;
+    const fullUrl = `https://fp-pro.info/s/${slug}`;
     navigator.clipboard.writeText(fullUrl);
     toast({
       title: "✅ הועתק!",
-      description: "הלינק הועתק ללוח",
-    });
-  };
-
-  const copyShareUrl = (slug: string) => {
-    const shareUrl = `https://jaddfwycowygakforhro.supabase.co/functions/v1/short-link?s=${slug}`;
-    navigator.clipboard.writeText(shareUrl);
-    toast({
-      title: "✅ הועתק לשיתוף!",
-      description: "לינק השיתוף הועתק ללוח - מתאים ל-WhatsApp/Facebook",
+      description: "הלינק הועתק ללוח - מתאים לשיתוף ברשתות חברתיות",
     });
   };
 
@@ -193,7 +184,7 @@ export const URLShortener = () => {
             <Label htmlFor="slug">קיצור (באנגלית)</Label>
             <div className="flex gap-2">
               <span className="flex items-center px-3 rounded-md border bg-background text-muted-foreground text-sm">
-                {window.location.origin}/
+                https://fp-pro.info/s/
               </span>
               <Input
                 id="slug"
@@ -231,9 +222,6 @@ export const URLShortener = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-sm">קיצורים קיימים ({shortUrls.length})</h3>
-            <div className="text-xs text-muted-foreground bg-muted px-3 py-1.5 rounded-md">
-              💡 לשיתוף ב-WhatsApp/Facebook, לחץ על <Share2 className="w-3 h-3 inline" />
-            </div>
           </div>
           
           {shortUrls.length === 0 ? (
@@ -253,7 +241,7 @@ export const URLShortener = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <code className="text-sm font-mono font-semibold text-primary">
-                          {window.location.origin}/{url.slug}
+                          https://fp-pro.info/s/{url.slug}
                         </code>
                         {!url.is_active && (
                           <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded">
@@ -279,17 +267,8 @@ export const URLShortener = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => copyShareUrl(url.slug)}
-                        title="העתק לשיתוף ברשתות"
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                      >
-                        <Share2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
                         onClick={() => copyUrl(url.slug)}
-                        title="העתק לינק רגיל"
+                        title="העתק קישור"
                       >
                         <Copy className="w-4 h-4" />
                       </Button>

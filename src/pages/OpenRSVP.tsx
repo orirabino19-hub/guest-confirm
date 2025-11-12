@@ -119,13 +119,6 @@ const useEventInvitation = (eventId: string, language: string) => {
 const OpenRSVP = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [searchParams] = useSearchParams();
-  
-  // ✅ Early language initialization from URL
-  const urlLanguage = searchParams.get('lang');
-  const initialLanguage = urlLanguage && ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(urlLanguage) 
-    ? urlLanguage 
-    : 'he';
-  
   const [event, setEvent] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [firstName, setFirstName] = useState("");
@@ -142,21 +135,14 @@ const OpenRSVP = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
 
-  // ✅ Initialize i18n immediately with the correct language (runs once on mount)
-  useEffect(() => {
-    i18n.changeLanguage(initialLanguage);
-  }, []);
-
-  // Handle language changes from URL parameter
+  // Handle language from URL parameter
   useEffect(() => {
     const langParam = searchParams.get('lang');
-    if (langParam && 
-        ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(langParam) &&
-        langParam !== i18n.language) {
+    if (langParam && ['he', 'en', 'de', 'ar', 'ru', 'fr', 'es'].includes(langParam)) {
       console.log('🌐 Setting language from URL:', langParam);
       i18n.changeLanguage(langParam);
     }
-  }, [searchParams]);
+  }, [searchParams, i18n]);
   const { generateMissingCodes } = useShortCodes();
   const { submitRSVP } = useRSVP();
   const { getCustomText, isTextHidden } = useCustomTexts(resolvedEventId);
@@ -541,10 +527,11 @@ const OpenRSVP = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' || i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
         <Card className="w-full max-w-md mx-4">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+            <LanguageSelector eventId={resolvedEventId} />
+            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4 mt-4" />
             <p className="text-lg text-muted-foreground">{t('common.loading')}</p>
           </CardContent>
         </Card>

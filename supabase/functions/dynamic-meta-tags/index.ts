@@ -166,7 +166,7 @@ serve(async (req) => {
       es: 'Evento'
     };
     
-    const eventTitle = getTranslation(['rsvp.eventTitle', 'event.title'], defaultEventTitle);
+    const eventTitle = getTranslation(['meta.ogTitle', 'rsvp.eventTitle', 'event.title'], defaultEventTitle);
     
     const defaultEventDescription = {
       he: `הוזמנת לאירוע "${eventTitle}"`,
@@ -178,7 +178,7 @@ serve(async (req) => {
       es: `Estás invitado a "${eventTitle}"`
     };
     
-    const eventDescription = getTranslation(['rsvp.eventDescription', 'event.description', 'rsvp.eventInvitation'], defaultEventDescription);
+    const eventDescription = getTranslation(['meta.ogDescription', 'rsvp.eventDescription', 'event.description', 'rsvp.eventInvitation'], defaultEventDescription);
     
     const titlePrefix = 
       langParam === 'he' ? 'הזמנה ל' :

@@ -35,25 +35,28 @@ const getInitialLanguage = (): string => {
 
 const initialLanguage = getInitialLanguage();
 
-i18n
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    resources,
-    fallbackLng: 'he',
-    lng: initialLanguage, // ✅ Use language from URL
-    debug: false,
+// ✅ Initialize i18n synchronously with the correct language
+if (!i18n.isInitialized) {
+  i18n
+    .use(LanguageDetector)
+    .use(initReactI18next)
+    .init({
+      resources,
+      fallbackLng: 'he',
+      lng: initialLanguage, // ✅ Use language from URL
+      debug: false,
 
-    interpolation: {
-      escapeValue: false, // React already escapes
-    },
+      interpolation: {
+        escapeValue: false, // React already escapes
+      },
 
-    detection: {
-      order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
-      lookupQuerystring: 'lang',
-      lookupLocalStorage: 'i18nextLng',
-      caches: ['localStorage'],
-    },
-  });
+      detection: {
+        order: ['querystring', 'localStorage', 'navigator', 'htmlTag'],
+        lookupQuerystring: 'lang',
+        lookupLocalStorage: 'i18nextLng',
+        caches: ['localStorage'],
+      },
+    });
+}
 
 export default i18n;

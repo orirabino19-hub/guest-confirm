@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import { Guest } from '@/hooks/useGuests';
 import { RSVPSubmission } from '@/hooks/useRSVP';
 import { useShortCodes } from '@/hooks/useShortCodes';
+import { useCustomFields, CustomFieldConfig } from '@/hooks/useCustomFields';
 
 export interface Event {
   id: string;
@@ -28,6 +29,19 @@ interface ExcelExportProps {
 const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, submissions }: ExcelExportProps) => {
   const { toast } = useToast();
   const { generateShortLink, generateMissingCodes } = useShortCodes();
+  const { fields: customFieldsOpen } = useCustomFields(selectedEventId || undefined, 'open');
+  const { fields: customFieldsPersonal } = useCustomFields(selectedEventId || undefined, 'personal');
+
+  // Combine and deduplicate custom fields from both link types
+  const allCustomFields = useMemo(() => {
+    const fieldsMap = new Map<string, CustomFieldConfig>();
+    [...customFieldsOpen, ...customFieldsPersonal].forEach(field => {
+      if (!fieldsMap.has(field.key)) {
+        fieldsMap.set(field.key, field);
+      }
+    });
+    return Array.from(fieldsMap.values()).sort((a, b) => a.order_index - b.order_index);
+  }, [customFieldsOpen, customFieldsPersonal]);
 
   // Generate missing codes when component mounts
   useEffect(() => {
@@ -210,7 +224,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     summaryWorksheet['!cols'] = [{ wch: 25 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'סיכום');
 
-    // Add RSVPs worksheet (include all submissions with source information)
+    // Add RSVPs worksheet (include all submissions with source information and custom fields)
     const rsvpData = allEventSubmissions.map((s, index) => {
       // Determine submission source
       let source = 'לא ידוע';
@@ -224,7 +238,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       
       const nameParts = splitName(s);
       
-      return {
+      // Base fields
+      const baseData: any = {
         'מס רשומה': index + 1,
         'שם פרטי': nameParts.first,
         'שם משפחה': nameParts.last,
@@ -234,10 +249,35 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סה"כ מאושרים': (s.men_count + s.women_count),
         'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
       };
+
+      // Add custom fields answers
+      allCustomFields.forEach(field => {
+        const answer = s.answers?.[field.key];
+        let displayValue = answer;
+        
+        // Format boolean values
+        if (typeof answer === 'boolean') {
+          displayValue = answer ? 'כן' : 'לא';
+        }
+        // Format arrays (for multi-select)
+        else if (Array.isArray(answer)) {
+          displayValue = answer.join(', ');
+        }
+        // Handle null/undefined
+        else if (answer === null || answer === undefined) {
+          displayValue = '';
+        }
+        
+        baseData[field.label] = displayValue;
+      });
+
+      return baseData;
     });
 
     const rsvpSheet = XLSX.utils.json_to_sheet(rsvpData);
-    rsvpSheet['!cols'] = [
+    
+    // Base columns + custom fields columns
+    const baseColumns = [
       { wch: 8 },   // מס רשומה
       { wch: 16 },  // שם פרטי
       { wch: 18 },  // שם משפחה
@@ -247,6 +287,11 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { wch: 16 },  // סה"כ מאושרים
       { wch: 22 }   // תאריך אישור
     ];
+    
+    // Add column width for each custom field
+    const customFieldColumns = allCustomFields.map(() => ({ wch: 20 }));
+    
+    rsvpSheet['!cols'] = [...baseColumns, ...customFieldColumns];
     XLSX.utils.book_append_sheet(workbook, rsvpSheet, 'אישורי הגעה');
 
     // Generate filename
@@ -382,7 +427,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
             <div>• רשימת אורחים מלאה עם קישורים אישיים + סטטוס אישור</div>
             <div>• אורחים שהגיעו מקישורים פתוחים ולפי שם</div>
             <div>• סיכום סטטיסטיקות כולל מאושרים בפועל מכל הסוגים</div>
-            <div>• גיליון "אישורי הגעה" עם כל האישורים והמקור שלהם</div>
+            <div>• גיליון "אישורי הגעה" עם כל האישורים, המקור שלהם, והשדות המותאמים אישית</div>
             </div>
           </div>
         )}

@@ -20,6 +20,7 @@ import GuestManager from "@/components/GuestManager";
 import EventLanguageSettings from "@/components/EventLanguageSettings";
 import OpenRSVPCustomFields from "@/components/OpenRSVPCustomFields";
 import { ClientAuthManager } from "@/components/ClientAuthManager";
+import SiteMetaManager from "@/components/SiteMetaManager";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
 import { useRSVP } from "@/hooks/useRSVP";
@@ -714,7 +715,7 @@ const Admin = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="guests" className="space-y-4" dir="rtl">
-          <TabsList className="grid w-full grid-cols-5 md:grid-cols-9 gap-1 h-auto min-h-[2.5rem]">
+          <TabsList className="grid w-full grid-cols-5 md:grid-cols-10 gap-1 h-auto min-h-[2.5rem]">
             <TabsTrigger value="guests" className="text-xs md:text-sm px-2 py-2 whitespace-normal">אורחים</TabsTrigger>
             <TabsTrigger value="import" className="text-xs md:text-sm px-2 py-2 whitespace-normal">יבוא</TabsTrigger>
             <TabsTrigger value="links" className="text-xs md:text-sm px-2 py-2 whitespace-normal">קישורים</TabsTrigger>
@@ -723,6 +724,7 @@ const Admin = () => {
             <TabsTrigger value="invitations" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הזמנות</TabsTrigger>
             <TabsTrigger value="colors" className="text-xs md:text-sm px-2 py-2 whitespace-normal">צבעים</TabsTrigger>
             <TabsTrigger value="custom-fields" className="text-xs md:text-sm px-2 py-2 whitespace-normal">שדות מותאמים</TabsTrigger>
+            <TabsTrigger value="site-settings" className="text-xs md:text-sm px-2 py-2 whitespace-normal">הגדרות אתר</TabsTrigger>
             <TabsTrigger value="export" className="text-xs md:text-sm px-2 py-2 whitespace-normal">ייצוא</TabsTrigger>
           </TabsList>
 
@@ -809,6 +811,11 @@ const Admin = () => {
             />
           </TabsContent>
 
+          <TabsContent value="site-settings" className="space-y-4">
+            {selectedEventId && (
+              <SiteMetaManager eventId={selectedEventId} />
+            )}
+          </TabsContent>
 
           <TabsContent value="export" className="space-y-4">
             <ExcelExport

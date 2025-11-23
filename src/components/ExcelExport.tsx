@@ -71,18 +71,16 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     console.log('submissions sample:', submissions.slice(0, 2));
 
     const filteredGuests = guests.filter(guest => guest.event_id === selectedEventId);
+    const eventSubmissions = submissions.filter(s => s.event_id === selectedEventId);
 
-    if (filteredGuests.length === 0) {
+    if (filteredGuests.length === 0 && eventSubmissions.length === 0) {
       toast({
         title: "⚠️ אין נתונים לייצוא",
-        description: "לא נמצאו אורחים לאירוע זה",
+        description: "לא נמצאו אורחים או אישורי הגעה לאירוע זה",
         variant: "destructive"
       });
       return;
     }
-
-    // סנן submissions רק לאירוע הנוכחי
-    const eventSubmissions = submissions.filter(s => s.event_id === selectedEventId);
     console.log('🔍 Event submissions:', eventSubmissions.length);
 
     // Helper function to get display name
@@ -352,6 +350,9 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     uiAllEventSubs.map(s => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim())).filter(Boolean)
   ).size;
   const pendingGuests = Math.max(filteredGuests.length - confirmedCount, 0);
+  
+  // Check if there's any data to export (guests or submissions)
+  const hasDataToExport = filteredGuests.length > 0 || uiAllEventSubs.length > 0;
 
   if (!selectedEventId) {
     return (
@@ -400,7 +401,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         <div className="space-y-2">
           <Button 
             onClick={exportGuestList}
-            disabled={filteredGuests.length === 0}
+            disabled={!hasDataToExport}
             className="w-full"
             size="lg"
           >

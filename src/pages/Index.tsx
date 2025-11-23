@@ -2,11 +2,71 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import LanguageSelector from "@/components/LanguageSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    const loadSiteMeta = async () => {
+      try {
+        // Load the first event's site meta (you can change this logic to load a specific event)
+        const { data, error } = await supabase
+          .from('events')
+          .select('site_title, site_description')
+          .limit(1)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading site meta:', error);
+          return;
+        }
+
+        if (data) {
+          const title = data.site_title || 'אישור הגעה לאירוע';
+          const description = data.site_description || 'מערכת אישור הגעה מתקדמת לאירועים. הזמינו אורחים בקלות ונהלו את רשימת המוזמנים';
+
+          // Update document title
+          document.title = title;
+
+          // Update meta description
+          const metaDescription = document.querySelector('meta[name="description"]');
+          if (metaDescription) {
+            metaDescription.setAttribute('content', description);
+          }
+
+          // Update Open Graph tags
+          const ogTitle = document.querySelector('meta[property="og:title"]');
+          if (ogTitle) {
+            ogTitle.setAttribute('content', title);
+          }
+
+          const ogDescription = document.querySelector('meta[property="og:description"]');
+          if (ogDescription) {
+            ogDescription.setAttribute('content', description);
+          }
+
+          // Update Twitter tags
+          const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+          if (twitterTitle) {
+            twitterTitle.setAttribute('content', title);
+          }
+
+          const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+          if (twitterDescription) {
+            twitterDescription.setAttribute('content', description);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading site meta:', error);
+      }
+    };
+
+    loadSiteMeta();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center py-8 px-4" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>

@@ -121,6 +121,8 @@ export type Database = {
           location: string | null
           modern_style_enabled: boolean | null
           short_code: string | null
+          site_description: string | null
+          site_title: string | null
           slug: string
           theme: Json | null
           title: string
@@ -138,6 +140,8 @@ export type Database = {
           location?: string | null
           modern_style_enabled?: boolean | null
           short_code?: string | null
+          site_description?: string | null
+          site_title?: string | null
           slug?: string
           theme?: Json | null
           title: string
@@ -155,6 +159,8 @@ export type Database = {
           location?: string | null
           modern_style_enabled?: boolean | null
           short_code?: string | null
+          site_description?: string | null
+          site_title?: string | null
           slug?: string
           theme?: Json | null
           title?: string

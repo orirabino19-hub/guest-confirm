@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useClientAuth } from "@/hooks/useClientAuth";
 import { useEvents } from "@/hooks/useEvents";
 import { useGuests } from "@/hooks/useGuests";
+import { useCustomFields } from "@/hooks/useCustomFields";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LogOut, Users, Calendar, MapPin, Phone, Mail } from "lucide-react";
+import { LogOut, Users, Calendar, MapPin, Phone, Mail, Download } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
 import fleishmanPelesLogo from "@/assets/fleishman-peles-logo.png";
 import RSVPSubmissionsList from "@/components/RSVPSubmissionsList";
 
@@ -34,10 +37,26 @@ export default function ClientDashboard() {
   const { isAuthenticated, username, logout, loading } = useClientAuth();
   const { events, refetch: refetchEvents } = useEvents();
   const { guests, refetch: refetchGuests } = useGuests();
+  const { toast } = useToast();
   
   const [submissions, setSubmissions] = useState<RSVPSubmission[]>([]);
   const [submissionsLoading, setSubmissionsLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Fetch custom fields for both link types
+  const { fields: customFieldsOpen } = useCustomFields(eventId, 'open');
+  const { fields: customFieldsPersonal } = useCustomFields(eventId, 'personal');
+
+  // Merge custom fields from both types
+  const allCustomFields = useMemo(() => {
+    const fieldsMap = new Map();
+    [...customFieldsOpen, ...customFieldsPersonal].forEach(field => {
+      if (!fieldsMap.has(field.key)) {
+        fieldsMap.set(field.key, field);
+      }
+    });
+    return Array.from(fieldsMap.values()).sort((a, b) => a.order_index - b.order_index);
+  }, [customFieldsOpen, customFieldsPersonal]);
 
   const selectedEvent = events.find(e => e.id === eventId);
   const selectedEventGuests = guests.filter(g => g.event_id === eventId);
@@ -115,6 +134,111 @@ export default function ClientDashboard() {
     } catch (error: any) {
       console.error('Error updating submission:', error);
       setError('שגיאה בעדכון אישור ההגעה');
+    }
+  };
+
+  const exportToExcel = () => {
+    if (!selectedEvent || submissions.length === 0) {
+      toast({
+        title: "⚠️ אין נתונים לייצוא",
+        description: "לא נמצאו אישורי הגעה לייצוא",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Format answer for display
+      const formatAnswer = (answer: any): string => {
+        if (answer === null || answer === undefined) return '';
+        if (typeof answer === 'boolean') return answer ? 'כן' : 'לא';
+        if (Array.isArray(answer)) return answer.join(', ');
+        return String(answer);
+      };
+
+      // Prepare submissions data with custom fields
+      const exportData = submissions.map((s, index) => {
+        const baseData: any = {
+          'מס רשומה': index + 1,
+          'שם פרטי': s.first_name || '',
+          'שם משפחה': s.last_name || '',
+          'סוג קישור': s.guest_id ? 'קישור אישי' : 'קישור פתוח',
+          'גברים': s.men_count,
+          'נשים': s.women_count,
+          'סה"כ': s.men_count + s.women_count,
+          'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        };
+        
+        // Add custom field answers
+        allCustomFields.forEach(field => {
+          const answer = s.answers?.[field.key];
+          baseData[field.label] = formatAnswer(answer);
+        });
+        
+        return baseData;
+      });
+
+      // Create submissions worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      
+      // Set column widths
+      const colWidths = [
+        { wch: 8 },  // מס רשומה
+        { wch: 15 }, // שם פרטי
+        { wch: 15 }, // שם משפחה
+        { wch: 12 }, // סוג קישור
+        { wch: 8 },  // גברים
+        { wch: 8 },  // נשים
+        { wch: 8 },  // סה"כ
+        { wch: 18 }, // תאריך אישור
+        ...allCustomFields.map(() => ({ wch: 20 })) // custom fields
+      ];
+      ws['!cols'] = colWidths;
+
+      // Create summary worksheet
+      const summaryData = [
+        ['שם האירוע', selectedEvent.title],
+        ['תאריך הייצוא', new Date().toLocaleString('he-IL')],
+        [''],
+        ['סה"כ אישורים', submissions.length],
+        ['גברים מאושרים', totalMen],
+        ['נשים מאושרות', totalWomen],
+        ['סה"כ מוזמנים', totalConfirmedGuests],
+        [''],
+        ['מקישורים אישיים', guestLinkSubmissions],
+        ['מקישורים פתוחים', openLinkSubmissions]
+      ];
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+      wsSummary['!cols'] = [{ wch: 20 }, { wch: 30 }];
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'סיכום');
+      XLSX.utils.book_append_sheet(wb, ws, 'אישורי הגעה');
+
+      // Generate filename with event name and date
+      const fileName = `${selectedEvent.title}_אישורי_הגעה_${new Date().toLocaleDateString('he-IL').replace(/\./g, '-')}.xlsx`;
+      
+      // Download file
+      XLSX.writeFile(wb, fileName);
+
+      toast({
+        title: "✅ הקובץ יוצא בהצלחה",
+        description: `הורדת ${submissions.length} אישורי הגעה`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "❌ שגיאה בייצוא",
+        description: "אירעה שגיאה בעת ייצוא הקובץ",
+        variant: "destructive"
+      });
     }
   };
 
@@ -268,6 +392,17 @@ export default function ClientDashboard() {
           </TabsList>
 
           <TabsContent value="submissions">
+            <div className="mb-4 flex justify-end">
+              <Button 
+                onClick={exportToExcel} 
+                disabled={submissions.length === 0}
+                variant="outline"
+                size="sm"
+              >
+                <Download className="h-4 w-4 ml-2" />
+                ייצוא לאקסל
+              </Button>
+            </div>
             <RSVPSubmissionsList 
               submissions={submissions} 
               loading={submissionsLoading}

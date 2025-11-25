@@ -178,7 +178,7 @@ export default function ClientDashboard() {
         // Add custom field answers
         allCustomFields.forEach(field => {
           const answer = s.answers?.[field.key];
-          const fieldLabel = field.labels?.['he'] || field.label;
+          const fieldLabel = field.labels?.['he'] || field.labels?.['en'] || field.labels?.['de'] || field.label || `שדה: ${field.key}`;
           baseData[fieldLabel] = formatAnswer(answer);
         });
         

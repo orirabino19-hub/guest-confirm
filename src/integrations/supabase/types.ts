@@ -120,6 +120,9 @@ export type Database = {
           id: string
           location: string | null
           modern_style_enabled: boolean | null
+          rsvp_close_date: string | null
+          rsvp_enabled: boolean
+          rsvp_open_date: string | null
           short_code: string | null
           site_description: string | null
           site_title: string | null
@@ -139,6 +142,9 @@ export type Database = {
           id?: string
           location?: string | null
           modern_style_enabled?: boolean | null
+          rsvp_close_date?: string | null
+          rsvp_enabled?: boolean
+          rsvp_open_date?: string | null
           short_code?: string | null
           site_description?: string | null
           site_title?: string | null
@@ -158,6 +164,9 @@ export type Database = {
           id?: string
           location?: string | null
           modern_style_enabled?: boolean | null
+          rsvp_close_date?: string | null
+          rsvp_enabled?: boolean
+          rsvp_open_date?: string | null
           short_code?: string | null
           site_description?: string | null
           site_title?: string | null

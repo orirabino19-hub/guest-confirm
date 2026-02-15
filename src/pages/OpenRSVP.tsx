@@ -20,6 +20,7 @@ import { useShortCodes } from "@/hooks/useShortCodes";
 import { useRSVP } from "@/hooks/useRSVP";
 import { useCustomTexts } from "@/hooks/useCustomTexts";
 import { updateMetaTags, generateOpenRSVPMetaTags, getOpenGraphLocale } from "@/utils/metaTags";
+import { isRSVPOpen, formatRSVPStatusMessage } from "@/utils/rsvpStatus";
 
 interface CustomField {
   id: string;
@@ -128,6 +129,8 @@ const OpenRSVP = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
+  const [rsvpClosed, setRsvpClosed] = useState(false);
+  const [rsvpClosedMessage, setRsvpClosedMessage] = useState("");
   const [resolvedEventId, setResolvedEventId] = useState<string>("");
   const [eventTheme, setEventTheme] = useState<any>(null);
   const [selectedGender, setSelectedGender] = useState<'male' | 'female' | null>(null);
@@ -251,6 +254,17 @@ const OpenRSVP = () => {
           if (theme.secondaryColor) document.documentElement.style.setProperty('--muted-foreground', `${hexToHsl(theme.secondaryColor)}`);
           if (theme.cardBackground) document.documentElement.style.setProperty('--card', `${hexToHsl(theme.cardBackground)}`);
           if (theme.inputBackground) document.documentElement.style.setProperty('--input', `${hexToHsl(theme.inputBackground)}`);
+        }
+
+        // Check RSVP status
+        const rsvpStatus = isRSVPOpen({
+          rsvp_enabled: eventData.rsvp_enabled,
+          rsvp_open_date: eventData.rsvp_open_date,
+          rsvp_close_date: eventData.rsvp_close_date,
+        });
+        if (!rsvpStatus.open) {
+          setRsvpClosed(true);
+          setRsvpClosedMessage(formatRSVPStatusMessage(rsvpStatus, i18n.language));
         }
 
         // טעינת השדות המותאמים אישית - רק עבור לינקים פתוחים
@@ -560,7 +574,21 @@ const OpenRSVP = () => {
     );
   }
 
-  // Check if modern style is enabled
+  if (rsvpClosed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="text-center py-12">
+            <LanguageSelector eventId={resolvedEventId} />
+            <div className="text-4xl mb-4 mt-4">🔒</div>
+            <h2 className="text-xl font-semibold mb-2">{event?.name}</h2>
+            <p className="text-muted-foreground">{rsvpClosedMessage}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const isModernStyle = event?.modern_style_enabled || false;
 
   // Dynamic classes based on style

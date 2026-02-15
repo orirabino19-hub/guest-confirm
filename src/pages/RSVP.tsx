@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useShortCodes } from "@/hooks/useShortCodes";
 import { useCustomTexts } from "@/hooks/useCustomTexts";
 import { updateMetaTags, generateRSVPMetaTags } from "@/utils/metaTags";
+import { isRSVPOpen, formatRSVPStatusMessage } from "@/utils/rsvpStatus";
 
 console.log('🔥 RSVP.tsx file loaded');
 
@@ -31,6 +32,8 @@ const RSVP = () => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [rsvpClosed, setRsvpClosed] = useState(false);
+  const [rsvpClosedMessage, setRsvpClosedMessage] = useState("");
   const { t, i18n } = useTranslation();
   const { resolveShortCodes, getGuestNameByEventCodeAndPhone } = useShortCodes();
   const { getCustomText, isTextHidden } = useCustomTexts(currentEventId);
@@ -150,6 +153,17 @@ const RSVP = () => {
 
         setEventName(eventData.title);
         setCurrentEventId(eventData.id);
+
+        // Check RSVP status
+        const rsvpStatus = isRSVPOpen({
+          rsvp_enabled: eventData.rsvp_enabled,
+          rsvp_open_date: eventData.rsvp_open_date,
+          rsvp_close_date: eventData.rsvp_close_date,
+        });
+        if (!rsvpStatus.open) {
+          setRsvpClosed(true);
+          setRsvpClosedMessage(formatRSVPStatusMessage(rsvpStatus, i18n.language));
+        }
         
         // Update page title
         document.title = `הזמנה ל${eventData.title}`;
@@ -283,6 +297,21 @@ const RSVP = () => {
             >
               {t('rsvp.errors.returnHome')}
             </a>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (rsvpClosed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={i18n.language === 'he' ? 'rtl' : 'ltr'}>
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="text-center py-12">
+            <LanguageSelector eventId={currentEventId} />
+            <div className="text-4xl mb-4 mt-4">🔒</div>
+            <h2 className="text-xl font-semibold mb-2">{eventName}</h2>
+            <p className="text-muted-foreground">{rsvpClosedMessage}</p>
           </CardContent>
         </Card>
       </div>

@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { isRSVPOpen } from "@/utils/rsvpStatus";
 
 // Language configuration interface
 interface LanguageConfig {
@@ -46,6 +48,9 @@ export interface Event {
   customFields?: CustomField[];
   accordion_form_enabled?: boolean;
   modern_style_enabled?: boolean;
+  rsvp_enabled?: boolean;
+  rsvp_open_date?: string | null;
+  rsvp_close_date?: string | null;
 }
 
 interface EventManagerProps {
@@ -65,6 +70,9 @@ interface EventManagerProps {
     location?: string;
     accordion_form_enabled?: boolean;
     modern_style_enabled?: boolean;
+    rsvp_enabled?: boolean;
+    rsvp_open_date?: string | null;
+    rsvp_close_date?: string | null;
   }) => void;
   onEventDelete: (eventId: string) => void;
 }
@@ -88,7 +96,10 @@ const EventManager = ({
     invitationImage: "",
     languages: ["he"], // Default to Hebrew
     accordion_form_enabled: false,
-    modern_style_enabled: false
+    modern_style_enabled: false,
+    rsvp_enabled: true,
+    rsvp_open_date: "" as string,
+    rsvp_close_date: "" as string,
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
@@ -139,7 +150,10 @@ const EventManager = ({
       invitationImage: "",
       languages: event.languages || ["he"],
       accordion_form_enabled: event.accordion_form_enabled || false,
-      modern_style_enabled: event.modern_style_enabled || false
+      modern_style_enabled: event.modern_style_enabled || false,
+      rsvp_enabled: event.rsvp_enabled !== false,
+      rsvp_open_date: event.rsvp_open_date ? new Date(event.rsvp_open_date).toISOString().slice(0, 16) : "",
+      rsvp_close_date: event.rsvp_close_date ? new Date(event.rsvp_close_date).toISOString().slice(0, 16) : "",
     });
     setIsEditOpen(true);
   };
@@ -161,10 +175,13 @@ const EventManager = ({
       event_date: newEvent.event_date,
       location: newEvent.location,
       accordion_form_enabled: newEvent.accordion_form_enabled,
-      modern_style_enabled: newEvent.modern_style_enabled
+      modern_style_enabled: newEvent.modern_style_enabled,
+      rsvp_enabled: newEvent.rsvp_enabled,
+      rsvp_open_date: newEvent.rsvp_open_date || null,
+      rsvp_close_date: newEvent.rsvp_close_date || null,
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false, rsvp_enabled: true, rsvp_open_date: "", rsvp_close_date: "" });
     setEditingEvent(null);
     setIsEditOpen(false);
     
@@ -192,7 +209,7 @@ const EventManager = ({
       languages: newEvent.languages
     });
     
-    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
+    setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false, rsvp_enabled: true, rsvp_open_date: "", rsvp_close_date: "" });
     setSelectedFile(null);
     setIsCreateOpen(false);
     
@@ -312,7 +329,7 @@ const EventManager = ({
                      onClick={() => {
                      setIsCreateOpen(false);
                      setSelectedFile(null);
-                     setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
+                      setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false, rsvp_enabled: true, rsvp_open_date: "", rsvp_close_date: "" });
                     }}
                   >
                     ביטול
@@ -408,7 +425,69 @@ const EventManager = ({
                    <p className="text-xs text-muted-foreground mr-6">
                      עיצוב מודרני עם גרדיאנטים, אנימציות ו-glass-morphism effects
                    </p>
+                  </div>
+
+                 {/* RSVP Scheduling Section */}
+                 <div className="space-y-3 border-t pt-4">
+                   <h4 className="text-sm font-semibold">⏰ תזמון אישורי הגעה</h4>
+                   
+                   <div className="flex items-center justify-between">
+                     <Label htmlFor="rsvp-enabled" className="text-sm cursor-pointer">
+                       אישורי הגעה פתוחים
+                     </Label>
+                     <Switch
+                       id="rsvp-enabled"
+                       checked={newEvent.rsvp_enabled}
+                       onCheckedChange={(checked) => setNewEvent(prev => ({ 
+                         ...prev, 
+                         rsvp_enabled: checked 
+                       }))}
+                     />
+                   </div>
+
+                   {newEvent.rsvp_enabled && (
+                     <>
+                       <div>
+                         <Label htmlFor="rsvp-open-date" className="text-sm">תאריך פתיחה (אופציונלי)</Label>
+                         <Input
+                           id="rsvp-open-date"
+                           type="datetime-local"
+                           value={newEvent.rsvp_open_date}
+                           onChange={(e) => setNewEvent(prev => ({ ...prev, rsvp_open_date: e.target.value }))}
+                         />
+                         <p className="text-xs text-muted-foreground mt-1">אם ריק - פתוח מיד</p>
+                       </div>
+                       <div>
+                         <Label htmlFor="rsvp-close-date" className="text-sm">תאריך סגירה (אופציונלי)</Label>
+                         <Input
+                           id="rsvp-close-date"
+                           type="datetime-local"
+                           value={newEvent.rsvp_close_date}
+                           onChange={(e) => setNewEvent(prev => ({ ...prev, rsvp_close_date: e.target.value }))}
+                         />
+                         <p className="text-xs text-muted-foreground mt-1">אם ריק - פתוח ללא הגבלה</p>
+                       </div>
+                     </>
+                   )}
+
+                   {/* Status badge */}
+                   {(() => {
+                     const status = isRSVPOpen({
+                       rsvp_enabled: newEvent.rsvp_enabled,
+                       rsvp_open_date: newEvent.rsvp_open_date || null,
+                       rsvp_close_date: newEvent.rsvp_close_date || null,
+                     });
+                     return (
+                       <div className="flex items-center gap-2">
+                         <span className="text-xs">סטטוס:</span>
+                         <Badge variant={status.open ? "default" : "destructive"}>
+                           {status.open ? "🟢 פתוח" : status.reason === 'not_yet_open' ? "🟡 ממתין לפתיחה" : status.reason === 'closed' ? "🔴 נסגר" : "🔴 כבוי"}
+                         </Badge>
+                       </div>
+                     );
+                   })()}
                  </div>
+
                  <div className="flex gap-2 pt-4">
                   <Button type="submit" className="flex-1">
                     עדכן אירוע
@@ -419,7 +498,7 @@ const EventManager = ({
                      onClick={() => {
                        setIsEditOpen(false);
                        setEditingEvent(null);
-                       setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false });
+                       setNewEvent({ title: "", description: "", event_date: "", location: "", invitationImage: "", languages: ["he"], accordion_form_enabled: false, modern_style_enabled: false, rsvp_enabled: true, rsvp_open_date: "", rsvp_close_date: "" });
                      }}
                     className="flex-1"
                   >

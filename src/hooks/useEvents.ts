@@ -22,6 +22,9 @@ export interface Event {
   updated_at: string;
   languages?: string[];
   customFields?: CustomField[];
+  rsvp_enabled?: boolean;
+  rsvp_open_date?: string | null;
+  rsvp_close_date?: string | null;
 }
 
 export const useEvents = () => {

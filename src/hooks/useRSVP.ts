@@ -13,6 +13,7 @@ export interface RSVPSubmission {
   last_name?: string;
   men_count: number;
   women_count: number;
+  children_count: number;
   answers: Json;
   status: string;
   submitted_at: string;

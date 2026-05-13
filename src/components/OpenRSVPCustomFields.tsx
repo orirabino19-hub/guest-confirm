@@ -502,7 +502,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="default">
-                        {field.type === 'menCounter' ? 'מונה גברים' : 'מונה נשים'}
+                        {field.type === 'menCounter' ? 'מונה גברים' : field.type === 'womenCounter' ? 'מונה נשים' : 'מונה ילדים'}
                       </Badge>
                       {field.required && (
                         <Badge variant="destructive" className="text-xs">

@@ -126,6 +126,7 @@ const OpenRSVP = () => {
   const [lastName, setLastName] = useState("");
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
+  const [childrenCount, setChildrenCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -454,9 +455,9 @@ const OpenRSVP = () => {
       let totalWomenCount = event?.accordion_form_enabled
         ? (selectedGender === 'female' ? 1 : 0)
         : womenCount;
+      let totalChildrenCount = event?.accordion_form_enabled ? 0 : childrenCount;
       
       // Add counts from custom field counters (only for regular form)
-      let totalChildrenCount = 0;
       if (!event?.accordion_form_enabled) {
         event?.customFields?.forEach(field => {
           if (field.type === 'menCounter') {
@@ -491,6 +492,7 @@ const OpenRSVP = () => {
       setLastName("");
       setMenCount(0);
       setWomenCount(0);
+      setChildrenCount(0);
       setSelectedGender(null);
       setIsAccordionOpen(false);
       const initialFormData: Record<string, any> = {};
@@ -525,7 +527,10 @@ const OpenRSVP = () => {
   
   const totalGuests = event?.accordion_form_enabled
     ? (selectedGender ? 1 : 0)
-    : (menCount + womenCount + customFieldsGuests);
+    : (menCount + womenCount + childrenCount + customFieldsGuests);
+
+  const showChildrenCounter = !event?.accordion_form_enabled &&
+    (event?.customFields || []).some(field => field.id === 'childrenCounter' || field.type === 'childrenCounter');
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {

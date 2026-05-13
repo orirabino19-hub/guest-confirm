@@ -459,6 +459,16 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                 👩 הוסף מונה נשים
               </Button>
             )}
+            {!customFields.some(f => f.id === 'childrenCounter') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => addQuickField('childrenCounter')}
+                className="text-xs"
+              >
+                👶 הוסף מונה ילדים
+              </Button>
+            )}
           </div>
 
           {/* Display existing counter fields */}

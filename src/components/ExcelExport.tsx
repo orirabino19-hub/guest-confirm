@@ -104,14 +104,15 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     // Aggregate confirmed counts per guest (by guest_id if available, otherwise by display name)
     const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim());
-    const confirmedMap = new Map<string, { men: number; women: number; total: number }>();
+    const confirmedMap = new Map<string, { men: number; women: number; children: number; total: number }>();
     for (const s of eventSubmissions) {
       const k = keyForSubmission(s);
       if (!k) continue;
       const men = Number(s.men_count) || 0;
       const women = Number(s.women_count) || 0;
-      const prev = confirmedMap.get(k) || { men: 0, women: 0, total: 0 };
-      const next = { men: prev.men + men, women: prev.women + women, total: prev.total + men + women };
+      const children = Number((s as any).children_count) || 0;
+      const prev = confirmedMap.get(k) || { men: 0, women: 0, children: 0, total: 0 };
+      const next = { men: prev.men + men, women: prev.women + women, children: prev.children + children, total: prev.total + men + women + children };
       confirmedMap.set(k, next);
     }
 

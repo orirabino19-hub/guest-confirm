@@ -111,6 +111,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' },
     { value: 'menCounter', label: 'מונה גברים', labelEn: 'Men Counter' },
     { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' },
+    { value: 'childrenCounter', label: 'מונה ילדים', labelEn: 'Children Counter' },
     { value: 'fullName', label: 'שם מלא', labelEn: 'Full Name' },
     { value: 'guestName', label: 'שם אורח', labelEn: 'Guest Name' },
     { value: 'phone', label: 'טלפון', labelEn: 'Phone Number' },

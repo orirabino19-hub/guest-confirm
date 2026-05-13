@@ -520,7 +520,7 @@ const OpenRSVP = () => {
   const customFieldsGuests = event?.accordion_form_enabled 
     ? 0 
     : ((event?.customFields || [])
-        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter')
         .reduce((total, field) => total + (formData[field.id] || 0), 0));
   
   const totalGuests = event?.accordion_form_enabled

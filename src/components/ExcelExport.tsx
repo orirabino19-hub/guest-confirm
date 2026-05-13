@@ -120,7 +120,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const guestExportData = await Promise.all(filteredGuests.map(async (guest, index) => {
       const guestKeyById = String(guest.id);
       const guestKeyByName = getDisplayName(guest).trim();
-      const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
+      const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, children: 0, total: 0 };
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
       const nameParts = splitName(guest);
       
@@ -133,6 +133,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
         'גברים (מאושרים)': confirmed.men,
         'נשים (מאושרות)': confirmed.women,
+        'ילדים (מאושרים)': confirmed.children,
         'סה"כ מאושרים': confirmed.total,
         'קישור אישי': shortLink
       };

@@ -291,6 +291,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { wch: 18 },  // סוג קישור
       { wch: 18 },  // גברים (מאושרים)
       { wch: 18 },  // נשים (מאושרות)
+      { wch: 18 },  // ילדים (מאושרים)
       { wch: 16 },  // סה"כ מאושרים
       { wch: 22 }   // תאריך אישור
     ];

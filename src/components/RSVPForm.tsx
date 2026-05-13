@@ -361,6 +361,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
       case 'menCounter':
       case 'womenCounter':
+      case 'childrenCounter':
         return (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id} className={modernLabelClasses}>

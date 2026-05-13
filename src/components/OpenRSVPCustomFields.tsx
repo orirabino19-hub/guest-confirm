@@ -412,8 +412,9 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     );
   }
 
-  const counterFields = customFields.filter(field => field.type === 'menCounter' || field.type === 'womenCounter');
-  const otherFields = customFields.filter(field => field.type !== 'menCounter' && field.type !== 'womenCounter');
+  const isCounterType = (t: string) => t === 'menCounter' || t === 'womenCounter' || t === 'childrenCounter';
+  const counterFields = customFields.filter(field => isCounterType(field.type));
+  const otherFields = customFields.filter(field => !isCounterType(field.type));
 
   return (
     <Card>

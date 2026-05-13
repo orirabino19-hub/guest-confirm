@@ -693,8 +693,49 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                </div>
+
+                {/* Children Counter */}
+                <div className="space-y-2">
+                  <Label className={labelClasses}>
+                    {getCustomText ? getCustomText('rsvp.childrenLabel', i18n.language, i18n.language === 'he' ? "ילדים" : "Children") : (i18n.language === 'he' ? "ילדים" : "Children")}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                      disabled={childrenCount <= 0}
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={childrenCount}
+                      onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value)))}
+                      className={`text-center text-lg ${inputClasses}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setChildrenCount(Math.min(20, childrenCount + 1))}
+                      disabled={childrenCount >= 20}
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
+              </div>
               </div>
 
               {/* Custom Fields */}

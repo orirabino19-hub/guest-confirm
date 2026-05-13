@@ -244,10 +244,10 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
   // Calculate total guests from default counters plus custom fields
   const customFieldsGuests = customFields
-    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter')
     .reduce((sum, field) => sum + (formData[field.id] || 0), 0);
   
-  const totalGuests = menCount + womenCount + customFieldsGuests;
+  const totalGuests = menCount + womenCount + childrenCount + customFieldsGuests;
 
   const renderCustomField = (field: CustomField) => {
     const label = i18n.language === 'he' ? field.label : (field.labelEn || field.label);

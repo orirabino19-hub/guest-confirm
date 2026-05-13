@@ -109,7 +109,7 @@ const Admin = () => {
           const existing = fieldsMap.get(field.key) || {
             id: field.key,
             type: field.field_type === 'number' ? 
-              (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+              (field.key === 'menCounter' ? 'menCounter' : field.key === 'womenCounter' ? 'womenCounter' : field.key === 'childrenCounter' ? 'childrenCounter' : 'text') 
               : field.field_type,
             label: field.label,
             labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,

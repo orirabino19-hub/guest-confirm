@@ -172,7 +172,10 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                     <span>נשים: {submission.women_count}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>סה"כ: {submission.men_count + submission.women_count}</span>
+                    <span>👶 ילדים: {(submission as any).children_count || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>סה"כ: {submission.men_count + submission.women_count + ((submission as any).children_count || 0)}</span>
                   </div>
                 </div>
                 {Object.keys(submission.answers as any || {}).length > 0 && (

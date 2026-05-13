@@ -332,7 +332,7 @@ const OpenRSVP = () => {
         customFields.forEach(field => {
           if (field.type === 'checkbox') {
             initialFormData[field.id] = false;
-          } else if (field.type === 'menCounter' || field.type === 'womenCounter') {
+          } else if (field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter') {
             initialFormData[field.id] = 0;
           } else {
             initialFormData[field.id] = '';

@@ -15,6 +15,7 @@ export interface Guest {
   notes?: string;
   men_count: number;
   women_count: number;
+  children_count?: number;
   created_at: string;
   updated_at: string;
 }

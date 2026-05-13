@@ -116,6 +116,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
+  const [childrenCount, setChildrenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventTheme, setEventTheme] = useState<any>(null);
   const [isModernStyle, setIsModernStyle] = useState(false);

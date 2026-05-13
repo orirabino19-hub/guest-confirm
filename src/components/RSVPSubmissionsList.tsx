@@ -85,7 +85,8 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
       first_name: submission.first_name || (submission.full_name ? submission.full_name.split(' ')[0] : ''),
       last_name: submission.last_name || (submission.full_name ? submission.full_name.split(' ').slice(1).join(' ') : ''),
       men_count: submission.men_count,
-      women_count: submission.women_count
+      women_count: submission.women_count,
+      children_count: (submission as any).children_count || 0
     });
   };
 

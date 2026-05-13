@@ -221,6 +221,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { 'פרטי האירוע': 'מספר מוזמנים שיגיעו', 'ערך': '' },
       { 'פרטי האירוע': 'גברים', 'ערך': totalConfirmedMen },
       { 'פרטי האירוע': 'נשים', 'ערך': totalConfirmedWomen },
+      { 'פרטי האירוע': 'ילדים', 'ערך': totalConfirmedChildren },
       { 'פרטי האירוע': 'סה"כ מוזמנים שיגיעו', 'ערך': totalConfirmedGuests },
     ];
 

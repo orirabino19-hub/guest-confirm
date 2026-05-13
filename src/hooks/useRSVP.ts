@@ -81,7 +81,8 @@ export const useRSVP = (eventId?: string) => {
           .from('guests')
           .update({
             men_count: submissionData.men_count,
-            women_count: submissionData.women_count
+            women_count: submissionData.women_count,
+            children_count: submissionData.children_count || 0
           })
           .eq('id', submissionData.guest_id);
       }

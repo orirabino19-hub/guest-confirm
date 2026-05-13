@@ -203,6 +203,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
         last_name: guestName.split(' ').slice(1).join(' ') || '',
         men_count: menCount,
         women_count: womenCount,
+        children_count: childrenCount,
         answers: formData
       };
 

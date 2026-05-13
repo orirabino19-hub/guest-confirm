@@ -61,6 +61,7 @@ export const useGuests = (eventId?: string) => {
     email?: string;
     men_count?: number;
     women_count?: number;
+    children_count?: number;
   }) => {
     try {
       const { error } = await supabase
@@ -70,6 +71,7 @@ export const useGuests = (eventId?: string) => {
             ...guestData,
             men_count: guestData.men_count || 0,
             women_count: guestData.women_count || 0,
+            children_count: guestData.children_count || 0,
           },
         ]);
 

@@ -456,12 +456,15 @@ const OpenRSVP = () => {
         : womenCount;
       
       // Add counts from custom field counters (only for regular form)
+      let totalChildrenCount = 0;
       if (!event?.accordion_form_enabled) {
         event?.customFields?.forEach(field => {
           if (field.type === 'menCounter') {
             totalMenCount += Number(formData[field.id] || 0);
           } else if (field.type === 'womenCounter') {
             totalWomenCount += Number(formData[field.id] || 0);
+          } else if (field.type === 'childrenCounter') {
+            totalChildrenCount += Number(formData[field.id] || 0);
           }
         });
       }
@@ -474,6 +477,7 @@ const OpenRSVP = () => {
         last_name: lastName.trim(),
         men_count: totalMenCount,
         women_count: totalWomenCount,
+        children_count: totalChildrenCount,
         answers: formData
       };
 

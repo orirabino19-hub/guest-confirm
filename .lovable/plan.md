@@ -1,40 +1,37 @@
-## תוכנית: הוספת מונה ילדים (וטיפול בבעיית המונה)
+## הבעיה
 
-### הבעיה
-כיום קיימים שני מונים מובנים בלבד: **מונה גברים** ו-**מונה נשים**. הם "קשיחים" - הקוד מזהה אותם לפי מזהה (`menCounter`/`womenCounter`) ושומר אותם בעמודות נפרדות בבסיס הנתונים (`men_count`, `women_count`). לכן כשמנסים להוסיף מונה נוסף הוא הופך אוטומטית לשדה טקסט - אין סוג שדה "מונה כללי" במערכת.
+כשלוחצים בניהול על "👶 הוסף מונה ילדים" השדה לא נשמר בפועל בדאטהבייס, ולכן גם לא מופיע בטופס ההזמנה (קישור פתוח). אותה בעיה תיאורטית קיימת גם למונה גברים/נשים, אבל ברוב האירועים הם כבר נטענו לדאטהבייס מהזרעה ישנה — לכן רק הילדים בולט.
 
-### הפתרון המוצע
-הוספת **מונה ילדים** מובנה (באותו מבנה כמו המונים הקיימים) + תיקון לוגיקת הזיהוי כך שיתמוך גם בו.
+## גורם השורש
 
-### שינויים
+ב-`src/components/OpenRSVPCustomFields.tsx`, הפונקציה `addQuickField` יוצרת אובייקט שדה ללא המאפיין `displayLocations`.
 
-#### 1. בסיס נתונים - Migration חדש
-הוספת עמודה `children_count` לטבלאות:
-- `guests` (integer, NOT NULL, default 0)
-- `rsvp_submissions` (integer, NOT NULL, default 0)
+ב-`src/pages/Admin.tsx`, הפונקציה `handleCustomFieldsUpdate` מסננת לפי:
+```
+fields.filter(field => field.displayLocations?.openLink)
+fields.filter(field => field.displayLocations?.personalLink)
+```
+מאחר ש-`displayLocations` הוא `undefined`, השדה החדש נשמט בשקט מהשמירה — לא נשמר ב-`custom_fields_config`. בטעינה הבאה הוא נעלם, וב-OpenRSVP הוא לא נרנדר (כי הוא לא קיים).
 
-#### 2. הוספת סוג שדה חדש `childrenCounter`
-עדכון ה-types בכל הקבצים:
-- `src/components/EventManager.tsx` - interface CustomField
-- `src/components/RSVPForm.tsx` - interface + רינדור
-- `src/components/OpenRSVPCustomFields.tsx` - הוספה לרשימת `fieldTypes`, ל-`addQuickField`, ולפילטר `counterFields`
-- `src/hooks/useEvents.ts` - interface + ברירות מחדל
-- `src/hooks/useGuests.ts`, `src/hooks/useRSVP.ts` - הוספת `children_count`
-- `src/pages/Admin.tsx` - תיקון 4 המקומות שבהם הזיהוי מתבצע (שורות 90, 112, 511, 533) - הוספת זיהוי `children` + מיפוי ל-`number` בעת שמירה (שורות 382, 402)
+בנוסף, ב-`src/components/RSVPForm.tsx` (הטופס של ההזמנה האישית) המונה ילדים מקודד קשיח אבל יש סגירת `</div>` חסרה אחרי המונה נשים (שורה 696) — הילדים מרונדר בתוך ה-wrapper של הנשים. זה לא בהכרח מסתיר אותו אבל פוגע בעיצוב/יישור.
 
-#### 3. ממשק משתמש
-- **טופס RSVP** (`RSVPForm.tsx`, `OpenRSVPCustomFields.tsx`): רינדור המונה עם כפתורי + / − בדומה לגברים/נשים, כולל אימוג'י 👶
-- **כפתור "הוסף מהיר"** באדמין: כפתור חדש "👶 מונה ילדים" ליד הכפתורים הקיימים
-- **רשימת הגשות** (`RSVPSubmissionsList.tsx`): הצגת מספר הילדים + עריכה
-- **רשימת אורחים** (`GuestList.tsx`, `GuestManager.tsx`): הצגה בסך הכל
-- **ייצוא Excel** (`ExcelExport.tsx`): עמודה "ילדים (מאושרים)" + סיכום
-- **ייבוא Excel** (`ExcelImport.tsx`): תמיכה בעמודת ילדים
+## התיקון
 
-#### 4. הודעות סיכום
-עדכון טקסטים מסכמים מ-"X גברים, Y נשים" ל-"X גברים, Y נשים, Z ילדים" בכל המקומות הרלוונטיים (כולל תרגומים ב-`src/i18n/locales/`).
+### 1. `src/components/OpenRSVPCustomFields.tsx`
+ב-`addQuickField`, להוסיף `displayLocations` לכל שדות ה-quick (`menCounter`, `womenCounter`, `childrenCounter`, `fullName`, `guestName`, `phone`, `email`) עם:
+```
+displayLocations: { regularInvitation: true, openLink: true, personalLink: true }
+```
+כדי שיופיעו בכל שלושת המקומות וייכללו בלוגיקת השמירה.
 
-### מה לא משתנה
-- הלוגיקה של מונים נשארת מובנית (לא הופכת לגנרית). אם בעתיד תרצה לאפשר מונים מותאמים אישית לחלוטין (למשל "מונה תינוקות") - זה מצריך שינוי ארכיטקטוני נפרד שבו המונים יישמרו ב-`answers` (jsonb) במקום בעמודות.
+### 2. `src/components/RSVPForm.tsx`
+לתקן את סגירת ה-`</div>` החסרה של עוטף "מונה נשים" כדי שמונה הילדים יהיה אח שלו ולא ילד.
 
-### שאלה לפני ביצוע
-האם להוסיף את מונה הילדים **אוטומטית** לכל האירועים הקיימים, או רק להפוך אותו לזמין כתוספת ידנית דרך כפתור "הוסף מהיר"?
+### 3. אימות
+- ללחוץ "👶 הוסף מונה ילדים" באירוע קיים → לוודא שנשמר ב-`custom_fields_config` (link_type=open + personal).
+- לפתוח את הקישור הפתוח (`/open/...`) ולוודא שהמונה ילדים מופיע.
+- לפתוח קישור אישי ולוודא ששלושת המונים מיושרים נכון.
+
+## למה זה קטן
+
+זה תיקון נקודתי בשני קבצי frontend בלבד, ללא שינוי סכמה (`children_count` כבר קיים ב-DB), ללא משפיע על אירועים קיימים שיש להם כבר את המונים גברים/נשים שמורים.

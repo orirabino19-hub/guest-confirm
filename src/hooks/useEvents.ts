@@ -138,6 +138,15 @@ export const useEvents = () => {
         },
         {
           event_id: data.id,
+          link_type: 'personal' as const,
+          key: 'childrenCounter',
+          label: '👶 מספר ילדים',
+          field_type: 'number' as const,
+          required: false,
+          order_index: 2
+        },
+        {
+          event_id: data.id,
           link_type: 'open' as const,
           key: 'fullName',
           label: 'שם מלא',
@@ -162,6 +171,15 @@ export const useEvents = () => {
           field_type: 'number' as const,
           required: false,
           order_index: 2
+        },
+        {
+          event_id: data.id,
+          link_type: 'open' as const,
+          key: 'childrenCounter',
+          label: '👶 מספר ילדים',
+          field_type: 'number' as const,
+          required: false,
+          order_index: 3
         }
       ];
 

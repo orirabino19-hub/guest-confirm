@@ -126,6 +126,7 @@ const OpenRSVP = () => {
   const [lastName, setLastName] = useState("");
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
+  const [childrenCount, setChildrenCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>("");
@@ -454,9 +455,9 @@ const OpenRSVP = () => {
       let totalWomenCount = event?.accordion_form_enabled
         ? (selectedGender === 'female' ? 1 : 0)
         : womenCount;
+      let totalChildrenCount = event?.accordion_form_enabled ? 0 : childrenCount;
       
       // Add counts from custom field counters (only for regular form)
-      let totalChildrenCount = 0;
       if (!event?.accordion_form_enabled) {
         event?.customFields?.forEach(field => {
           if (field.type === 'menCounter') {
@@ -491,6 +492,7 @@ const OpenRSVP = () => {
       setLastName("");
       setMenCount(0);
       setWomenCount(0);
+      setChildrenCount(0);
       setSelectedGender(null);
       setIsAccordionOpen(false);
       const initialFormData: Record<string, any> = {};
@@ -525,7 +527,10 @@ const OpenRSVP = () => {
   
   const totalGuests = event?.accordion_form_enabled
     ? (selectedGender ? 1 : 0)
-    : (menCount + womenCount + customFieldsGuests);
+    : (menCount + womenCount + childrenCount + customFieldsGuests);
+
+  const showChildrenCounter = !event?.accordion_form_enabled &&
+    (event?.customFields || []).some(field => field.id === 'childrenCounter' || field.type === 'childrenCounter');
 
   // Check if all required fields are filled
   const hasRequiredFields = () => {
@@ -1287,7 +1292,9 @@ const OpenRSVP = () => {
                     {/* Custom Fields */}
                     {event?.customFields && event.customFields.length > 0 && (
                       <div className="space-y-4">
-                        {event.customFields.map(renderCustomField)}
+                        {event.customFields
+                          .filter(field => field.id !== 'childrenCounter')
+                          .map(renderCustomField)}
                       </div>
                     )}
                   </div>
@@ -1389,6 +1396,52 @@ const OpenRSVP = () => {
                         </Button>
                       </div>
                     </div>
+
+                    {showChildrenCounter && (
+                      <div className="space-y-2">
+                        <Label className={labelClasses || "text-sm font-medium"}>
+                          {getCustomText('rsvp.childrenLabel', i18n.language, i18n.language === 'he' ? "ילדים" : "Children")}
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                            disabled={childrenCount <= 0}
+                            className={`h-10 w-10 shrink-0 ${
+                              isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                            }`}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={childrenCount}
+                            onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value)))}
+                            className={`text-center text-lg ${
+                              isModernStyle 
+                                ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 placeholder:text-gray-400' 
+                                : 'border-border/50 focus:border-primary'
+                            }`}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setChildrenCount(Math.min(20, childrenCount + 1))}
+                            disabled={childrenCount >= 20}
+                            className={`h-10 w-10 shrink-0 ${
+                              isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                            }`}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Total Display */}

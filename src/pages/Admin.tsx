@@ -90,8 +90,8 @@ const Admin = () => {
               (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
               : field.field_type,
             label: field.label,
-            labelEn: field.label,
-            labels: field.labels || {},
+            labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
+            labels: (field.labels as Record<string, string>) || {},
             required: field.required,
             options: field.options,
             displayLocations: {
@@ -112,8 +112,8 @@ const Admin = () => {
               (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
               : field.field_type,
             label: field.label,
-            labelEn: field.label,
-            labels: field.labels || {},
+            labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
+            labels: (field.labels as Record<string, string>) || {},
             required: field.required,
             options: field.options,
             displayLocations: {
@@ -511,7 +511,7 @@ const Admin = () => {
                 (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
                 : field.field_type,
               label: field.label,
-              labelEn: field.label,
+              labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
               labels: (field.labels as Record<string, string>) || {},
               required: field.required,
               options: field.options,
@@ -533,7 +533,7 @@ const Admin = () => {
                 (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
                 : field.field_type,
               label: field.label,
-              labelEn: field.label,
+              labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
               labels: (field.labels as Record<string, string>) || {},
               required: field.required,
               options: field.options,

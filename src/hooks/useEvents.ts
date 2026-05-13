@@ -191,7 +191,7 @@ export const useEvents = () => {
     try {
       const { error } = await supabase
         .from('events')
-        .update(updates)
+        .update(updates as any)
         .eq('id', eventId);
 
       if (error) throw error;

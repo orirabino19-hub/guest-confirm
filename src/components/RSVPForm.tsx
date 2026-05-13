@@ -693,6 +693,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                  </div>
                 </div>
 
                 {/* Children Counter */}

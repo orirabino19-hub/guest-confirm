@@ -120,55 +120,67 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
 
 
   const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter') => {
+    const defaultDisplayLocations = {
+      regularInvitation: true,
+      openLink: true,
+      personalLink: true,
+    };
     const quickFields = {
       fullName: {
         id: 'fullName',
         type: 'text' as const,
         label: 'שם מלא',
         labelEn: 'Full Name',
-        required: true
+        required: true,
+        displayLocations: defaultDisplayLocations,
       },
       guestName: {
         id: 'guestName',
         type: 'text' as const,
         label: 'שם האורח',
         labelEn: 'Guest Name',
-        required: true
+        required: true,
+        displayLocations: defaultDisplayLocations,
       },
       phone: {
         id: 'phone',
         type: 'text' as const,
         label: 'מספר טלפון',
         labelEn: 'Phone Number',
-        required: false
+        required: false,
+        displayLocations: defaultDisplayLocations,
       },
       email: {
         id: 'email',
         type: 'text' as const,
         label: 'כתובת אימייל',
         labelEn: 'Email Address',
-        required: false
+        required: false,
+        displayLocations: defaultDisplayLocations,
       },
       menCounter: {
         id: 'menCounter',
         type: 'menCounter' as const,
         label: '👨 מספר גברים',
         labelEn: '👨 Number of Men',
-        required: false
+        required: false,
+        displayLocations: defaultDisplayLocations,
       },
       womenCounter: {
         id: 'womenCounter',
         type: 'womenCounter' as const,
         label: '👩 מספר נשים',
         labelEn: '👩 Number of Women',
-        required: false
+        required: false,
+        displayLocations: defaultDisplayLocations,
       },
       childrenCounter: {
         id: 'childrenCounter',
         type: 'childrenCounter' as const,
         label: '👶 מספר ילדים',
         labelEn: '👶 Number of Children',
-        required: false
+        required: false,
+        displayLocations: defaultDisplayLocations,
       }
     };
 

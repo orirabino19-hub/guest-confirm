@@ -399,7 +399,7 @@ const Admin = () => {
             key: field.id,
             label: field.label,
             labels: labels,
-            field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+            field_type: field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter' ? 'number' : field.type,
             required: field.required,
             options: field.options,
             order_index: index

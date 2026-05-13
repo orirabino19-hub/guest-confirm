@@ -24,7 +24,7 @@ import { isRSVPOpen, formatRSVPStatusMessage } from "@/utils/rsvpStatus";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'email' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn: string;
   labels?: Record<string, string>; // Additional language translations

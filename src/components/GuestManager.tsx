@@ -254,9 +254,9 @@ const GuestManager = ({ selectedEventId, selectedEventSlug, guests, onGuestAdd, 
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-3 w-3" />
                       <span className="font-mono">{guest.phone}</span>
-                      {guest.men_count > 0 || guest.women_count > 0 ? (
+                      {guest.men_count > 0 || guest.women_count > 0 || (guest.children_count || 0) > 0 ? (
                         <span className="text-green-600 font-medium">
-                          • {guest.men_count + guest.women_count} מוזמנים
+                          • {guest.men_count + guest.women_count + (guest.children_count || 0)} מוזמנים
                         </span>
                       ) : null}
                     </div>

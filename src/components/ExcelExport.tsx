@@ -244,6 +244,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       const nameParts = splitName(s);
       
       // Base fields
+      const childrenC = (s as any).children_count || 0;
       const baseData: any = {
         'מס רשומה': index + 1,
         'שם פרטי': nameParts.first,
@@ -251,7 +252,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סוג קישור': source,
         'גברים (מאושרים)': s.men_count,
         'נשים (מאושרות)': s.women_count,
-        'סה"כ מאושרים': (s.men_count + s.women_count),
+        'ילדים (מאושרים)': childrenC,
+        'סה"כ מאושרים': (s.men_count + s.women_count + childrenC),
         'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
       };
 

@@ -254,6 +254,16 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                             onChange={(e) => setEditForm(prev => ({ ...prev, women_count: parseInt(e.target.value) || 0 }))}
                           />
                         </div>
+                        <div>
+                          <Label htmlFor="children_count">מספר ילדים</Label>
+                          <Input
+                            id="children_count"
+                            type="number"
+                            min="0"
+                            value={editForm.children_count}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, children_count: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" onClick={() => setEditingSubmission(null)}>
                             ביטול

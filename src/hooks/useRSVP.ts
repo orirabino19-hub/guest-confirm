@@ -65,6 +65,7 @@ export const useRSVP = (eventId?: string) => {
     last_name?: string;
     men_count: number;
     women_count: number;
+    children_count?: number;
     answers: Json;
   }) => {
     try {

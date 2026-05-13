@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn: string;
   options?: string[];

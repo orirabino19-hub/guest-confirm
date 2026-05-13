@@ -1292,7 +1292,9 @@ const OpenRSVP = () => {
                     {/* Custom Fields */}
                     {event?.customFields && event.customFields.length > 0 && (
                       <div className="space-y-4">
-                        {event.customFields.map(renderCustomField)}
+                        {event.customFields
+                          .filter(field => field.id !== 'childrenCounter')
+                          .map(renderCustomField)}
                       </div>
                     )}
                   </div>
@@ -1394,6 +1396,52 @@ const OpenRSVP = () => {
                         </Button>
                       </div>
                     </div>
+
+                    {showChildrenCounter && (
+                      <div className="space-y-2">
+                        <Label className={labelClasses || "text-sm font-medium"}>
+                          {getCustomText('rsvp.childrenLabel', i18n.language, i18n.language === 'he' ? "ילדים" : "Children")}
+                        </Label>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                            disabled={childrenCount <= 0}
+                            className={`h-10 w-10 shrink-0 ${
+                              isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                            }`}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={childrenCount}
+                            onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value)))}
+                            className={`text-center text-lg ${
+                              isModernStyle 
+                                ? 'rounded-xl bg-white/80 border-gray-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-200 placeholder:text-gray-400' 
+                                : 'border-border/50 focus:border-primary'
+                            }`}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setChildrenCount(Math.min(20, childrenCount + 1))}
+                            disabled={childrenCount >= 20}
+                            className={`h-10 w-10 shrink-0 ${
+                              isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                            }`}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Total Display */}

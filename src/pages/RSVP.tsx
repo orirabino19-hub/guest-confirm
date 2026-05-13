@@ -14,7 +14,7 @@ console.log('🔥 RSVP.tsx file loaded');
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'email' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn?: string;
   required: boolean;

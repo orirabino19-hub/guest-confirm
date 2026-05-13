@@ -762,6 +762,7 @@ const OpenRSVP = () => {
 
       case 'menCounter':
       case 'womenCounter':
+      case 'childrenCounter':
         const count = formData[field.id] || 0;
         const increment = () => {
           if (count < 10) {

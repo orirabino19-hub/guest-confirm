@@ -93,9 +93,9 @@ const GuestList = ({ guests, loading, selectedEventId, selectedEventSlug }: Gues
                      </h3>
                    </div>
                    <p className="text-sm text-muted-foreground">📞 {guest.phone}</p>
-                   {(guest.men_count > 0 || guest.women_count > 0) && (
+                   {(guest.men_count > 0 || guest.women_count > 0 || (guest.children_count || 0) > 0) && (
                      <p className="text-sm text-green-600">
-                       👥 {guest.men_count + guest.women_count} מוזמנים ({guest.men_count} גברים, {guest.women_count} נשים)
+                       👥 {guest.men_count + guest.women_count + (guest.children_count || 0)} מוזמנים ({guest.men_count} גברים, {guest.women_count} נשים{(guest.children_count || 0) > 0 ? `, ${guest.children_count} ילדים` : ''})
                      </p>
                    )}
                 </div>

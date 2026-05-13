@@ -24,7 +24,7 @@ import { isRSVPOpen, formatRSVPStatusMessage } from "@/utils/rsvpStatus";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'email' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn: string;
   labels?: Record<string, string>; // Additional language translations
@@ -332,7 +332,7 @@ const OpenRSVP = () => {
         customFields.forEach(field => {
           if (field.type === 'checkbox') {
             initialFormData[field.id] = false;
-          } else if (field.type === 'menCounter' || field.type === 'womenCounter') {
+          } else if (field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter') {
             initialFormData[field.id] = 0;
           } else {
             initialFormData[field.id] = '';
@@ -456,12 +456,15 @@ const OpenRSVP = () => {
         : womenCount;
       
       // Add counts from custom field counters (only for regular form)
+      let totalChildrenCount = 0;
       if (!event?.accordion_form_enabled) {
         event?.customFields?.forEach(field => {
           if (field.type === 'menCounter') {
             totalMenCount += Number(formData[field.id] || 0);
           } else if (field.type === 'womenCounter') {
             totalWomenCount += Number(formData[field.id] || 0);
+          } else if (field.type === 'childrenCounter') {
+            totalChildrenCount += Number(formData[field.id] || 0);
           }
         });
       }
@@ -474,6 +477,7 @@ const OpenRSVP = () => {
         last_name: lastName.trim(),
         men_count: totalMenCount,
         women_count: totalWomenCount,
+        children_count: totalChildrenCount,
         answers: formData
       };
 
@@ -493,7 +497,7 @@ const OpenRSVP = () => {
       event?.customFields?.forEach(field => {
         if (field.type === 'checkbox') {
           initialFormData[field.id] = false;
-        } else if (field.type === 'menCounter' || field.type === 'womenCounter') {
+        } else if (field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter') {
           initialFormData[field.id] = 0;
         } else {
           initialFormData[field.id] = '';
@@ -516,7 +520,7 @@ const OpenRSVP = () => {
   const customFieldsGuests = event?.accordion_form_enabled 
     ? 0 
     : ((event?.customFields || [])
-        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+        .filter(field => field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter')
         .reduce((total, field) => total + (formData[field.id] || 0), 0));
   
   const totalGuests = event?.accordion_form_enabled
@@ -758,6 +762,7 @@ const OpenRSVP = () => {
 
       case 'menCounter':
       case 'womenCounter':
+      case 'childrenCounter':
         const count = formData[field.id] || 0;
         const increment = () => {
           if (count < 10) {

@@ -104,14 +104,15 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     // Aggregate confirmed counts per guest (by guest_id if available, otherwise by display name)
     const keyForSubmission = (s: RSVPSubmission) => (s.guest_id ? String(s.guest_id) : getDisplayName(s).trim());
-    const confirmedMap = new Map<string, { men: number; women: number; total: number }>();
+    const confirmedMap = new Map<string, { men: number; women: number; children: number; total: number }>();
     for (const s of eventSubmissions) {
       const k = keyForSubmission(s);
       if (!k) continue;
       const men = Number(s.men_count) || 0;
       const women = Number(s.women_count) || 0;
-      const prev = confirmedMap.get(k) || { men: 0, women: 0, total: 0 };
-      const next = { men: prev.men + men, women: prev.women + women, total: prev.total + men + women };
+      const children = Number((s as any).children_count) || 0;
+      const prev = confirmedMap.get(k) || { men: 0, women: 0, children: 0, total: 0 };
+      const next = { men: prev.men + men, women: prev.women + women, children: prev.children + children, total: prev.total + men + women + children };
       confirmedMap.set(k, next);
     }
 
@@ -119,7 +120,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const guestExportData = await Promise.all(filteredGuests.map(async (guest, index) => {
       const guestKeyById = String(guest.id);
       const guestKeyByName = getDisplayName(guest).trim();
-      const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, total: 0 };
+      const confirmed = confirmedMap.get(guestKeyById) || confirmedMap.get(guestKeyByName) || { men: 0, women: 0, children: 0, total: 0 };
       const shortLink = await generateShortLink(selectedEventId, guest.phone || '');
       const nameParts = splitName(guest);
       
@@ -132,6 +133,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סטטוס': confirmed.total > 0 ? 'אישר' : 'ממתין',
         'גברים (מאושרים)': confirmed.men,
         'נשים (מאושרות)': confirmed.women,
+        'ילדים (מאושרים)': confirmed.children,
         'סה"כ מאושרים': confirmed.total,
         'קישור אישי': shortLink
       };
@@ -141,6 +143,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const openRsvpSubmissions = eventSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id));
     const openRsvpExportData = openRsvpSubmissions.map((submission, index) => {
       const nameParts = splitName(submission);
+      const childrenCount = (submission as any).children_count || 0;
       
       return {
         'מס רשומה': guestExportData.length + index + 1,
@@ -151,7 +154,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סטטוס': 'אישר',
         'גברים (מאושרים)': submission.men_count || 0,
         'נשים (מאושרות)': submission.women_count || 0,
-        'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0),
+        'ילדים (מאושרים)': childrenCount,
+        'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0) + childrenCount,
         'קישור אישי': 'קישור פתוח'
       };
     });
@@ -172,6 +176,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { wch: 12 },  // סטטוס
       { wch: 18 },  // גברים (מאושרים)
       { wch: 18 },  // נשים (מאושרות)
+      { wch: 18 },  // ילדים (מאושרים)
       { wch: 20 },  // סה"כ מאושרים
       { wch: 50 }   // קישור אישי
     ];
@@ -193,7 +198,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     const totalConfirmedMen = allEventSubmissions.reduce((sum, s) => sum + Number(s.men_count || 0), 0);
     const totalConfirmedWomen = allEventSubmissions.reduce((sum, s) => sum + Number(s.women_count || 0), 0);
-    const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
+    const totalConfirmedChildren = allEventSubmissions.reduce((sum, s) => sum + Number((s as any).children_count || 0), 0);
+    const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen + totalConfirmedChildren;
 
     // Count ALL confirmed guests including those from open RSVPs
     const allSubmissions = allEventSubmissions;
@@ -215,6 +221,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { 'פרטי האירוע': 'מספר מוזמנים שיגיעו', 'ערך': '' },
       { 'פרטי האירוע': 'גברים', 'ערך': totalConfirmedMen },
       { 'פרטי האירוע': 'נשים', 'ערך': totalConfirmedWomen },
+      { 'פרטי האירוע': 'ילדים', 'ערך': totalConfirmedChildren },
       { 'פרטי האירוע': 'סה"כ מוזמנים שיגיעו', 'ערך': totalConfirmedGuests },
     ];
 
@@ -237,6 +244,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       const nameParts = splitName(s);
       
       // Base fields
+      const childrenC = (s as any).children_count || 0;
       const baseData: any = {
         'מס רשומה': index + 1,
         'שם פרטי': nameParts.first,
@@ -244,7 +252,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סוג קישור': source,
         'גברים (מאושרים)': s.men_count,
         'נשים (מאושרות)': s.women_count,
-        'סה"כ מאושרים': (s.men_count + s.women_count),
+        'ילדים (מאושרים)': childrenC,
+        'סה"כ מאושרים': (s.men_count + s.women_count + childrenC),
         'תאריך אישור': new Date(s.submitted_at).toLocaleString('he-IL')
       };
 
@@ -282,6 +291,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
       { wch: 18 },  // סוג קישור
       { wch: 18 },  // גברים (מאושרים)
       { wch: 18 },  // נשים (מאושרות)
+      { wch: 18 },  // ילדים (מאושרים)
       { wch: 16 },  // סה"כ מאושרים
       { wch: 22 }   // תאריך אישור
     ];

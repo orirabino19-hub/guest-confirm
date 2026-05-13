@@ -19,6 +19,7 @@ interface RSVPSubmissionsListProps {
     last_name?: string;
     men_count?: number; 
     women_count?: number; 
+    children_count?: number;
   }) => void;
 }
 
@@ -28,7 +29,8 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
     first_name: '',
     last_name: '',
     men_count: 0,
-    women_count: 0
+    women_count: 0,
+    children_count: 0
   });
   const [customFieldsMap, setCustomFieldsMap] = useState<Record<string, string>>({});
 
@@ -83,7 +85,8 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
       first_name: submission.first_name || (submission.full_name ? submission.full_name.split(' ')[0] : ''),
       last_name: submission.last_name || (submission.full_name ? submission.full_name.split(' ').slice(1).join(' ') : ''),
       men_count: submission.men_count,
-      women_count: submission.women_count
+      women_count: submission.women_count,
+      children_count: (submission as any).children_count || 0
     });
   };
 
@@ -169,7 +172,10 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                     <span>נשים: {submission.women_count}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <span>סה"כ: {submission.men_count + submission.women_count}</span>
+                    <span>👶 ילדים: {(submission as any).children_count || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span>סה"כ: {submission.men_count + submission.women_count + ((submission as any).children_count || 0)}</span>
                   </div>
                 </div>
                 {Object.keys(submission.answers as any || {}).length > 0 && (
@@ -246,6 +252,16 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
                             min="0"
                             value={editForm.women_count}
                             onChange={(e) => setEditForm(prev => ({ ...prev, women_count: parseInt(e.target.value) || 0 }))}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="children_count">מספר ילדים</Label>
+                          <Input
+                            id="children_count"
+                            type="number"
+                            min="0"
+                            value={editForm.children_count}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, children_count: parseInt(e.target.value) || 0 }))}
                           />
                         </div>
                         <div className="flex justify-end gap-2">

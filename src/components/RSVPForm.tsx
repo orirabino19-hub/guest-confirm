@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'email' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn?: string;
   required: boolean;
@@ -116,6 +116,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [menCount, setMenCount] = useState(0);
   const [womenCount, setWomenCount] = useState(0);
+  const [childrenCount, setChildrenCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [eventTheme, setEventTheme] = useState<any>(null);
   const [isModernStyle, setIsModernStyle] = useState(false);
@@ -202,6 +203,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
         last_name: guestName.split(' ').slice(1).join(' ') || '',
         men_count: menCount,
         women_count: womenCount,
+        children_count: childrenCount,
         answers: formData
       };
 
@@ -242,10 +244,10 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
   // Calculate total guests from default counters plus custom fields
   const customFieldsGuests = customFields
-    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter')
+    .filter(field => field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter')
     .reduce((sum, field) => sum + (formData[field.id] || 0), 0);
   
-  const totalGuests = menCount + womenCount + customFieldsGuests;
+  const totalGuests = menCount + womenCount + childrenCount + customFieldsGuests;
 
   const renderCustomField = (field: CustomField) => {
     const label = i18n.language === 'he' ? field.label : (field.labelEn || field.label);
@@ -359,6 +361,7 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
 
       case 'menCounter':
       case 'womenCounter':
+      case 'childrenCounter':
         return (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id} className={modernLabelClasses}>
@@ -690,8 +693,49 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                </div>
+
+                {/* Children Counter */}
+                <div className="space-y-2">
+                  <Label className={labelClasses}>
+                    {getCustomText ? getCustomText('rsvp.childrenLabel', i18n.language, i18n.language === 'he' ? "ילדים" : "Children") : (i18n.language === 'he' ? "ילדים" : "Children")}
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setChildrenCount(Math.max(0, childrenCount - 1))}
+                      disabled={childrenCount <= 0}
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={childrenCount}
+                      onChange={(e) => setChildrenCount(Math.max(0, Number(e.target.value)))}
+                      className={`text-center text-lg ${inputClasses}`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setChildrenCount(Math.min(20, childrenCount + 1))}
+                      disabled={childrenCount >= 20}
+                      className={`h-10 w-10 shrink-0 ${
+                        isModernStyle ? 'rounded-xl border-gray-300 hover:border-amber-400 hover:bg-amber-50 transition-all' : ''
+                      }`}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
+              </div>
               </div>
 
               {/* Custom Fields */}

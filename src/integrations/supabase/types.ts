@@ -179,6 +179,7 @@ export type Database = {
       }
       guests: {
         Row: {
+          children_count: number
           created_at: string
           email: string | null
           event_id: string
@@ -196,6 +197,7 @@ export type Database = {
           women_count: number
         }
         Insert: {
+          children_count?: number
           created_at?: string
           email?: string | null
           event_id: string
@@ -213,6 +215,7 @@ export type Database = {
           women_count?: number
         }
         Update: {
+          children_count?: number
           created_at?: string
           email?: string | null
           event_id?: string
@@ -302,6 +305,7 @@ export type Database = {
       rsvp_submissions: {
         Row: {
           answers: Json
+          children_count: number
           event_id: string
           first_name: string | null
           full_name: string | null
@@ -317,6 +321,7 @@ export type Database = {
         }
         Insert: {
           answers?: Json
+          children_count?: number
           event_id: string
           first_name?: string | null
           full_name?: string | null
@@ -332,6 +337,7 @@ export type Database = {
         }
         Update: {
           answers?: Json
+          children_count?: number
           event_id?: string
           first_name?: string | null
           full_name?: string | null

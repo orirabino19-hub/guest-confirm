@@ -22,7 +22,7 @@ interface LanguageConfig {
 
 export interface CustomField {
   id: string;
-  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter';
+  type: 'text' | 'select' | 'checkbox' | 'textarea' | 'menCounter' | 'womenCounter' | 'childrenCounter';
   label: string;
   labelEn: string;
   labels?: Record<string, string>; // Additional language translations

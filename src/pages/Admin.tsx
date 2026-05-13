@@ -87,7 +87,7 @@ const Admin = () => {
           const existing = fieldsMap.get(field.key) || {
             id: field.key,
             type: field.field_type === 'number' ? 
-              (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+              (field.key === 'menCounter' ? 'menCounter' : field.key === 'womenCounter' ? 'womenCounter' : field.key === 'childrenCounter' ? 'childrenCounter' : 'text') 
               : field.field_type,
             label: field.label,
             labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
@@ -109,7 +109,7 @@ const Admin = () => {
           const existing = fieldsMap.get(field.key) || {
             id: field.key,
             type: field.field_type === 'number' ? 
-              (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+              (field.key === 'menCounter' ? 'menCounter' : field.key === 'womenCounter' ? 'womenCounter' : field.key === 'childrenCounter' ? 'childrenCounter' : 'text') 
               : field.field_type,
             label: field.label,
             labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
@@ -379,7 +379,7 @@ const Admin = () => {
             key: field.id,
             label: field.label,
             labels: labels,
-            field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+            field_type: field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter' ? 'number' : field.type,
             required: field.required,
             options: field.options,
             order_index: index
@@ -399,7 +399,7 @@ const Admin = () => {
             key: field.id,
             label: field.label,
             labels: labels,
-            field_type: field.type === 'menCounter' || field.type === 'womenCounter' ? 'number' : field.type,
+            field_type: field.type === 'menCounter' || field.type === 'womenCounter' || field.type === 'childrenCounter' ? 'number' : field.type,
             required: field.required,
             options: field.options,
             order_index: index
@@ -508,7 +508,7 @@ const Admin = () => {
             const existing = fieldsMap.get(field.key) || {
               id: field.key,
               type: field.field_type === 'number' ? 
-                (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+                (field.key === 'menCounter' ? 'menCounter' : field.key === 'womenCounter' ? 'womenCounter' : field.key === 'childrenCounter' ? 'childrenCounter' : 'text') 
                 : field.field_type,
               label: field.label,
               labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
@@ -530,7 +530,7 @@ const Admin = () => {
             const existing = fieldsMap.get(field.key) || {
               id: field.key,
               type: field.field_type === 'number' ? 
-                (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
+                (field.key === 'menCounter' ? 'menCounter' : field.key === 'womenCounter' ? 'womenCounter' : field.key === 'childrenCounter' ? 'childrenCounter' : 'text') 
                 : field.field_type,
               label: field.label,
               labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
@@ -637,7 +637,7 @@ const Admin = () => {
   const guestLinkSubmissions = selectedEventSubmissions.filter(s => s.guest_id).length;
   const pendingCount = Math.max(0, registeredGuests - guestLinkSubmissions);
   const totalConfirmedGuests = selectedEventSubmissions
-    .reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
+    .reduce((sum, s) => sum + (s.men_count + s.women_count + ((s as any).children_count || 0)), 0);
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
   const selectedEventSlug = selectedEvent ? 'event' : null; // Default slug until we add proper slug field

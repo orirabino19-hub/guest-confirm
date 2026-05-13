@@ -111,6 +111,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     { value: 'checkbox', label: 'תיבת סימון', labelEn: 'Checkbox' },
     { value: 'menCounter', label: 'מונה גברים', labelEn: 'Men Counter' },
     { value: 'womenCounter', label: 'מונה נשים', labelEn: 'Women Counter' },
+    { value: 'childrenCounter', label: 'מונה ילדים', labelEn: 'Children Counter' },
     { value: 'fullName', label: 'שם מלא', labelEn: 'Full Name' },
     { value: 'guestName', label: 'שם אורח', labelEn: 'Guest Name' },
     { value: 'phone', label: 'טלפון', labelEn: 'Phone Number' },
@@ -118,7 +119,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
   ];
 
 
-  const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
+  const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter') => {
     const quickFields = {
       fullName: {
         id: 'fullName',
@@ -160,6 +161,13 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         type: 'womenCounter' as const,
         label: '👩 מספר נשים',
         labelEn: '👩 Number of Women',
+        required: false
+      },
+      childrenCounter: {
+        id: 'childrenCounter',
+        type: 'childrenCounter' as const,
+        label: '👶 מספר ילדים',
+        labelEn: '👶 Number of Children',
         required: false
       }
     };
@@ -404,8 +412,9 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
     );
   }
 
-  const counterFields = customFields.filter(field => field.type === 'menCounter' || field.type === 'womenCounter');
-  const otherFields = customFields.filter(field => field.type !== 'menCounter' && field.type !== 'womenCounter');
+  const isCounterType = (t: string) => t === 'menCounter' || t === 'womenCounter' || t === 'childrenCounter';
+  const counterFields = customFields.filter(field => isCounterType(field.type));
+  const otherFields = customFields.filter(field => !isCounterType(field.type));
 
   return (
     <Card>
@@ -450,6 +459,16 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                 👩 הוסף מונה נשים
               </Button>
             )}
+            {!customFields.some(f => f.id === 'childrenCounter') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => addQuickField('childrenCounter')}
+                className="text-xs"
+              >
+                👶 הוסף מונה ילדים
+              </Button>
+            )}
           </div>
 
           {/* Display existing counter fields */}
@@ -483,7 +502,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="default">
-                        {field.type === 'menCounter' ? 'מונה גברים' : 'מונה נשים'}
+                        {field.type === 'menCounter' ? 'מונה גברים' : field.type === 'womenCounter' ? 'מונה נשים' : 'מונה ילדים'}
                       </Badge>
                       {field.required && (
                         <Badge variant="destructive" className="text-xs">

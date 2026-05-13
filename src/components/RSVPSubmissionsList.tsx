@@ -19,6 +19,7 @@ interface RSVPSubmissionsListProps {
     last_name?: string;
     men_count?: number; 
     women_count?: number; 
+    children_count?: number;
   }) => void;
 }
 
@@ -28,7 +29,8 @@ const RSVPSubmissionsList = ({ submissions, loading, onDeleteSubmission, onUpdat
     first_name: '',
     last_name: '',
     men_count: 0,
-    women_count: 0
+    women_count: 0,
+    children_count: 0
   });
   const [customFieldsMap, setCustomFieldsMap] = useState<Record<string, string>>({});
 

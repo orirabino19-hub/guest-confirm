@@ -637,7 +637,7 @@ const Admin = () => {
   const guestLinkSubmissions = selectedEventSubmissions.filter(s => s.guest_id).length;
   const pendingCount = Math.max(0, registeredGuests - guestLinkSubmissions);
   const totalConfirmedGuests = selectedEventSubmissions
-    .reduce((sum, s) => sum + (s.men_count + s.women_count), 0);
+    .reduce((sum, s) => sum + (s.men_count + s.women_count + ((s as any).children_count || 0)), 0);
 
   const selectedEvent = events.find(e => e.id === selectedEventId);
   const selectedEventSlug = selectedEvent ? 'event' : null; // Default slug until we add proper slug field

@@ -119,7 +119,7 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
   ];
 
 
-  const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter') => {
+  const addQuickField = (type: 'fullName' | 'guestName' | 'phone' | 'email' | 'menCounter' | 'womenCounter' | 'childrenCounter') => {
     const quickFields = {
       fullName: {
         id: 'fullName',
@@ -161,6 +161,13 @@ const OpenRSVPCustomFields = ({ selectedEventId, customFields, onCustomFieldsUpd
         type: 'womenCounter' as const,
         label: '👩 מספר נשים',
         labelEn: '👩 Number of Women',
+        required: false
+      },
+      childrenCounter: {
+        id: 'childrenCounter',
+        type: 'childrenCounter' as const,
+        label: '👶 מספר ילדים',
+        labelEn: '👶 Number of Children',
         required: false
       }
     };

@@ -89,18 +89,18 @@ const Admin = () => {
             type: field.field_type === 'number' ? 
               (field.key.includes('men') ? 'menCounter' : field.key.includes('women') ? 'womenCounter' : 'text') 
               : field.field_type,
-            label: field.label,
-            labelEn: field.label,
-            labels: field.labels || {},
-            required: field.required,
-            options: field.options,
-            displayLocations: {
-              regularInvitation: false,
-              openLink: false,
-              personalLink: false
-            }
-          };
-          existing.displayLocations.openLink = true;
+              label: field.label,
+              labelEn: ((field.labels as Record<string, string>) || {}).en || field.label,
+              labels: (field.labels as Record<string, string>) || {},
+              required: field.required,
+              options: field.options,
+              displayLocations: {
+                regularInvitation: false,
+                openLink: false,
+                personalLink: false
+              }
+            };
+            existing.displayLocations.openLink = true;
           fieldsMap.set(field.key, existing);
         });
 

@@ -737,7 +737,6 @@ const RSVPForm = ({ guestName, phone, eventName, customFields = [], eventId, get
                   </div>
                 </div>
               </div>
-              </div>
 
               {/* Custom Fields */}
               {customFields.length > 0 && (

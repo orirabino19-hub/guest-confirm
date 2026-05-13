@@ -118,6 +118,7 @@ export default function ClientDashboard() {
     last_name?: string;
     men_count?: number;
     women_count?: number;
+    children_count?: number;
   }) => {
     try {
       const { error } = await supabase

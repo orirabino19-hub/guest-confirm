@@ -24,6 +24,7 @@ interface RSVPSubmission {
   last_name: string | null;
   men_count: number;
   women_count: number;
+  children_count?: number;
   status: string;
   submitted_at: string;
   updated_at: string;

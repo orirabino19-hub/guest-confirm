@@ -143,6 +143,7 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
     const openRsvpSubmissions = eventSubmissions.filter(s => !s.guest_id || !filteredGuests.find(g => g.id === s.guest_id));
     const openRsvpExportData = openRsvpSubmissions.map((submission, index) => {
       const nameParts = splitName(submission);
+      const childrenCount = (submission as any).children_count || 0;
       
       return {
         'מס רשומה': guestExportData.length + index + 1,
@@ -153,7 +154,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
         'סטטוס': 'אישר',
         'גברים (מאושרים)': submission.men_count || 0,
         'נשים (מאושרות)': submission.women_count || 0,
-        'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0),
+        'ילדים (מאושרים)': childrenCount,
+        'סה"כ מאושרים': (submission.men_count || 0) + (submission.women_count || 0) + childrenCount,
         'קישור אישי': 'קישור פתוח'
       };
     });

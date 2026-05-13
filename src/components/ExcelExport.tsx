@@ -198,7 +198,8 @@ const ExcelExport = ({ selectedEventId, selectedEventSlug, eventName, guests, su
 
     const totalConfirmedMen = allEventSubmissions.reduce((sum, s) => sum + Number(s.men_count || 0), 0);
     const totalConfirmedWomen = allEventSubmissions.reduce((sum, s) => sum + Number(s.women_count || 0), 0);
-    const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen;
+    const totalConfirmedChildren = allEventSubmissions.reduce((sum, s) => sum + Number((s as any).children_count || 0), 0);
+    const totalConfirmedGuests = totalConfirmedMen + totalConfirmedWomen + totalConfirmedChildren;
 
     // Count ALL confirmed guests including those from open RSVPs
     const allSubmissions = allEventSubmissions;
